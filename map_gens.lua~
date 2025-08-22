@@ -1,0 +1,263 @@
+local base = require("map_gens_base")
+
+local size = {
+   0,
+   1/2,
+   1/math.sqrt(2),
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+}
+
+local example_settings = {
+   resources = {
+      frequency = 1,
+      size = 1,
+      richness = 1,
+   },
+   world = {
+      decorative = {
+         frequency = 1,
+         size = 1,
+         richness = 1,
+      },
+      entity = {
+         frequency = 1,
+         size = 1,
+         richness = 1,
+      },
+      tile = {
+         frequency = 1,
+         size = 1,
+         richness = 1,
+      },
+   },
+   starting_area = 1,
+   no_enemies_mode = false,
+   enemy = {
+      frequency = 1,
+      size = 1,
+      richness = 1,
+   }
+}
+
+local enemy_settings = {
+   "enemy-base",
+   "gleba-enemy-base",
+   "electric_enemies",
+   "hot_enemy_base",
+   "frost_enemy_base",
+   "toxic_enemy_base"
+}
+
+local function deepcopy(o, seen)
+  seen = seen or {}
+  if o == nil then return nil end
+  if seen[o] then return seen[o] end
+
+  local no
+  if type(o) == 'table' then
+    no = {}
+    seen[o] = no
+
+    for k, v in next, o, nil do
+      no[deepcopy(k, seen)] = deepcopy(v, seen)
+    end
+    setmetatable(no, deepcopy(getmetatable(o), seen))
+  else -- number, string, boolean, etc
+    no = o
+  end
+  return no
+end
+
+local function single_number(number)
+   if number < 1 then number = 1 end
+   if number > #size  then number = #size end
+   return number
+end
+
+local function numbers_to_values(settings_table)
+   return {
+      frequency = size[single_number(settings_table["frequency"])],
+      size = size[single_number(settings_table["size"])],
+      richness = size[single_number(settings_table["frequency"])],
+   }
+end
+
+local function fill_planet(name,settings,base_settings)
+   local planet = deepcopy(base[name])
+   for k,_ in pairs(base_settings.autoplace_controls) do
+      local enemy_test = false
+      for _,v in ipairs(enemy_settings) do
+         if v == k then
+            enemy_test = true
+         end
+      end
+      if enemy_test then
+         local s = settings.enemy
+         planet.autoplace_controls[k] = numbers_to_values(s)
+      else
+         local s = settings.resources
+         planet.autoplace_controls[k] = numbers_to_values(s)
+      end
+   end
+   local se = settings.enemy
+   --planet.autoplace_controls["enemy-base"] = numbers_to_values(se)
+   for setting,values in pairs(settings.world) do
+      local ap = planet.autoplace_settings[setting]
+      if ap and ap.settings then
+         for a,_ in pairs(ap.settings) do
+            ap.settings[a] = numbers_to_values(values)
+         end
+      end
+   end
+   planet.no_enemies_mode = settings.no_enemies_mode
+   planet.starting_area = size[single_number(settings.starting_area)]
+   planet.starting_points = {{x=0,y=0}}
+   planet.territory_settings  = base_settings.territory_settings
+   planet.default_enable_all_autoplace_controls = false
+   planet.seed = base_settings.seed
+   return planet
+end
+
+
+return {
+   variant_list = {
+      "rich",
+      "normal",
+      "dwarf",
+      "dangerous"
+   },
+   variants = {
+      rich = {
+         resources = {
+            frequency = 9,
+            size = 9,
+            richness = 9,
+         },
+         world = {
+            decorative = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            entity = {
+               frequency = 7,
+               size = 7,
+               richness = 7,
+            },
+            tile = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+         },
+         starting_area = 3,
+         no_enemies_mode = false,
+         enemy = {
+            frequency = 5,
+            size = 5,
+            richness = 5,
+         }
+      },
+      normal = {
+         resources = {
+            frequency = 4,
+            size = 4,
+            richness = 4,
+         },
+         world = {
+            decorative = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            entity = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            tile = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+         },
+         starting_area = 4,
+         no_enemies_mode = false,
+         enemy = {
+            frequency = 4,
+            size = 4,
+            richness = 4,
+         }
+      },
+      dwarf = {
+         resources = {
+            frequency = 2,
+            size = 2,
+            richness = 2,
+         },
+         world = {
+            decorative = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            entity = {
+               frequency = 2,
+               size = 2,
+               richness = 2,
+            },
+            tile = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+         },
+         starting_area = 6,
+         no_enemies_mode = false,
+         enemy = {
+            frequency = 2,
+            size = 2,
+            richness = 2,
+         }
+      },
+      dangerous = {
+         resources = {
+            frequency = 3,
+            size = 3,
+            richness = 3,
+         },
+         world = {
+            decorative = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            entity = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+            tile = {
+               frequency = 4,
+               size = 4,
+               richness = 4,
+            },
+         },
+         starting_area = 2,
+         no_enemies_mode = false,
+         enemy = {
+            frequency = 9,
+            size = 9,
+            richness = 9,
+         }
+      }
+   },
+   functions = {
+      generate = fill_planet
+   }
+}

@@ -1,0 +1,219 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.8
+Date: 2025-07-31
+  Changes:
+    - Fixed warp chest. Now you can't use multiple chests
+    - Completely re-work aditional planet variants. It should be much easier now to make new ones
+    - Small improvements to warp train
+    - Added translation text for warp platform belt
+---------------------------------------------------------------------------------------------------
+Version: 0.2.7
+Date: 2025-07-31
+  Changes:
+    - Change flamthrower ammo to light oil (Recipe request)
+---------------------------------------------------------------------------------------------------
+Version: 0.2.6
+Date: 2025-07-28
+  Changes:
+    - New warp GUI
+---------------------------------------------------------------------------------------------------
+Version: 0.2.5
+Date: 2025-07-23
+  Changes:
+    - Added new research to warp trains between ground and factory floor
+    - Change requirements for bio-labs (they have to be on ground floor)
+    - Fix some spelling issues
+    - Added vote to warp in multiplayer
+    - Remove debug texts
+---------------------------------------------------------------------------------------------------
+Version: 0.2.4
+Date: 2025-07-23
+  Changes:
+    - Fix multiplayer spawning when factory floor is at lvl 0
+---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2025-07-23
+  Changes:
+    - Fixed crash with garden floor upgrade
+    -  Fix text in settings
+---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2025-07-20
+  Changes:
+    - Add alert if you will be traveling to your next destination via shattered planet
+    - Prevent traveling to solar system edge (there is no need for it)
+    - Lower speed for traveling via space
+    - Make some texts more visible
+    - Fix platform size at lvl 1 for easy and super easy
+---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2025-07-18
+  Changes:
+    - big mining drills will have more module slots with quality
+    - change some of the planet settings to improve balance
+    - Make wagons bigger to make rails more fun to use
+    - Add quality to wagons
+    - add equipment grid to locomotive so it can defend wagons
+    - These changes should add more options for gathering resources
+    - change tile under platform (ground platform can be now destroeyd)
+    - Allow everyone to walk on water to avoid edge-cases
+    - Fixed asteroids while warping via space (initial collision)
+    - Fix power while flying via space
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2025-07-13
+  Changes:
+    - Enable traveling via space by default
+    - Fix gathering promethium in space
+    - Add research multiplier for warp specific researches
+    - Added option to change warp platform size(difficulty)
+    - Added option to change factory floor shape
+    - In multiplayer players now teleport to factory floor when they join
+    - Changed costs of some sciences to better reflect their value
+---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2025-06-08
+  Changes:
+    - Small fix for dedicated servers
+    - Make it harder to miss the first message
+    - Fix warp sounds in multiplayer
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2025-05-22
+  Changes:
+    - Removed debug logs
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2025-05-21
+  Changes:
+    - Small fix issue on line 765
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2025-05-17
+  Changes:
+    - This is first version going towards expansion on the original idea
+    - Reworked how platform behaves during warp time
+    - It is now possible to collect promethium
+    - Improved performance in multiplayer
+    - It is now imposible to walk between platforms durring warp time
+    - Fixed warping to the factory floor with button in multiplayer
+    - It is now possible to unlock asteroid collectors
+    - It is now possible to change when certain planets unlock in settings
+    - Added sound effect to the warps
+    - Space transition is by default disabled (to maintain compatibility with previous version)
+      This can be enabled in settings (that will be default in next version)
+---------------------------------------------------------------------------------------------------
+Version: 0.0.21
+Date: 2025-05-14
+  Changes:
+    - Changed how white science is changed, to fix compatibility with other mods
+    - Changed code structure to make it cleaner
+---------------------------------------------------------------------------------------------------
+Version: 0.0.20
+Date: 2025-05-13
+  Changes:
+    - Fixed compatibility with RSO
+    - Started removing bots on old surface after the warp
+---------------------------------------------------------------------------------------------------
+Version: 0.0.19
+Date: 2025-04-29
+  Changes:
+    - Added more mods that can cause crashed or issues into the list of conflicts
+    - All of these will be removed when they work again
+    - Fixed some of the texts and names
+    - Updated RU translation thanks to (Jimmyster)
+    - Changed how enemy waves work to lower the UPS drop
+    - Since this makes waves a bit harder I improved artilery damage research
+---------------------------------------------------------------------------------------------------
+Version: 0.0.18
+Date: 2025-04-27
+  Changes:
+    - Fixed spawning extra bosses
+    - Cleanup code around spawning bosses
+    - Made it internaly possible to spawn normal demolishers as bosses (Needs to be tested)
+    - Changed order of changelogs to be same as other mods
+---------------------------------------------------------------------------------------------------
+Version: 0.0.17
+Date: 2025-04-17
+  Changes:
+    - Changed how mobs are spawning for the final research (This should help with UPS issues)
+    - Made it possible to change what tile is used for ground floor and for factory floor
+    - Fixed names for settings
+---------------------------------------------------------------------------------------------------
+Version: 0.0.16
+Date: 2025-04-15
+  Changes:
+    - Fixed garden deleting buildings on upgrade
+    - Fixed some translation
+    - Fixed issue of teleporting in remote mode
+---------------------------------------------------------------------------------------------------
+Version: 0.0.15
+Date: 2025-04-13
+  Changes:
+    - Added new floor (garden)
+    - Ru translation thanks to (Jimmyster)
+---------------------------------------------------------------------------------------------------
+Version: 0.0.14
+Date: 2025-03-12
+  Changes:
+    - Re-balanced enemies
+---------------------------------------------------------------------------------------------------
+Version: 0.0.13
+Date: 2025-03-12
+  Changes:
+    - Added hazard concerte to indicate changes
+    - Fixed respawning in multiplayer
+    - Added armored biters as recomended mod
+    - Added some helpfull messages to indicate what is happening
+---------------------------------------------------------------------------------------------------
+Version: 0.0.12
+Date: 2025-03-01
+  Changes:
+    - fix spawn of warp demolisher
+---------------------------------------------------------------------------------------------------
+Version: 0.0.11
+Date: 2025-03-01
+  Changes:
+    - Remove debug prints
+---------------------------------------------------------------------------------------------------
+Version: 0.0.10
+Date: 2025-03-01
+  Changes:
+    - Added more types of bosses to resolve some of the pathing issues created by demolishers
+    - Prevent player from working on final technology on planets where it would be easy to survive
+---------------------------------------------------------------------------------------------------
+Version: 0.0.9
+Date: 2025-02-28
+  Changes:
+    - Fixed enemie wave spawn
+---------------------------------------------------------------------------------------------------
+Version: 0.0.7
+Date: 2025-02-26
+  Changes:
+    - Small fix for people who research green science before platform
+---------------------------------------------------------------------------------------------------
+Version: 0.0.6
+Date: 2025-02-24
+  Changes:
+    - Fixed aquilo timer
+    - Added rolling next planet (now you know where you will teleport next)
+---------------------------------------------------------------------------------------------------
+Version: 0.0.5
+Date: 2025-02-23
+  Changes:
+    - No more bots on nauvis (replaced with default enemies)
+    - Added support for enemies from other mods
+    - Changed timer on aquilo to be always 1 minute
+    - Changed range of bot enemies to 10 from 15
+    - fixed a case when players could get stuck inside each other
+---------------------------------------------------------------------------------------------------
+Version: 0.0.4
+Date: 2025-02-19
+  Changes:
+    - Made it imposible to get void planet 2 times in a row
+    - Fixed wrong order of science for time research
+---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 2025-02-18
+  Changes:
+    - Small bug fixes for various issues

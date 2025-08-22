@@ -1,0 +1,169 @@
+local entity_base = table.deepcopy(data.raw["linked-container"]["linked-chest"])
+local item_base = table.deepcopy(data.raw["item"]["linked-chest"])
+entity_base.gui_mode = "none"
+
+ei_containers_entity_path = "__warptorio-2.0__/graphics/entities/"
+ei_containers_item_path = "__warptorio-2.0__/graphics/items/"
+
+function make_item(size, typus)
+    local item = table.deepcopy(item_base)
+
+    if typus then
+        typename = "_"..typus
+    else
+        typename = ""
+    end
+
+    name = size.."x"..size.."-container"
+    fullname = "warp_"..name..typename
+
+    item.name = fullname
+    item.place_result = fullname
+
+    item.icon = ei_containers_item_path..name..typename..".png"
+
+    --item.subgroup = "ei_containers-"..size.."x"..size
+
+    if not typus then
+        typus = "none"
+    end
+    --item.order = order_dict[typus]
+
+    data:extend({item})
+end
+
+function make_container(size, slots, typus, animation)
+    -- size can be 1 for 1x1, 2 for 2x2, 3 for 3x3, etc.
+    -- type can be blue, red, pink, filter, green, yellow
+
+    local container = table.deepcopy(entity_base)
+
+    if typus then
+        typename = "_"..typus
+    else
+        typename = ""
+    end
+
+    -- naming
+    name = size.."x"..size.."-container"
+    fullname = "warp_"..name..typename
+
+    container.name = fullname
+    container.icon = ei_containers_item_path..name..typename..".png"
+
+    image_size = 512
+    adjust = 1
+
+    if size > 2 then
+        image_size = 1024
+        adjust = 0.5
+    end
+
+    -- size
+    container.selection_box = {{-size/2, -size/2}, {size/2, size/2}}
+    container.collision_box = {{-size/2+0.15, -size/2+0.15}, {size/2-0.15, size/2-0.15}}
+
+    -- picture
+    container.picture.layers[1].filename = ei_containers_entity_path..name..typename..".png"
+    container.picture.layers[1].width = image_size
+    container.picture.layers[1].height = image_size
+
+    container.picture.layers[2].filename = ei_containers_entity_path..name.."_shadow.png"
+    container.picture.layers[2].width = image_size
+    container.picture.layers[2].height = image_size
+
+    container.picture.layers[1].scale = 0.13*size*adjust
+    container.picture.layers[2].scale = 0.13*size*adjust
+
+    -- inventory
+    container.minable.result = nil
+    container.inventory_size = slots
+
+    -- animation
+    if animation then
+        container.animation = {
+            layers = {
+                {
+                    filename = ei_containers_entity_path..name..typename..".png",
+                    priority = "extra-high",
+                    width = image_size,
+                    height = image_size,
+                    scale = 0.13*size*adjust,
+                    frame_count = 1,
+                    line_length = 1,
+                    animation_speed = 1,
+                    repeat_count = 5,
+                },
+                {
+                    filename = ei_containers_entity_path..name.."_beam.png",
+                    priority = "extra-high",
+                    width = image_size,
+                    height = image_size,
+                    scale = 0.13*size*adjust,
+                    frame_count = 5,
+                    line_length = 5,
+                    animation_speed = 1,
+                    run_mode = "backward",
+                },
+                {
+                    filename = ei_containers_entity_path..name.."_shadow.png",
+                    priority = "extra-high",
+                    width = image_size,
+                    height = image_size,
+                    scale = 0.13*size*adjust,
+                    draw_as_shadow = true,
+                    frame_count = 1,
+                    line_length = 1,
+                    animation_speed = 1,
+                    repeat_count = 5,
+                }
+            }
+        }
+    end
+
+    -- for different types of containers
+    if typus then
+        if typus == "filter" then
+            container.inventory_type = "with_filters_and_bar"
+            -- also only 18 slots
+            container.inventory_size = 18
+        end
+        -- TODO add animations
+
+        -- different logistic versions
+        if typus == "blue" then
+            container.type = "logistic-container"
+            container.logistic_mode = "requester"
+            container.max_logistic_slots = 1000
+        end
+
+        if typus == "yellow" then
+            container.type = "logistic-container"
+            container.logistic_mode = "storage"
+            container.max_logistic_slots = 1
+        end
+
+        if typus == "red" then
+            container.type = "logistic-container"
+            container.logistic_mode = "passive-provider"
+            container.max_logistic_slots = 0
+        end
+
+        if typus == "green" then
+            container.type = "logistic-container"
+            container.logistic_mode = "buffer"
+            container.max_logistic_slots = 1000
+        end
+
+        if typus == "pink" then
+            container.type = "logistic-container"
+            container.logistic_mode = "active-provider"
+            container.max_logistic_slots = 0
+        end
+    end
+
+    data:extend({container})
+end
+
+make_item(2,nil)
+make_container(2, 48, nil, false)
