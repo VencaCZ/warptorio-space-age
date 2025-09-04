@@ -8,6 +8,7 @@ Date: 2025-09-04
     - Make it that if you hop between only 2 planets it will get harder
     - You can now disable next planet sound in settings
     - Remove warptorio enemies (I need to remake them)
+    - Make warped train always automatic on warp
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.8
 Date: 2025-08-16

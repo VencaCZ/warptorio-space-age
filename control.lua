@@ -1130,12 +1130,22 @@ local function next_warp_zone_prepare()
     local size = 10
     surface.request_to_generate_chunks({0,0}, size)
     storage.warptorio.warp_next = name
+    storage.warptorio.previous_surface_wave = storage.warptorio.wave_index
+    storage.warptorio.previous_surface_time = storage.warptorio.wave_time
 end
 
 local function next_warp_zone_finish()
    local name = storage.warptorio.warp_next
    --local name = storage.warptorio.space
    local surface = game.surfaces[name]
+   local keep_time = false
+   game.print((storage.warptorio.previous_surface_2 or "none") .. " | " .. storage.warptorio.surface_name )
+   if storage.warptorio.previous_surface_2 == storage.warptorio.surface_name then
+      keep_time = true
+      game.print({"warptorio.hopping-surfaces"},{color={1,0.25,0.25}})
+   end
+   storage.warptorio.previous_surface_2 = storage.warptorio.previous_surface_1
+   storage.warptorio.previous_surface_1 = storage.warptorio.surface_name
     surface.force_generate_chunk_requests()
     --game.print("New warpzone created")
     create_void_platform(name)
@@ -1157,14 +1167,20 @@ local function next_warp_zone_finish()
     if storage.warptorio.factory_level > 0 then
       refresh_power_and_teleport()
     end
+    
     storage.warptorio.wave_index = 0
     storage.warptorio.wave_time = warp_settings.biter.time
-    local extra_time = false
+    if keep_time then
+       storage.warptorio.wave_index = storage.warptorio.previous_surface_wave or 0
+       storage.warptorio.wave_time = storage.warptorio.previous_surface_time or warp_settings.biter.time
+    end
+    -- This is no longer needed
+    --[[local extra_time = false
     for i,v in ipairs(warp_settings.biter.extra_time_planet) do
       if v == storage.warptorio.surface_name then
         extra_time = true
       end
-    end
+       end]]
     if extra_time then storage.warptorio.wave_time = storage.warptorio.wave_time + warp_settings.biter.extra_time_amount end
     create_void_platform(source,true)
     if storage.warptorio.old_surface and game.surfaces[storage.warptorio.old_surface] and game.surfaces[storage.warptorio.old_surface].valid then
@@ -1438,7 +1454,11 @@ local function roll_planet()
   
   storage.warptorio.planet_next = surface_name
   if game.forces["player"].technologies[warp_settings.trigger_research].researched then
-    game.print({"warptorio.next-planet",storage.warptorio.planet_next})
+     local sound = defines.print_sound.always
+     if not warp_settings.next_planet_sound then
+        sound = defines.print_sound.never
+     end
+     game.print({"warptorio.next-planet",storage.warptorio.planet_next},{sound=sound})
   end
 end
 
@@ -1689,12 +1709,20 @@ local techs = {
          game.set_win_ending_info{title={"warptorio.end-screen-title"}, message={"warptorio.end-screen-text"}}
          game.set_game_state{game_finished=true,player_won=true,can_continue=true}
       end
-   }
+   },
+   {
+      name = "warptorio%-platform%-repair",
+      func = function ()
+         game.print("test")
+         update_ground_platform()
+      end
+   },   
 }
 
 script.on_event(defines.events.on_research_finished, function(e)
     for _,v in ipairs(techs) do
        if string.find(e.research.name, v.name) then
+          game.print(e.research.name)
           v.func(e.research.name)
           return
        end

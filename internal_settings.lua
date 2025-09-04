@@ -154,11 +154,17 @@ local local_settings = {
   },
   biter = {
     entity_type = {
-      default = {
+       default = {
+         --[[ For now removing warp enemies so I can remake them
         {"warp-entity-bullet","warp-entity-laser"},
         {"warp-entity-bullet","warp-entity-laser"},
         {"warp-entity-bullet-2","warp-entity-laser-2"},
-        {"warp-entity-bullet-3","warp-entity-laser-3"}
+            {"warp-entity-bullet-3","warp-entity-laser-3"}
+         ]]
+          {"small-biter","small-spitter","small-wriggler-pentapod"},
+          {"medium-biter","medium-spitter","big-wriggler-pentapod"},
+          {"big-biter","big-spitter","small-strafer-pentapod"},
+          {"behemoth-biter","behemoth-spitter","medium-strafer-pentapod"},
       },
       nauvis = {
         {"small-biter","small-spitter"},
@@ -207,6 +213,7 @@ local local_settings = {
   },
   starter = settings.startup["warptorio_starter"].value,
   planet_timer = 30,
+  next_planet_sound = settings.startup["warptorio_next-planet-sound"].value,
   trigger_research = "chemical-science-pack",
   trigger_wave = "logistic-science-pack",
   trigger_space = "space-science-pack",

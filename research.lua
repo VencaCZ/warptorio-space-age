@@ -297,10 +297,15 @@ ExtendTech(t,{name="warp-power-1",unit={count=1000,ingredients = SciencePacks({r
 ExtendTech(t,
     { name = "warp-power-2", unit = { count = 5000, ingredients = SciencePacks({ vulcanus = 1, fulgora = 1, aquilo = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-ground-platform-7", "warp-power-1" }, effects = {} })
 
+local t = table.deepcopy(data.raw["technology"]["repair-pack"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
+ExtendTech(t,{name="warptorio-platform-repair",unit={count_formula="100*L*L",time=60},prerequisites={"warp-ground-platform-1"},max_level="infinite"}, {red=1})
 
 local t = table.deepcopy(data.raw["technology"]["railway"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
 ExtendTech(t,
-    { name = "warp-train", unit = { count = 1000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-ground-platform-5", "warp-factory-platform-4" }, effects = {} })
+           { name = "warp-train", unit = { count = 1000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-ground-platform-5", "warp-factory-platform-4" }, effects = {} })
