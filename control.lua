@@ -1287,7 +1287,7 @@ local function next_warp_zone_space()
 
    if game.surfaces[dest].platform then
       local surface_name = storage.warptorio.planet_next ~= "void" and storage.warptorio.planet_next or "nauvis"
-      game.print("Setting transition location to:"..surface_name)
+      --game.print("Setting transition location to:"..surface_name)
       local prototypes = prototypes.space_connection
       local names = {}
       for key,value in pairs(prototypes) do
@@ -1322,7 +1322,7 @@ local function next_warp_zone_space()
       local sf = game.surfaces[dest].platform
       sf.space_location = surface_name
       if connection then
-         game.print("Connection found:"..connection)
+         --game.print("Connection found:"..connection)
          sf.space_connection = connection
          sf.distance = 0.5
          sf.speed = 1
@@ -1523,8 +1523,8 @@ local function warp_trains()
    for i,v in ipairs(stations) do
       local train = v.get_stopped_train()
       if train then
-         game.print("Train stoped at warp station")
-         game.print(v.surface.name)
+         --game.print("Train stoped at warp station")
+         --game.print(v.surface.name)
          local at_station = train.state == defines.train_state.wait_station
          local wagons = train.carriages
          local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
@@ -1719,7 +1719,7 @@ local techs = {
    {
       name = warp_settings.techs.container_left,
       func = function ()
-         game.print("Container will be added after the teleport")
+         --game.print("Container will be added after the teleport")
          storage.warptorio.container_left_enabled = true             
       end
    },
@@ -1745,7 +1745,7 @@ local techs = {
    {
       name = "warptorio%-platform%-repair",
       func = function ()
-         game.print("test")
+         --game.print("test")
          update_ground_platform()
       end
    },   
