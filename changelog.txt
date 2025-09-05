@@ -8,6 +8,10 @@ Date: 2025-09-04
     - Make it that if you hop between only 2 planets it will get harder
     - You can now disable next planet sound in settings
     - Remove warptorio enemies (I need to remake them)
+    - Make sure that flamethrowerand tesla tower will freeze on aquilo
+    - Add setting to remove recipes based on surface conditions on warp (default false for now)
+    - Trains will be now automatic on warp It is still bad but better
+    - Warp station has to be last in the queue if you want to use this
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.8
 Date: 2025-08-16

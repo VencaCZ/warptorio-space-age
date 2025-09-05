@@ -278,6 +278,14 @@ flamethrower_ammo.ingredients = {
 }
 
 
+-- make flametrower freeze on aquilo
+
+local flamethrower_turret = data.raw["fluid-turret"]["flamethrower-turret"]
+flamethrower_turret.heating_energy = "100kW"
+
+local tesla_turret = data.raw["electric-turret"]["tesla-turret"]
+tesla_turret.heating_energy = "100kW"
+
 --[[local test = table.deepcopy(data.raw["planet"]["nauvis"])
 test.icon = "__warptorio-2.0__/graphics/destinations/moon.png"
 test.icon_size = 128

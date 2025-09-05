@@ -131,6 +131,30 @@ local function remove_resources(surface)
   end
 end
 
+local function remove_recipes(surface)
+  if storage.warptorio.ground_level == 0 then return end
+  local level = storage.warptorio.ground_level
+  local platform = warp_settings.floor.levels[level]
+
+	local minx = -platform
+	local maxx = platform
+	local miny = -platform
+	local maxy = platform
+
+  local entities = game.surfaces[surface].find_entities_filtered{area = {{minx, miny}, {maxx, maxy}}, type = "assembling-machine"}
+  for i,v in ipairs(entities) do
+     local recipe,quality = v.get_recipe()
+     if recipe and recipe.prototype.surface_conditions then
+        for a,b in ipairs(recipe.prototype.surface_conditions) do
+           local value = game.surfaces[surface].get_property(b.property)
+           if value < b.min or value > b.max then
+              v.set_recipe()
+           end
+        end
+     end
+  end
+end
+
 local function starter_chest()
   if not warp_settings.starter then return end
   local container = get_or_create("steel-chest",{x=0,y=-10,surface="nauvis"})
@@ -1162,6 +1186,9 @@ local function next_warp_zone_finish()
     end
     --storage.warptorio.warp_next = name
     remove_resources(source)
+    if warp_settings.reset_recipe then
+       remove_recipes(source)
+    end
     teleport_ground(source,name)
     teleport_players(source,name)
     if storage.warptorio.factory_level > 0 then
@@ -1504,6 +1531,11 @@ local function warp_trains()
          if at_station then
             game.print({"warptorio.train-warp",destination})
             warp_array(wagons,destination)
+            --Now we have to get destination train and switch it to automatic
+         end
+         local t2 = game.train_manager.get_trains({surface=destination})
+         for a,b in ipairs(t2) do
+            b.manual_mode = false
          end
       end
    end

@@ -212,6 +212,7 @@ local local_settings = {
     amount = 1
   },
   starter = settings.startup["warptorio_starter"].value,
+  reset_recipe = settings.startup["warptorio_reset-recipe"].value,
   planet_timer = 30,
   next_planet_sound = settings.startup["warptorio_next-planet-sound"].value,
   trigger_research = "chemical-science-pack",

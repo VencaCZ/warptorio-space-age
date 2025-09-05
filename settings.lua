@@ -65,8 +65,11 @@ data:extend(
 	{type="bool-setting",name="warptorio_starter",order="11b",
 	setting_type="startup",default_value=false},
 
-	{type="bool-setting",name="warptorio_next-planet-sound",order="11b",
+  	{type="bool-setting",name="warptorio_reset-recipe",order="11b",
 	setting_type="startup",default_value=false},
+  
+	{type="bool-setting",name="warptorio_next-planet-sound",order="11b",
+	setting_type="startup",default_value=true},
   
   {type="bool-setting",name="warptorio_space-transition",order="11b",
 	setting_type="startup",default_value=true},
