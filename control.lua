@@ -161,15 +161,16 @@ local function prepare_surface_spawn(surface, surface_name, allow_random)
   local level = storage.warptorio.ground_level > 0 and storage.warptorio.ground_level or 1
   local platform = warp_settings.floor.levels[level]
   local chunk_radius = math.ceil((platform * 2) / 32) + 2
-  local base_range = math.max(chunk_radius + 4, 12)
-  if storage.warporio and storage.warporio.index then
-    base_range = math.max(base_range, chunk_radius + storage.warporio.index * 2)
+  local base_range = warp_settings.random_position_offset
+  --if storage.warporio and storage.warporio.index then
+  --  base_range = math.max(base_range, chunk_radius + storage.warporio.index * 2)
+  --end
+  local chunk_x = 0
+  local chunk_y = 0
+  if warp_settings.allow_random_position then
+     chunk_x = math.random(-base_range, base_range)
+     chunk_y = math.random(-base_range, base_range)
   end
-  local chunk_x, chunk_y
-  repeat
-    chunk_x = math.random(-base_range, base_range)
-    chunk_y = math.random(-base_range, base_range)
-  until chunk_x ~= 0 or chunk_y ~= 0
   local center = {x = chunk_x * 32 + 16, y = chunk_y * 32 + 16}
   set_surface_offset(surface_name, center)
   local radius = math.max(chunk_radius, size)
