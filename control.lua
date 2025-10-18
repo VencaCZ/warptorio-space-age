@@ -49,16 +49,18 @@ local function generate_cross(width, height,arm_width)
 end
 
 -- Function to generate a hexagon
-local function generate_hexagon(radius, tile)
+local function generate_hexagon(radius, tile,offset_x,offset_y)
     local tiles = {}
     local sqrt3 = math.sqrt(3)
     local r_sqrt3_half = radius * sqrt3 / 2
+    local offset_x = offset_x or 0
+    local offset_y = offset_y or 0
     for y = -radius * sqrt3 / 2, radius * sqrt3 / 2 do
         for x = -radius, radius do
             if math.abs(y) <= r_sqrt3_half and
                math.abs(x) <= radius and
                sqrt3 * math.abs(x) + math.abs(y) <= 2 * radius then
-                table.insert(tiles, create_tile(tile, x, y))
+                table.insert(tiles, create_tile(tile, x+offset_x, y+offset_y))
             end
         end
     end
@@ -66,17 +68,19 @@ local function generate_hexagon(radius, tile)
 end
 
 -- Function to generate an ellipse
-local function generate_ellipse(width, height,tile)
+local function generate_ellipse(width, height,tile,offset_x,offset_y)
     local tiles = {}
     local half_width = math.floor(width / 2)
     local half_height = math.floor(height / 2)
-
+    local offset_x = offset_x or 0
+    local offset_y = offset_y or 0
+    
     for y = -half_height, half_height do
         for x = -half_width, half_width do
             local normalized_x = x / half_width
             local normalized_y = y / half_height
             if (normalized_x * normalized_x) + (normalized_y * normalized_y) <= 1 then
-                table.insert(tiles, create_tile(tile, x, y))
+                table.insert(tiles, create_tile(tile, x+offset_x, y+offset_y))
             end
         end
     end
@@ -88,6 +92,13 @@ local my_map_gen_settings = {
 		default_enable_all_autoplace_controls = false,
 		property_expression_names = {cliffiness = 0},
 		autoplace_settings = {tile = {settings = { ["out-of-map"] = {frequency="normal", size="normal", richness="normal"} }}},
+		starting_area = "none",
+}
+
+local space_gen_settings = {
+		default_enable_all_autoplace_controls = false,
+		property_expression_names = {cliffiness = 0},
+		autoplace_settings = {tile = {settings = { ["empty-space"] = {frequency="normal", size="normal", richness="normal"} }}},
 		starting_area = "none",
 }
 
@@ -170,7 +181,7 @@ local function on_init_or_load()
     storage.warptorio.factory_level = storage.warptorio.factory_level or 0
     storage.warptorio.ground_level = storage.warptorio.ground_level or 0
     storage.warptorio.belt_level = storage.warptorio.belt_level or 0
-    storage.warptorio.power_level = storage.warptorio.power_levle or 0
+    storage.warptorio.power_level = storage.warptorio.power_level or 0
     storage.warptorio.time_passed = storage.warptorio.time_passed or 0
     storage.warptorio.time_level = storage.warptorio.time_level or 0
     storage.warptorio.wave_time = storage.warptorio.wave_time or 0
@@ -411,7 +422,7 @@ end
 
 local function new_random_surface(name)
 
-
+  
   local surface_name = storage.warptorio.planet_next ~= "void" and storage.warptorio.planet_next or "nauvis"
   if name == "garden" then 
     surface_name = "nauvis"
@@ -442,6 +453,8 @@ local function new_random_surface(name)
      game.print({"warptorio.map-gen-"..ms_i})
   end
 
+  ms.seed = math.random(0,math.pow(2,32))
+  --ms = space_gen_settings
   
   if surface_name == "nauvis" then
     return game.create_surface(name,ms)
@@ -453,6 +466,9 @@ local function new_random_surface(name)
     end
 
     if game.planets[storage.warptorio.surface_name].prototype.entities_require_heating or game.planets[storage.warptorio.surface_name].surface ~= nil then
+      if game.planets[storage.warptorio.surface_name].surface ~= nil then
+         game.planets[storage.warptorio.surface_name].surface.map_gen_settings = ms
+      end
       local surf = game.planets[storage.warptorio.surface_name].create_surface()
       surf.name = name
       return surf
@@ -1015,7 +1031,10 @@ local function check_wave()
       create_angry_biters(biter_type,angry_amount,storage.warptorio.warp_zone,quality)
     end
     if (spawn_boss and storage.warptorio.surface_name ~= "aquilo") or technology_check() then
-      if storage.warptorio.wave_index == 10 and (not technology_check()) then game.print({"warptorio.boss-warning"}) end
+       if storage.warptorio.wave_index == 10 and (not technology_check()) then
+          game.print({"warptorio.boss-warning"},{sound=nil})
+          game.play_sound({path="boss-spawn"})
+       end
       local max = math.ceil(storage.warptorio.wave_index/10)
       local max = max < warp_settings.biter.max_bosses and max or warp_settings.biter.max_bosses
       for _=1,max do
@@ -1163,8 +1182,9 @@ local function next_warp_zone_finish()
    --local name = storage.warptorio.space
    local surface = game.surfaces[name]
    local keep_time = false
-   game.print((storage.warptorio.previous_surface_2 or "none") .. " | " .. storage.warptorio.surface_name )
-   if storage.warptorio.previous_surface_2 == storage.warptorio.surface_name then
+   --game.print((storage.warptorio.previous_surface_2 or "none") .. " | " .. storage.warptorio.surface_name )
+   if storage.warptorio.previous_surface_2 == storage.warptorio.surface_name
+      and storage.warptorio.surface_name ~= "nauvis" then
       keep_time = true
       game.print({"warptorio.hopping-surfaces"},{color={1,0.25,0.25}})
    end
@@ -1451,16 +1471,13 @@ local function roll_planet()
       end
        end]]
     for i,v in pairs(game.planets) do
-       if game.forces.player.is_space_location_unlocked(i) then
+       if game.forces.player.is_space_location_unlocked(i) and i ~= storage.warptorio.surface_name then
           table.insert(surfaces,i)
        end
     end
   end
 
   local surface_name = surfaces[math.random(1,#surfaces)]
-  while storage.warptorio.surface_name == surface_name and surface_name ~= "nauvis" do
-    surface_name = surfaces[math.random(1,#surfaces)]
-  end
 
   if surface_name == "nauvis" and storage.warptorio.void ~= true then
     local r = math.random()
@@ -1482,10 +1499,12 @@ local function roll_planet()
   storage.warptorio.planet_next = surface_name
   if game.forces["player"].technologies[warp_settings.trigger_research].researched then
      local sound = defines.print_sound.always
-     if not warp_settings.next_planet_sound then
-        sound = defines.print_sound.never
+     if not warp_settings.next_planet_text then
+        game.print({"warptorio.next-planet",storage.warptorio.planet_next},{sound=nil})
      end
-     game.print({"warptorio.next-planet",storage.warptorio.planet_next},{sound=sound})
+     if not warp_settings.next_planet_sound then
+        game.play_sound({path="planet-change",volume_modifier=0.5})
+     end
   end
 end
 
@@ -1821,6 +1840,38 @@ end)
 
 script.on_event(defines.events.on_entity_spawned, function(event)
 	replace_common(event.entity)
+end)
+
+script.on_event(defines.events.on_script_trigger_effect, function(event)
+  if event.effect_id == "asteroid" then
+     if event.source_entity then
+        local name = event.source_entity.name
+        local pos = event.source_entity.position
+        local tile = "empty-space"
+        local tiles = generate_rectangle(5, 5, tile,pos.x,pos.y)
+        game.surfaces[event.surface_index].set_tiles(tiles)
+        game.surfaces[event.surface_index].create_entity{
+           name="vulcanus-cliff-collapse",
+           position=pos,}
+        local amount = 3
+        if string.match(name, "small") then
+           amount = 1
+        end
+        if string.match(name, "medium") then
+           amount = 2
+        end
+        local types = {"carbonic","metallic","oxide","promethium"}
+        for _,i in ipairs(types) do
+           if string.match(name, i) then
+              -- TODO change this to dedicated chest
+              local item = i.."-asteroid-chunk"
+              local container = get_or_create("steel-chest",{x=0,y=-10,surface=storage.warptorio.warp_zone})
+              container.insert({name=item, count=amount})
+              return
+           end
+        end
+     end
+  end
 end)
 
 script.on_event(defines.events.on_player_joined_game, function(e)

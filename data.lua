@@ -18,6 +18,44 @@ local collector = data.raw["asteroid-collector"]["asteroid-collector"]
 collector.surface_conditions = nil
 collector.tile_buildability_rules = nil
 
+local thruster = data.raw["thruster"]["thruster"]
+thruster.surface_conditions = nil
+thruster.tile_buildability_rules = nil
+
+-- Asteroids
+for _, i in pairs(data.raw["asteroid"]) do
+    table.insert(
+        i.dying_trigger_effect,
+        {
+            type = "script",
+            effect_id = "asteroid"
+        }
+    )
+end
+--[[
+for _,i_original in pairs(data.raw["asteroid-chunk"]) do
+   if not string.match(i_original.name, "parameter") then
+      local i = table.deepcopy(i_original)
+      i.subgroup = "space-environment"
+      i.type = "asteroid"
+      i.is_military_target = false
+      i.flags = {
+        "placeable-enemy",
+        "placeable-off-grid",
+        "not-repairable",
+        "not-on-map"
+      }
+      i.collision_mask = {
+        layers = {
+          object = true
+        },
+        not_colliding_with_itself = true
+      }
+      data:extend{i}
+   end
+end
+]]--
+
 -- promethium
 local promethium = data.raw["recipe"]["promethium-science-pack"]
 promethium.surface_conditions = nil
@@ -239,6 +277,18 @@ data:extend{{
       filename = "__warptorio-space-age__/sounds/warp_end.wav",
       category = "environment",
 }}
+data:extend{{
+      type = "sound",
+      name = "planet-change",
+      filename = "__warptorio-space-age__/sounds/planet_change.wav",
+      category = "environment",
+} }
+data:extend{{
+      type = "sound",
+      name = "boss-spawn",
+      filename = "__warptorio-space-age__/sounds/boss_spawn.wav",
+      category = "environment",
+}}
 
 -- Change bio-labs
 
@@ -285,6 +335,21 @@ flamethrower_turret.heating_energy = "100kW"
 
 local tesla_turret = data.raw["electric-turret"]["tesla-turret"]
 tesla_turret.heating_energy = "100kW"
+
+-- extra warptorio specific beacons
+
+local beacon = data.raw["beacon"]["beacon"]
+
+beacon.distribution_effectivity_bonus_per_quality_level = 0.25
+beacon.quality_affects_module_slots = true
+beacon.allowed_effects = {
+   "consumption",
+   "speed",
+   "pollution",
+   "quality"
+}
+
+--if mods["zzz-nonstandard-beacons"] then
 
 --[[local test = table.deepcopy(data.raw["planet"]["nauvis"])
 test.icon = "__warptorio-2.0__/graphics/destinations/moon.png"

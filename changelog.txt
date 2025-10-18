@@ -12,6 +12,10 @@ Date: 2025-09-04
     - Add setting to remove recipes based on surface conditions on warp (default false for now)
     - Trains will be now automatic on warp It is still bad but better
     - Warp station has to be last in the queue if you want to use this
+    - Fixed map gen on some planets it should be more random now
+    - Made beacons a lot more powerfull and accept quality. This should help with space issues
+    - Make it possible to start at 100% evolution
+    - Updated RU translation thanks to Jimmy
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.8
 Date: 2025-08-16

@@ -31,6 +31,17 @@ data.raw["technology"]["space-science-pack"].unit = {
   time = 60
 }
 
+-- Change landfill
+local landfill = data.raw["technology"]["landfill"]
+if landfill then
+  landfill.unit = nil
+  landfill.research_trigger = {
+    type = "craft-item",
+    item = "nutrients",
+    count = 50
+  }
+end
+
 -- improve researches
 data.raw["technology"]["artillery-shell-damage-1"].effects = {
    {
