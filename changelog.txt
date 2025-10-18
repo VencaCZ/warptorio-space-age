@@ -1,5 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.9
+Date: 2025-10-18
+  Changes:
+    - Reworked warp transition
+    - Changed sounds for big wave and next planet
+    - Added setting to disable next planet chat message
+    - Changed how is next planet selected
+---------------------------------------------------------------------------------------------------
+Version: 0.2.9
 Date: 2025-09-04
   Changes:
     - Removed surface conditions from asteroid collectors
