@@ -52,7 +52,7 @@ data:extend(
   
 	{type="int-setting",name="warptorio_jumps",order="11b",
 	setting_type="startup",default_value=400,
-	minimum_value=100,maximum_value=600},
+	minimum_value=1,maximum_value=600},
 
 	{type="double-setting",name="warptorio_research-multiplier",order="11b",
 	setting_type="startup",default_value=1,
@@ -69,6 +69,9 @@ data:extend(
 	setting_type="startup",default_value=false},
   
 	{type="bool-setting",name="warptorio_next-planet-sound",order="11b",
+	setting_type="startup",default_value=true},
+
+	{type="bool-setting",name="warptorio_next-planet-text",order="11b",
 	setting_type="startup",default_value=true},
   
   {type="bool-setting",name="warptorio_space-transition",order="11b",
