@@ -1929,6 +1929,16 @@ script.on_event(defines.events.on_built_entity, function(e)
        end
        storage.warptorio.container = e.entity
     end
+    if e.entity.name == "warp-asteroid-chest" then
+       if storage.warptorio.collector_chest then
+          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       else
+          game.print({"warptorio.collector-placed"})
+          storage.warptorio.collector_chest = e.entity
+       end
+    end
 end)
 
 script.on_event(defines.events.on_player_mined_entity, function(e)
@@ -1982,10 +1992,11 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local types = {"carbonic","metallic","oxide","promethium"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
-              -- TODO change this to dedicated chest
-              --local item = i.."-asteroid-chunk"
-              --local container = get_or_create("steel-chest",{x=0,y=-10,surface=storage.warptorio.warp_zone})
-              --container.insert({name=item, count=amount})
+              if storage.warptorio.collector_chest then
+                 local item = i.."-asteroid-chunk"
+                 local container = storage.warptorio.collector_chest
+                 container.insert({name=item, count=amount})
+              end
               return
            end
         end

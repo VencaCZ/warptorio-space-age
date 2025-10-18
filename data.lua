@@ -1,7 +1,7 @@
 	require("research")
 require("prototypes/entities")
 require("prototypes/containers")
-
+require("prototypes/collector_container")
 --shortcut
 local shortcut = {
   type="shortcut",

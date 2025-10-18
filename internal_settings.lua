@@ -182,7 +182,7 @@ local local_settings = {
       }
     },
     tresholds = {0,0.15,0.5,0.9},
-    extra_time_planet = {"aquilo"},
+    extra_time_planet = {},
     extra_time_amount = 2*60,
     quality_start = settings.startup["warptorio_quality-start"].value,
     quality_step = settings.startup["warptorio_quality-step"].value,
@@ -218,6 +218,7 @@ local local_settings = {
   allow_random_position = settings.startup["warptorio_allow-random-position"].value,
   random_position_offset = 3,
   next_planet_text = settings.startup["warptorio_next-planet-text"].value,
+  next_planet_sound = settings.startup["warptorio_next-planet-sound"].value,
   trigger_research = "chemical-science-pack",
   trigger_wave = "logistic-science-pack",
   trigger_space = "space-science-pack",

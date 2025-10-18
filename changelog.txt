@@ -6,6 +6,9 @@ Date: 2025-10-18
     - Changed sounds for big wave and next planet
     - Added setting to disable next planet chat message
     - Changed how is next planet selected
+    - No more extra time on aquilo
+    - Fix hexagon shape
+    - Reworked collecting asteroids to allow for more defense
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.9
 Date: 2025-09-04
