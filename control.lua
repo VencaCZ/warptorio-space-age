@@ -167,7 +167,7 @@ local function prepare_surface_spawn(surface, surface_name, allow_random)
   --end
   local chunk_x = 0
   local chunk_y = 0
-  if warp_settings.allow_random_position then
+  if warp_settings.allow_random_position and storage.warptorio.allow_random_spawn then
      chunk_x = math.random(-base_range, base_range)
      chunk_y = math.random(-base_range, base_range)
   end
@@ -520,10 +520,12 @@ local function new_random_surface(name)
   storage.warptorio.surface_name = storage.warptorio.planet_next
   local map_gen = nil
   map_gen = game.planets[surface_name].prototype.map_gen_settings
+  storage.warptorio.allow_random_spawn = true
 
   if storage.warptorio.planet_next == "void" or name == "garden" then
       map_gen = my_map_gen_settings
       storage.warptorio.void = true
+      storage.warptorio.allow_random_spawn = false
   else
     storage.warptorio.void = false
   end
@@ -533,12 +535,17 @@ local function new_random_surface(name)
   map_gen.peaceful_mode = false
   map_gen.no_enemies_mode = false
   local ms = nil
-
+  storage.warptorio.current_variant = "normal"
+  
   --game.print("Generating surface:"..surface_name)
   if storage.warptorio.planet_next == "void" or name == "garden" then
      ms = map_gen
   else
      local ms_i = map_gens.variant_list[math.random(1,#map_gens.variant_list)]
+     storage.warptorio.current_variant = ms_i
+     if ms_i == "rich" then
+        storage.warptorio.allow_random_spawn = false
+     end
      ms = map_gens.functions.generate(surface_name,ms_i,map_gen)
      game.print({"warptorio.map-gen-"..ms_i})
   end
@@ -1966,9 +1973,9 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         for _,i in ipairs(types) do
            if string.match(name, i) then
               -- TODO change this to dedicated chest
-              local item = i.."-asteroid-chunk"
-              local container = get_or_create("steel-chest",{x=0,y=-10,surface=storage.warptorio.warp_zone})
-              container.insert({name=item, count=amount})
+              --local item = i.."-asteroid-chunk"
+              --local container = get_or_create("steel-chest",{x=0,y=-10,surface=storage.warptorio.warp_zone})
+              --container.insert({name=item, count=amount})
               return
            end
         end

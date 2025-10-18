@@ -73,6 +73,9 @@ data:extend(
 
 	{type="bool-setting",name="warptorio_next-planet-text",order="11b",
 	setting_type="startup",default_value=true},
+
+  {type="bool-setting",name="warptorio_allow-random-position",order="11b",
+	setting_type="startup",default_value=true},
   
   {type="bool-setting",name="warptorio_space-transition",order="11b",
 	setting_type="startup",default_value=true},
