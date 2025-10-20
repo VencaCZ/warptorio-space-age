@@ -9,6 +9,7 @@ Date: 2025-10-18
     - No more extra time on aquilo
     - Fix hexagon shape
     - Reworked collecting asteroids to allow for more defense
+    - Make some researches cheaper
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.9
 Date: 2025-09-04

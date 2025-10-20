@@ -520,10 +520,15 @@ local function update_factory_platform(e)
 end
 
 local function new_random_surface(name)
-
+   
+   if name == "home" then
+      storage.warptorio.warp_next = "nauvis"
+      game.print({"warptorio.map-home"})
+      return game.planets["nauvis"].surface
+   end
   
   local surface_name = storage.warptorio.planet_next ~= "void" and storage.warptorio.planet_next or "nauvis"
-  if name == "garden" then 
+  if name == "garden" or name == "space" then 
     surface_name = "nauvis"
   end
   storage.warptorio.surface_name = storage.warptorio.planet_next
@@ -535,6 +540,8 @@ local function new_random_surface(name)
       map_gen = my_map_gen_settings
       storage.warptorio.void = true
       storage.warptorio.allow_random_spawn = false
+  elseif name == "space" then
+      map_gen = space_gen_settings
   else
     storage.warptorio.void = false
   end
@@ -547,8 +554,13 @@ local function new_random_surface(name)
   storage.warptorio.current_variant = "normal"
   
   --game.print("Generating surface:"..surface_name)
-  if storage.warptorio.planet_next == "void" or name == "garden" then
+  if storage.warptorio.planet_next == "void" or name == "garden" or name == "space" then
      ms = map_gen
+     if name == "space" then
+        game.print({"warptorio.map-space"})
+     elseif storage.warptorio.planet_next == "void" then
+        game.print({"warptorio.map-void"})
+     end
   else
      local ms_i = map_gens.variant_list[math.random(1,#map_gens.variant_list)]
      storage.warptorio.current_variant = ms_i
@@ -560,6 +572,7 @@ local function new_random_surface(name)
   end
 
   ms.seed = math.random(0,math.pow(2,32))
+  storage.warptorio.warp_next = name
   --ms = space_gen_settings
   
   if surface_name == "nauvis" then
@@ -791,44 +804,69 @@ local function update_ground_platform(e)
   end
 end
 
+local function create_asteroids(amount, surface)
+   local dest = storage.warptorio.space
+   local level = storage.warptorio.ground_level
+   local size = warp_settings.floor.levels[level]
+   local evolution = game.forces["enemy"].get_evolution_factor(storage.warptorio.warp_zone)
+   for i,v in ipairs(warp_settings.space.tresholds) do
+      if v < evolution then
+         for _=1,amount do
+            local x = math.random(-size*1.25,size*1.25)
+            local index = math.random(1,#warp_settings.space.asteroids[i])
+            local asteroid = warp_settings.space.asteroids[i][index]
+            game.surfaces[surface].create_entity{
+               name=asteroid,
+               position={x,math.random(-size*5,-size*2)},
+               target={0,0},
+               force="enemy"}
+         end
+      end
+   end
+end
+
 local function create_angry_biters(biter_type,number,surface,quality,target)
-  local target = target or {x=0,y=0}
-  local quality = quality or "normal"
-  if storage.warptorio.void then return end
-        local surface_player_list = {}
-
-  -- Create attack force for platform
-        local angle = math.random(0,2*math.pi)
-  local level = storage.warptorio.ground_level > 0 and storage.warptorio.ground_level or 1
-        local dist = warp_settings.floor.levels[level]
-  local range = 300
-  local offset = get_surface_offset(surface)
-  local center = {x = offset.x + (target.x or 0), y = offset.y + (target.y or 0)}
-        local x = center.x + math.cos(angle)*(dist+range)
-        local y = center.y + math.sin(angle)*(dist+range)
-
-  local unit_group = game.surfaces[surface].create_unit_group({ position = {x=x,y=y}, force = "enemy" })
-
-        for j = 1,number do
-
-                pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
-
-                local angry_bitter = game.surfaces[surface].create_entity{
-       name = biter_type,
-       position = pos,
-       quality = quality}
-    --angry_bitter.autopilot_destination = k.position
-    unit_group.add_member(angry_bitter)
-        end
-
-  unit_group.set_command({
-    type=defines.command.go_to_location,
-    destination={
-      x=center.x,
-      y=center.y
-    }
-  })
-  unit_group.start_moving()
+   local target = target or {x=0,y=0}
+   if surface == "space" then
+      create_asteroids(number,surface)
+      return
+   end
+   local quality = quality or "normal"
+   if storage.warptorio.void then return end
+   local surface_player_list = {}
+   
+   -- Create attack force for platform
+   local angle = math.random(0,2*math.pi)
+   local level = storage.warptorio.ground_level > 0 and storage.warptorio.ground_level or 1
+   local dist = warp_settings.floor.levels[level]
+   local range = 300
+   local offset = get_surface_offset(surface)
+   local center = {x = offset.x + (target.x or 0), y = offset.y + (target.y or 0)}
+   local x = center.x + math.cos(angle)*(dist+range)
+   local y = center.y + math.sin(angle)*(dist+range)
+   
+   local unit_group = game.surfaces[surface].create_unit_group({ position = {x=x,y=y}, force = "enemy" })
+   
+   for j = 1,number do
+      
+      pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
+      
+      local angry_bitter = game.surfaces[surface].create_entity{
+         name = biter_type,
+         position = pos,
+         quality = quality}
+      --angry_bitter.autopilot_destination = k.position
+      unit_group.add_member(angry_bitter)
+   end
+   
+   unit_group.set_command({
+         type=defines.command.go_to_location,
+         destination={
+            x=center.x,
+            y=center.y
+         }
+   })
+   unit_group.start_moving()
 end
 
 
@@ -1226,11 +1264,13 @@ local function teleport_players(source,destination,factory)
     if v.is_player() and v.connected and v.character and v.character.surface.name == source then
        local character_pos = v.character.position
        if factory then
-          local factory_offset = get_surface_offset(destination)
-          local factory_surface = game.surfaces[destination]
-          local fallback_center = {x = factory_offset.x, y = factory_offset.y}
-          local target = factory_surface and factory_surface.find_non_colliding_position("character", fallback_center, 0, platform, false) or fallback_center
-          v.teleport(target,destination)
+          --local factory_offset = get_surface_offset(destination)
+          --local factory_surface = game.surfaces[destination]
+          --local fallback_center = {x = factory_offset.x, y = factory_offset.y}
+          --local target = factory_surface and factory_surface.find_non_colliding_position("character", fallback_center, 0, platform, false) or fallback_center
+          --v.teleport(target,destination)
+          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
+          v.teleport(player_pos, destination)
        elseif character_pos.x >= minx and character_pos.x <=maxx and character_pos.y >= miny and character_pos.y <= maxy then
           local relative = {x = character_pos.x - source_offset.x, y = character_pos.y - source_offset.y}
           local target = {x = dest_offset.x + relative.x, y = dest_offset.y + relative.y}
@@ -1284,9 +1324,16 @@ local function next_warp_zone_prepare()
     storage.warporio.index = storage.warporio.index + 1
     storage.warptorio.time_passed = 0
     local name = "warpzone_"..storage.warporio.index
-    local surface = new_random_surface(name)
+    local num = math.random()
+    local surface = nil
+    if num < warp_settings.stuck_in_space_chance then
+       surface = new_random_surface("space")
+    elseif num > 1-warp_settings.going_home_chance  then
+       surface = new_random_surface("home")
+    else
+       surface = new_random_surface(name)
+    end
     prepare_surface_spawn(surface, name, not storage.warptorio.void)
-    storage.warptorio.warp_next = name
     storage.warptorio.previous_surface_wave = storage.warptorio.wave_index
     storage.warptorio.previous_surface_time = storage.warptorio.wave_time
 end
@@ -1324,7 +1371,7 @@ local function next_warp_zone_finish()
        remove_recipes(source)
     end
     teleport_ground(source,name)
-    teleport_players(source,name)
+    teleport_players(source,name,true)
     if storage.warptorio.factory_level > 0 then
       refresh_power_and_teleport()
     end
@@ -1622,6 +1669,7 @@ local function roll_planet()
         game.play_sound({path="planet-change",volume_modifier=0.5})
      end
   end
+
 end
 
 local function on_tick_power()
@@ -1929,6 +1977,16 @@ script.on_event(defines.events.on_built_entity, function(e)
        end
        storage.warptorio.container = e.entity
     end
+    if e.entity.name == "warp-asteroid-chest" then
+       if storage.warptorio.collector_chest then
+          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       else
+          game.print({"warptorio.collector-placed"})
+          storage.warptorio.collector_chest = e.entity
+       end
+    end
 end)
 
 script.on_event(defines.events.on_player_mined_entity, function(e)
@@ -1982,10 +2040,13 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local types = {"carbonic","metallic","oxide","promethium"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
-              -- TODO change this to dedicated chest
-              --local item = i.."-asteroid-chunk"
-              --local container = get_or_create("steel-chest",{x=0,y=-10,surface=storage.warptorio.warp_zone})
-              --container.insert({name=item, count=amount})
+              if storage.warptorio.collector_chest then
+                 local item = i.."-asteroid-chunk"
+                 local container = storage.warptorio.collector_chest
+                 if container.valid then
+                    container.insert({name=item, count=amount})
+                 end
+              end
               return
            end
         end
