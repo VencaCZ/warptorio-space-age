@@ -1326,9 +1326,9 @@ local function next_warp_zone_prepare()
     local name = "warpzone_"..storage.warporio.index
     local num = math.random()
     local surface = nil
-    if num < warp_settings.stuck_in_space_chance then
+    if num < warp_settings.stuck_in_space_chance and storage.warptorio.warp_zone ~= "space" then
        surface = new_random_surface("space")
-    elseif num > 1-warp_settings.going_home_chance  then
+    elseif num > 1-warp_settings.going_home_chance and storage.warptorio.surface_name ~= "nauvis" then
        surface = new_random_surface("home")
     else
        surface = new_random_surface(name)
@@ -1833,6 +1833,10 @@ script.on_event(defines.events.on_gui_click, function(event)
        storage.warptorio.clicks_to_teleport = {}
     end
     if event.element.name == "warp_planet" then
+       if storage.warptorio.teleporting then
+          game.print({"warptorio.warp_in_progress"})
+          return
+       end
        local amount = #game.forces["player"].connected_players
        if amount > 1 then
           local add = true
@@ -2025,25 +2029,40 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local name = event.source_entity.name
         local pos = event.source_entity.position
         local tile = "empty-space"
-        local tiles = generate_rectangle(5, 5, tile,pos.x,pos.y)
+        local explosion_size = 12
+        local amount = 5
+        if string.match(name, "small") then
+           amount = 1
+           explosion_size = 3
+        end
+        if string.match(name, "medium") then
+           amount = 2
+           explosion_size = 5
+        end
+        if string.match(name, "big") then
+           amount = 3
+           explosion_size = 9
+        end
+        local tiles = generate_rectangle(explosion_size, explosion_size, tile,pos.x,pos.y)
+        local level = storage.warptorio.ground_level
+        local size = warp_settings.floor.levels[level]
+        if not pos then return end
+        if pos.x < -(size+2) or pos.x > size+2 or
+           pos.y < -(size+2) or pos.y > size+2 then
+           game.print("To small")
+           return
+        end
         game.surfaces[event.surface_index].set_tiles(tiles)
         game.surfaces[event.surface_index].create_entity{
            name="vulcanus-cliff-collapse",
            position=pos,}
-        local amount = 3
-        if string.match(name, "small") then
-           amount = 1
-        end
-        if string.match(name, "medium") then
-           amount = 2
-        end
         local types = {"carbonic","metallic","oxide","promethium"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
               if storage.warptorio.collector_chest then
                  local item = i.."-asteroid-chunk"
                  local container = storage.warptorio.collector_chest
-                 if container.valid then
+                 if container then
                     container.insert({name=item, count=amount})
                  end
               end
