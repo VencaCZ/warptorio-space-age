@@ -541,7 +541,8 @@ local function new_random_surface(name)
       storage.warptorio.void = true
       storage.warptorio.allow_random_spawn = false
   elseif name == "space" then
-      map_gen = space_gen_settings
+     map_gen = space_gen_settings
+     storage.warptorio.allow_random_spawn = false
   else
     storage.warptorio.void = false
   end
@@ -1326,7 +1327,7 @@ local function next_warp_zone_prepare()
     local name = "warpzone_"..storage.warporio.index
     local num = math.random()
     local surface = nil
-    if num < warp_settings.stuck_in_space_chance and storage.warptorio.warp_zone ~= "space" then
+    if num < warp_settings.stuck_in_space_chance and not game.surfaces["space"] then
        surface = new_random_surface("space")
     elseif num > 1-warp_settings.going_home_chance and storage.warptorio.surface_name ~= "nauvis" then
        surface = new_random_surface("home")
@@ -2049,7 +2050,6 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         if not pos then return end
         if pos.x < -(size+2) or pos.x > size+2 or
            pos.y < -(size+2) or pos.y > size+2 then
-           game.print("To small")
            return
         end
         game.surfaces[event.surface_index].set_tiles(tiles)

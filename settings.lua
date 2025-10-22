@@ -25,6 +25,14 @@ data:extend(
   {type="double-setting",name="warptorio_players",order="11b",
    setting_type="startup",default_value=0.51,
    minimum_value=0.01,maximum_value=1.0},
+
+  {type="double-setting",name="warptorio_stuck-in-space-chance",order="11b",
+   setting_type="startup",default_value=0.05,
+   minimum_value=0.00,maximum_value=1.0},
+
+  {type="double-setting",name="warptorio_going-home-chance",order="11b",
+   setting_type="startup",default_value=0.05,
+   minimum_value=0.00,maximum_value=1.0},
   
 	{type="int-setting",name="warptorio_wave-amount",order="11b",
 	setting_type="startup",default_value=5,
