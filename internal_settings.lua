@@ -68,8 +68,10 @@ local local_settings = {
      }
   },
   space = {
-     time_per_warp = 0.4,
+     time_per_warp = 0.75,
      transition = settings.startup["warptorio_space-transition"].value,
+     transition_spawn_timer = 2,
+     transition_spawn_amount = 5,
      speed_per_warp = 0.005,
      edge_chance = 0.25,
      asteroid_chance = 10000,
@@ -79,7 +81,7 @@ local local_settings = {
      asteroids = {
         {"small-carbonic-asteroid","small-metallic-asteroid","small-oxide-asteroid"},
         {"medium-carbonic-asteroid","medium-metallic-asteroid","medium-oxide-asteroid"},
-        {"big-carbonic-asteroid","big-metallic-asteroid","big-oxide-asteroid","big-promethium-asteroid"},
+        {"big-carbonic-asteroid","big-metallic-asteroid","big-oxide-asteroid"},
         {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid","huge-promethium-asteroid"},
      }
   },

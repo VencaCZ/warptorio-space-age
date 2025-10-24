@@ -818,7 +818,7 @@ local function create_asteroids(amount, surface)
             local asteroid = warp_settings.space.asteroids[i][index]
             game.surfaces[surface].create_entity{
                name=asteroid,
-               position={x,math.random(-size*5,-size*2)},
+               position={x,math.random(-size*8,-size*4)},
                target={0,0},
                force="enemy"}
          end
@@ -1458,74 +1458,16 @@ end
 
 local function next_warp_zone_space()
    local source = storage.warptorio.warp_zone
-   local dest = storage.warptorio.space or "none"
+   local dest = "warp-space-transition"
 
    if not game.surfaces[dest] then
-       local sf = game.forces.player.create_space_platform{
-          name="warp_transition",planet="nauvis",starter_pack="space-platform-starter-pack"}
-       sf.apply_starter_pack()
-       storage.warptorio.space = sf.surface.name
-       create_void_platform(sf.surface.name,false,"empty-space")
-       dest = storage.warptorio.space
+      local surface = game.create_surface(dest,space_gen_settings)
+      surface.always_day = true
+      surface.request_to_generate_chunks({0,0}, 10)
+      surface.force_generate_chunk_requests()
    end
 
-   if game.surfaces[dest].platform then
-      local surface_name = storage.warptorio.planet_next ~= "void" and storage.warptorio.planet_next or "nauvis"
-      --game.print("Setting transition location to:"..surface_name)
-      local prototypes = prototypes.space_connection
-      local names = {}
-      for key,value in pairs(prototypes) do
-         table.insert(names,key)
-      end
-      names = shuffle(names)
-      local connection = nil
-      local allow_aquilo = true
-      if surface_name == "aquilo" then
-         allow_aquilo = false
-      end
-      for i=#names,1,-1 do
-         local v = names[i]
-         if string.find(v,"system") then
-            --game.print("Found:"..v)
-            table.remove(names,i)
-         end
-      end
-      for _,v in ipairs(names) do
-         if string.find(v,"solar-system-edge") then
-         end
-         if string.find(v,surface_name) and
-            not (string.find(v,"aquilo") and allow_aquilo) then
-            connection = v
-            break
-         end
-      end
-      if storage.warptorio.travel_to_edge then
-         connection = "solar-system-edge-shattered-planet"
-         storage.warptorio.travel_to_edge = false
-      end
-      local sf = game.surfaces[dest].platform
-      sf.space_location = surface_name
-      if connection then
-         --game.print("Connection found:"..connection)
-         sf.space_connection = connection
-         sf.distance = 0.5
-         sf.speed = 1
-         sf.paused = false
-         -- TODO: Extra Asteroids will be in next update
-         --[[local asteroids = prototypes[connection].asteroid_spawn_definitions
-         for _,v in ipairs(asteroids) do
-            game.print(v.asteroid)
-            local pos = getPointAndVector(0,0, 100)
-            sf.create_asteroid_chunks({{
-                  name = v.asteroid,
-                  position = pos.position,
-                  movement = pos.movement                  
-            }})
-            end]]
-      end
-   end
-
-   create_void_platform(dest,true,"empty-space",1.5)
+   create_void_platform(dest,true,"empty-space",2)
    
    teleport_ground(source,dest)
    teleport_players(source,"factory",true)
@@ -1537,7 +1479,8 @@ local function next_warp_zone_space()
    refresh_power_and_teleport(dest)
    update_belt()
    storage.warptorio.warp_zone = save
-   
+
+   --[[
    local text = {"warptorio.teleport-text"}
    rendering.draw_text{
       surface="factory",
@@ -1545,13 +1488,18 @@ local function next_warp_zone_space()
       target={x=0,y=0},
       color={1,0,0},
       time_to_live=storage.warptorio.transition_timer
-   }
+      }
+   ]]
    game.play_sound({path="warp-start"})
 end
 
 local function next_warp_zone_transition()
    if storage.warptorio.transition_timer < 60 then
       return
+   end
+   local dest = "warp-space-transition"
+   if storage.warptorio.transition_timer % 60*warp_settings.space.transition_spawn_timer == 0 then
+      create_asteroids(warp_settings.space.transition_spawn_amount,dest)
    end
    --[[local rand = math.random(0,warp_settings.space.asteroid_chance)
    local dest = storage.warptorio.space
@@ -1748,11 +1696,11 @@ script.on_event(defines.events.on_tick, function(event)
   if storage.warptorio.transition_timer > 0 then
      storage.warptorio.transition_timer = storage.warptorio.transition_timer - 1
      next_warp_zone_transition()
-     return
+     --return
   elseif storage.warptorio.transition_timer == 0 then
      next_warp_zone_finish()
      storage.warptorio.transition_timer = -1
-     return
+     --return
   elseif storage.warptorio.transition_timer > -warp_settings.time.extra_transition_time*60 then
      storage.warptorio.transition_timer = storage.warptorio.transition_timer - 1
   end
@@ -1793,16 +1741,20 @@ script.on_event(defines.events.on_tick, function(event)
   --  game.forces["enemy"].set_evolution_factor(factor*100,storage.warptorio.warp_zone)
   --end
   check_wave()
-  local tran_timer = (warp_settings.time.extra_transition_time*60)-1
-  if storage.warptorio.teleporting or storage.warptorio.transition_timer > -tran_timer then
-     return
-  end
+  --local tran_timer = (warp_settings.time.extra_transition_time*60)-1
+  --if storage.warptorio.teleporting or storage.warptorio.transition_timer > -tran_timer then
+  --   return
+  --end
   local players = game.players
+  local dest = storage.warptorio.warp_zone
+  if storage.warptorio.teleporting then
+     dest = "warp-space-transition"
+  end
   for i,v in pairs(players) do
     -- If player steps into teleport zone, teleport them
     if v.is_player() and v.connected and v.controller_type == defines.controllers.character then
-      check_teleport(v,{x=-1,y=-2,surface=storage.warptorio.warp_zone},"factory")
-      check_teleport(v,{x=-1,y=2,surface="factory"},storage.warptorio.warp_zone)
+      check_teleport(v,{x=-1,y=-2,dest},"factory")
+      check_teleport(v,{x=-1,y=2,surface="factory"},dest)
       if storage.warptorio.biochamber_level then
         check_teleport(v,{y=-1,x=2,surface="garden"},"factory")
         check_teleport(v,{y=-1,x=-2,surface="factory"},"garden")
