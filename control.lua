@@ -1358,7 +1358,7 @@ local function next_warp_zone_finish()
     local source = nil
     if storage.warptorio.factory_level >= warp_settings.space.trigger_factory_level and
        warp_settings.space.transition then
-       source = storage.warptorio.space
+       source = "warp-space-transition"
     else
        source = storage.warptorio.warp_zone
     end
@@ -1434,7 +1434,8 @@ local function next_warp_zone_finish()
     else
       game.play_sound({path="warp-start"})
     end
-
+   
+   teleport_players(source,"factory",true)
    storage.warptorio.teleporting = false
    create_void_platform(source,true,"empty-space")
 end
@@ -1753,7 +1754,7 @@ script.on_event(defines.events.on_tick, function(event)
   for i,v in pairs(players) do
     -- If player steps into teleport zone, teleport them
     if v.is_player() and v.connected and v.controller_type == defines.controllers.character then
-      check_teleport(v,{x=-1,y=-2,dest},"factory")
+      check_teleport(v,{x=-1,y=-2,surface=dest},"factory")
       check_teleport(v,{x=-1,y=2,surface="factory"},dest)
       if storage.warptorio.biochamber_level then
         check_teleport(v,{y=-1,x=2,surface="garden"},"factory")
