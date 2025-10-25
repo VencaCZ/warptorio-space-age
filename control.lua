@@ -1270,7 +1270,7 @@ local function teleport_players(source,destination,factory)
           --local fallback_center = {x = factory_offset.x, y = factory_offset.y}
           --local target = factory_surface and factory_surface.find_non_colliding_position("character", fallback_center, 0, platform, false) or fallback_center
           --v.teleport(target,destination)
-          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
+          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false)
           v.teleport(player_pos, destination)
        elseif character_pos.x >= minx and character_pos.x <=maxx and character_pos.y >= miny and character_pos.y <= maxy then
           local relative = {x = character_pos.x - source_offset.x, y = character_pos.y - source_offset.y}
@@ -1926,7 +1926,7 @@ end)
 
 script.on_event(defines.events.on_built_entity, function(e)
     if e.entity.name == "warp_2x2-container" then
-       if storage.warptorio.container then
+       if storage.warptorio.container and storage.warptorio.container.valid then
           game.print({"warptorio.container-placed-error"},{color={1,0,0}})
           e.entity.destroy()
           return
@@ -1936,10 +1936,14 @@ script.on_event(defines.events.on_built_entity, function(e)
        storage.warptorio.container = e.entity
     end
     if e.entity.name == "warp-asteroid-chest" then
-       if storage.warptorio.collector_chest then
+       if storage.warptorio.collector_chest and storage.warptorio.collector_chest.valid then
           game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
           e.entity.destroy()
           return
+       elseif e.entity.surface.name ~= "factory" and e.entity.surface.name ~= "garden" then
+          game.print({"warptorio.placed-error-surface"},{color={1,0,0}})
+          e.entity.destroy()
+          return          
        else
           game.print({"warptorio.collector-placed"})
           storage.warptorio.collector_chest = e.entity
