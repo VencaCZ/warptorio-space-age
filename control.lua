@@ -1372,7 +1372,8 @@ local function next_warp_zone_finish()
        remove_recipes(source)
     end
     teleport_ground(source,name)
-    teleport_players(source,name,true)
+    --teleport_players(source,name,true)
+    teleport_players(source,"factory",true)
     if storage.warptorio.factory_level > 0 then
       refresh_power_and_teleport()
     end
@@ -1434,8 +1435,6 @@ local function next_warp_zone_finish()
     else
       game.play_sound({path="warp-start"})
     end
-   
-   teleport_players(source,"factory",true)
    storage.warptorio.teleporting = false
    create_void_platform(source,true,"empty-space")
 end
