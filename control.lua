@@ -1587,7 +1587,7 @@ local function roll_planet()
       end
        end]]
     for i,v in pairs(game.planets) do
-       if game.forces.player.is_space_location_unlocked(i) and i ~= storage.warptorio.surface_name then
+       if game.forces.player.is_space_location_unlocked(i) and i ~= storage.warptorio.surface_name and not (planet:match('.*%-factory%-floor') or planet:match('factory%s-travel%s-surface')) then
           table.insert(surfaces,i)
        end
     end
