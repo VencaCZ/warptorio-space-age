@@ -536,7 +536,7 @@ local function new_random_surface(name)
   map_gen = game.planets[surface_name].prototype.map_gen_settings
   storage.warptorio.allow_random_spawn = true
 
-  if storage.warptorio.planet_next == "void" or name == "garden" then
+  if (storage.warptorio.planet_next == "void" and name ~= "space") or name == "garden" then
       map_gen = my_map_gen_settings
       storage.warptorio.void = true
       storage.warptorio.allow_random_spawn = false
@@ -765,13 +765,17 @@ end
 local function update_ground_platform(e)
   --game.print("Upgrading ground platform size")
   local level = storage.warptorio.ground_level
-
+  local dest = storage.warptorio.warp_zone
+  if storage.warptorio.teleporting then
+     dest = "warp-space-transition"
+  end
+  
   if e then
     level = mysplit(e,"-")
     level = tonumber(level[#level])
     --storage.warptorio.wave_time = 0
     if level == 1 then
-      create_void_platform(storage.warptorio.warp_zone)
+      create_void_platform(dest)
     end
   end
 
@@ -785,19 +789,19 @@ local function update_ground_platform(e)
 
   --remove_resources(storage.warptorio.warp_zone)
 
-  local tiles = generate_surface_rectangle(storage.warptorio.warp_zone, platform*2,platform*2,"warp_tile_world")
-  game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
+  local tiles = generate_surface_rectangle(dest, platform*2,platform*2,"warp_tile_world")
+  game.surfaces[dest].set_tiles(tiles)
   storage.warptorio.ground_level = level
   storage.warptorio.ground_size = platform*2
 
   if level == 1 then
-      local tiles = generate_surface_rectangle(storage.warptorio.warp_zone, 2,6,"hazard-concrete-left")
-      game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
+      local tiles = generate_surface_rectangle(dest, 2,6,"hazard-concrete-left")
+      game.surfaces[dest].set_tiles(tiles)
   end
 
   if not storage.warptorio.container_left_enabled then
-      local tiles = generate_surface_rectangle(storage.warptorio.warp_zone, 2,2,"hazard-concrete-left",-2)
-      game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
+      local tiles = generate_surface_rectangle(dest, 2,2,"hazard-concrete-left",-2)
+      game.surfaces[dest].set_tiles(tiles)
   end
 
   if storage.warptorio.factory_level > 0 then
@@ -1209,7 +1213,7 @@ local function check_wave()
     if storage.warptorio.wave_time < warp_settings.biter.min then
       storage.warptorio.wave_time = warp_settings.biter.min
     end
-  elseif not storage.warptorio.void then
+  elseif not storage.warptorio.void and not storage.warptorio.teleporting then
     storage.warptorio.wave_time = storage.warptorio.wave_time - 1/60
   end
 end
@@ -1983,6 +1987,7 @@ end)
 script.on_event(defines.events.on_script_trigger_effect, function(event)
   if event.effect_id == "asteroid" then
      if event.source_entity then
+        game.print("GOT"..event.source_entity.name)
         local name = event.source_entity.name
         local pos = event.source_entity.position
         local tile = "empty-space"
@@ -2004,18 +2009,12 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local level = storage.warptorio.ground_level
         local size = warp_settings.floor.levels[level]
         if not pos then return end
-        if pos.x < -(size+2) or pos.x > size+2 or
-           pos.y < -(size+2) or pos.y > size+2 then
-           return
-        end
-        game.surfaces[event.surface_index].set_tiles(tiles)
-        game.surfaces[event.surface_index].create_entity{
-           name="vulcanus-cliff-collapse",
-           position=pos,}
         local types = {"carbonic","metallic","oxide","promethium"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
+              game.print("GOT2")
               if storage.warptorio.collector_chest then
+                 game.print("GOT3")
                  local item = i.."-asteroid-chunk"
                  local container = storage.warptorio.collector_chest
                  if container then
@@ -2025,6 +2024,14 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
               return
            end
         end
+        if pos.x < -(size+2) or pos.x > size+2 or
+           pos.y < -(size+2) or pos.y > size+2 then
+           return
+        end
+        game.surfaces[event.surface_index].set_tiles(tiles)
+        game.surfaces[event.surface_index].create_entity{
+           name="vulcanus-cliff-collapse",
+           position=pos,}
      end
   end
 end)
