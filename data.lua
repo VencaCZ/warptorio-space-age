@@ -1,7 +1,7 @@
 	require("research")
 require("prototypes/entities")
 require("prototypes/containers")
-
+require("prototypes/collector_container")
 --shortcut
 local shortcut = {
   type="shortcut",
@@ -21,6 +21,12 @@ collector.tile_buildability_rules = nil
 local thruster = data.raw["thruster"]["thruster"]
 thruster.surface_conditions = nil
 thruster.tile_buildability_rules = nil
+
+--crusher
+
+local crusher = data.raw["assembling-machine"]["crusher"]
+crusher.surface_conditions = nil
+crusher.tile_buildability_rules = nil
 
 -- Asteroids
 for _, i in pairs(data.raw["asteroid"]) do

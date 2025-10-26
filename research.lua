@@ -16,6 +16,7 @@ data.raw["technology"]["rocket-silo"].unit = {
   time = 60
 }
 data.raw["technology"]["rocket-silo"].hidden = true
+data.raw["technology"]["space-platform-thruster"].hidden = true
 
 data.raw["technology"]["space-science-pack"].prerequisites = {"processing-unit","low-density-structure"}
 data.raw["technology"]["space-science-pack"].research_trigger = nil
@@ -234,7 +235,29 @@ ExtendTech(t,{name="warp-factory-platform-7",unit={count=10000,ingredients = Sci
 
 local t = table.deepcopy(data.raw["technology"]["space-platform"])
 t.research_trigger = nil
-ExtendTech(t,{name="space-platform",unit={count=5000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-factory-platform-3"}})
+t.effects = {
+   {
+      recipe = "warp-asteroid-chest",
+      type = "unlock-recipe"
+   },
+   {
+      recipe = "crusher",
+      type = "unlock-recipe"
+   },
+   {
+      recipe = "metallic-asteroid-crushing",
+      type = "unlock-recipe"
+   },
+   {
+      recipe = "carbonic-asteroid-crushing",
+      type = "unlock-recipe"
+   },
+   {
+      recipe = "oxide-asteroid-crushing",
+      type = "unlock-recipe"
+   },
+}
+ExtendTech(t,{name="space-platform",unit={count=500,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-factory-platform-3"}})
 
 local t = table.deepcopy(data.raw["technology"]["biochamber"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
