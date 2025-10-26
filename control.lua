@@ -1987,7 +1987,6 @@ end)
 script.on_event(defines.events.on_script_trigger_effect, function(event)
   if event.effect_id == "asteroid" then
      if event.source_entity then
-        game.print("GOT"..event.source_entity.name)
         local name = event.source_entity.name
         local pos = event.source_entity.position
         local tile = "empty-space"
@@ -2012,9 +2011,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local types = {"carbonic","metallic","oxide","promethium"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
-              game.print("GOT2")
               if storage.warptorio.collector_chest then
-                 game.print("GOT3")
                  local item = i.."-asteroid-chunk"
                  local container = storage.warptorio.collector_chest
                  if container then
