@@ -2,7 +2,8 @@
 Version: 0.2.11
 Date: 2025-10-18
   Changes:
-    - Compatibility with Factorissimo 3 thanks to LIMachi 
+    - Compatibility with Factorissimo 3 thanks to LIMachi
+    - Fixed asteroid collecting giving items to the chest even when its already full
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.10
 Date: 2025-10-18

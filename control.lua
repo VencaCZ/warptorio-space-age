@@ -1587,7 +1587,7 @@ local function roll_planet()
       end
        end]]
     for i,v in pairs(game.planets) do
-       if game.forces.player.is_space_location_unlocked(i) and i ~= storage.warptorio.surface_name and not (planet:match('.*%-factory%-floor') or planet:match('factory%s-travel%s-surface')) then
+       if game.forces.player.is_space_location_unlocked(i) and i ~= storage.warptorio.surface_name and not (i:match('.*%-factory%-floor') or i:match('factory%s-travel%s-surface')) then
           table.insert(surfaces,i)
        end
     end
@@ -1991,17 +1991,14 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local pos = event.source_entity.position
         local tile = "empty-space"
         local explosion_size = 12
-        local amount = 5
+        local amount = 1
         if string.match(name, "small") then
-           amount = 1
            explosion_size = 3
         end
         if string.match(name, "medium") then
-           amount = 2
            explosion_size = 5
         end
         if string.match(name, "big") then
-           amount = 3
            explosion_size = 9
         end
         local tiles = generate_rectangle(explosion_size, explosion_size, tile,pos.x,pos.y)
@@ -2015,7 +2012,9 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
                  local item = i.."-asteroid-chunk"
                  local container = storage.warptorio.collector_chest
                  if container then
-                    container.insert({name=item, count=amount})
+                    if container.can_insert({name=item, count=amount}) then
+                       container.insert({name=item, count=amount})
+                    end
                  end
               end
               return
