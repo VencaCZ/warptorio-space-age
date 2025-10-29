@@ -1377,7 +1377,11 @@ local function next_warp_zone_finish()
     end
     teleport_ground(source,name)
     --teleport_players(source,name,true)
-    teleport_players(source,"factory",true)
+    if storage.warptorio.factory_level > 0 then
+       teleport_players(source,"factory",true)
+    else
+       teleport_players(source,name)
+    end
     if storage.warptorio.factory_level > 0 then
       refresh_power_and_teleport()
     end
