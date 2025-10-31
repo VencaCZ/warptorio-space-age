@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.12
+Date: 2025-10-31
+  Changes:
+    - Made it possible to make the game even harder
+    - Fixed issue with robots building collector and warp chest
+---------------------------------------------------------------------------------------------------
 Version: 0.2.11
 Date: 2025-10-18
   Changes:

@@ -1852,6 +1852,33 @@ local function update_power(e)
     storage.warptorio.power_name = "warp-power-"..(level+1)
 end
 
+local function build_entity(e)
+    if e.entity.name == "warp_2x2-container" then
+       if storage.warptorio.container and storage.warptorio.container.valid then
+          game.print({"warptorio.container-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       else
+          game.print({"warptorio.container-placed"})
+       end
+       storage.warptorio.container = e.entity
+    end
+    if e.entity.name == "warp-asteroid-chest" then
+       if storage.warptorio.collector_chest and storage.warptorio.collector_chest.valid then
+          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       elseif e.entity.surface.name ~= "factory" and e.entity.surface.name ~= "garden" then
+          game.print({"warptorio.placed-error-surface"},{color={1,0,0}})
+          e.entity.destroy()
+          return          
+       else
+          game.print({"warptorio.collector-placed"})
+          storage.warptorio.collector_chest = e.entity
+       end
+    end
+end
+
 local techs = {
    {
       name = warp_settings.techs.ground,
@@ -1932,30 +1959,11 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(e)
-    if e.entity.name == "warp_2x2-container" then
-       if storage.warptorio.container and storage.warptorio.container.valid then
-          game.print({"warptorio.container-placed-error"},{color={1,0,0}})
-          e.entity.destroy()
-          return
-       else
-          game.print({"warptorio.container-placed"})
-       end
-       storage.warptorio.container = e.entity
-    end
-    if e.entity.name == "warp-asteroid-chest" then
-       if storage.warptorio.collector_chest and storage.warptorio.collector_chest.valid then
-          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
-          e.entity.destroy()
-          return
-       elseif e.entity.surface.name ~= "factory" and e.entity.surface.name ~= "garden" then
-          game.print({"warptorio.placed-error-surface"},{color={1,0,0}})
-          e.entity.destroy()
-          return          
-       else
-          game.print({"warptorio.collector-placed"})
-          storage.warptorio.collector_chest = e.entity
-       end
-    end
+  build_entity(e)
+end)
+
+script.on_event(defines.events.on_robot_built_entity, function(e)
+  build_entity(e)
 end)
 
 script.on_event(defines.events.on_player_mined_entity, function(e)
