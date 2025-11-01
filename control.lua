@@ -1732,20 +1732,29 @@ local function reorient_train(train,newenginepos,newengineorientation)
    return newpositions, neworientations
 end
 
-
 local function warp_trains()
    if not game.forces["player"].technologies["warp-train"].researched then return end
    local stations = game.train_manager.get_train_stops({station_name="WarpStation"})
    local factory_station = nil
+   local warp_zone_station = nil
    for i,v in ipairs(stations) do
       if v.surface.name == "factory" then
          factory_station = v
          game.print("Found factory station at " .. pos_str(factory_station.position) .. " " .. factory_station.backer_name .. " " .. factory_station.surface.name)
+      elseif v.surface.name == storage.warptorio.warp_zone then
+         warp_zone_station = v
+         game.print("Found warp zone station at " .. pos_str(warp_zone_station.position) .. " " .. warp_zone_station.backer_name .. " " .. warp_zone_station.surface.name)
+      end
+      if factory_station and warp_zone_station then
          break
       end
    end
    if not factory_station then
       game.print("No factory station found. Not going to try to warp")
+      return
+   end
+   if not warp_zone_station then
+      game.print("No warp zone station found. Not going to try to warp")
       return
    end
    for i,v in ipairs(stations) do
@@ -1755,38 +1764,42 @@ local function warp_trains()
          local at_station = train.state == defines.train_state.wait_station
          local wagons = train.carriages
          local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
+         local destination_station = nil
+         if v.surface.name == "factory" then
+            destination_station = warp_zone_station
+         else
+            destination_station = factory_station
+         end
          if at_station then
             game.print({"warptorio.train-warp",destination})
             game.print("Current station is at (" .. v.position.x .. ", " .. v.position.y .. ") on " .. v.surface.name .. " in warp zone " .. storage.warptorio.warp_zone)
-            --for i,tw in ipairs(wagons) do
-            --   game.print("Attempting to put train bit " .. tw.name .. " at (" .. tw.position.x .. ", " .. tw.position.y .. ") into same position on surface " .. destination)
-            --end
             local newpositions, neworientations
-            if factory_station.direction == defines.direction.east then
-               newpos = {x=factory_station.position.x - 3, y=factory_station.position.y - 2}
+            if destination_station.direction == defines.direction.east then
+               newpos = {x=destination_station.position.x - 3, y=destination_station.position.y - 2}
                game.print("Adjusted offset to factory station " .. pos_str(newpos))
                newpositions, neworientations = reorient_train(train, newpos, 0.25)
-            elseif factory_station.direction == defines.direction.west then
-               newpos = {x=factory_station.position.x + 3, y=factory_station.position.y + 2}
+            elseif destination_station.direction == defines.direction.west then
+               newpos = {x=destination_station.position.x + 3, y=destination_station.position.y + 2}
                game.print("Adjusted offset to factory station " .. pos_str(newpos))
                newpositions, neworientations = reorient_train(train, newpos, 0.75)
-            elseif factory_station.direction == defines.direction.north then
-               newpos = {x=factory_station.position.x - 2, y=factory_station.position.y + 3}
+            elseif destination_station.direction == defines.direction.north then
+               newpos = {x=destination_station.position.x - 2, y=destination_station.position.y + 3}
                game.print("Adjusted offset to factory station " .. pos_str(newpos))
                newpositions, neworientations = reorient_train(train, newpos, 0.0)
-            elseif factory_station.direction == defines.direction.south then
-               newpos = {x=factory_station.position.x + 2, y=factory_station.position.y - 3}
+            elseif destination_station.direction == defines.direction.south then
+               newpos = {x=destination_station.position.x + 2, y=destination_station.position.y - 3}
                game.print("Adjusted offset to factory station " .. pos_str(newpos))
                newpositions, neworientations = reorient_train(train, newpos, 0.5)
             else
                game.print("Unhandled orientation switch")
             end
-            warp_array_newpos(wagons,newpositions,neworientations,factory_station.direction,destination)
+            train.manual_mode = true
+            warp_array_newpos(wagons,newpositions,neworientations,destination_station.direction,destination)
             --Now we have to get destination train and switch it to automatic
          end
          local t2 = game.train_manager.get_trains({surface=destination})
          for a,b in ipairs(t2) do
-            b.manual_mode = false
+            b.manual_mode = true
          end
       end
    end
