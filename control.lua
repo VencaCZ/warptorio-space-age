@@ -1657,25 +1657,155 @@ local function warp_array(array,destination)
    end
 end
 
+local function warp_array_newpos(array,newpositions,neworientations,newdirection,destination)
+   for i,v in ipairs(array) do
+      local new_entity = v.clone({position=newpositions[i], surface=destination})
+      if new_entity then
+         new_entity.copy_settings(v)
+         new_entity.direction = newdirection
+         new_entity.orientation = neworientations[i]
+         v.destroy()
+      else
+         game.print({"warptorio.train-warp-error"},{color={1,0,0}})
+      end
+   end
+end
+
+local function pos_str(pos)
+   if pos == nil then
+      return "POS NIL"
+   else
+      return "(" .. pos.x .. ", " .. pos.y .. ")"
+   end
+end
+
+local function should_debug()
+   return false
+end
+
+local function debug_print(...)
+   if should_debug() then
+      game.print(...)
+   end
+end
+
+-- Reorient a train to follow from the new engine position needed at a new station
+-- Returns in the same order that 
+local function reorient_train(train,newenginepos,newengineorientation)
+   local newpositions = {}
+   local neworientations = {}
+   if newengineorientation > 0.24 and newengineorientation < 0.26 then
+      -- Orientation is east
+      for i,tw in ipairs(train.carriages) do
+         local multiplier = i - 1
+         local newpos = {x=newenginepos.x - (7 * multiplier), y=newenginepos.y}
+         table.insert(newpositions, newpos)
+         table.insert(neworientations, newengineorientation)
+      end
+   end
+   if newengineorientation > 0.74 and newengineorientation < 0.76 then
+      -- Orientation is west
+      for i,tw in ipairs(train.carriages) do
+         local multiplier = i - 1
+         local newpos = {x=newenginepos.x + (7 * multiplier), y=newenginepos.y}
+         table.insert(newpositions, newpos)
+         table.insert(neworientations, newengineorientation)
+      end
+   end
+   if newengineorientation > 0.49 and newengineorientation < 0.51 then
+      -- Orientation is south
+      for i,tw in ipairs(train.carriages) do
+         local multiplier = i - 1
+         local newpos = {x=newenginepos.x, y=newenginepos.y - (7 * multiplier)}
+         table.insert(newpositions, newpos)
+         table.insert(neworientations, newengineorientation)
+      end
+   end
+   if newengineorientation > -0.01 and newengineorientation < 0.01 then
+      -- Orientation is north
+      for i,tw in ipairs(train.carriages) do
+         local multiplier = i - 1
+         local newpos = {x=newenginepos.x, y=newenginepos.y + (7 * multiplier)}
+         table.insert(newpositions, newpos)
+         table.insert(neworientations, newengineorientation)
+      end
+   end
+   if should_debug() then
+      for i,tw in ipairs(train.carriages) do
+         debug_print("Moving " .. tw.name .. " from " .. pos_str(tw.position) .. " to " .. pos_str(newpositions[i]) .. " " .. tw.orientation .. "->" .. neworientations[i])
+      end
+   end
+   return newpositions, neworientations
+end
+
 local function warp_trains()
    if not game.forces["player"].technologies["warp-train"].researched then return end
    local stations = game.train_manager.get_train_stops({station_name="WarpStation"})
+   local factory_station = nil
+   local warp_zone_station = nil
+   for i,v in ipairs(stations) do
+      if v.surface.name == "factory" then
+         factory_station = v
+         debug_print("Found factory station at " .. pos_str(factory_station.position) .. " " .. factory_station.backer_name .. " " .. factory_station.surface.name)
+      elseif v.surface.name == storage.warptorio.warp_zone then
+         warp_zone_station = v
+         debug_print("Found warp zone station at " .. pos_str(warp_zone_station.position) .. " " .. warp_zone_station.backer_name .. " " .. warp_zone_station.surface.name)
+      end
+      if factory_station and warp_zone_station then
+         break
+      end
+   end
+   if not factory_station then
+      debug_print("No factory station found. Not going to try to warp")
+      return
+   end
+   if not warp_zone_station then
+      debug_print("No warp zone station found. Not going to try to warp")
+      return
+   end
    for i,v in ipairs(stations) do
       local train = v.get_stopped_train()
       if train then
-         --game.print("Train stoped at warp station")
-         --game.print(v.surface.name)
+         debug_print("Train stoped at warp station on " .. v.surface.name)
          local at_station = train.state == defines.train_state.wait_station
          local wagons = train.carriages
          local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
+         local destination_station = nil
+         if v.surface.name == "factory" then
+            destination_station = warp_zone_station
+         else
+            destination_station = factory_station
+         end
          if at_station then
             game.print({"warptorio.train-warp",destination})
-            warp_array(wagons,destination)
+            debug_print("Current station is at (" .. v.position.x .. ", " .. v.position.y .. ") on " .. v.surface.name .. " in warp zone " .. storage.warptorio.warp_zone)
+            local newpositions, neworientations
+            if destination_station.direction == defines.direction.east then
+               newpos = {x=destination_station.position.x - 3, y=destination_station.position.y - 2}
+               debug_print("Adjusted offset to factory station " .. pos_str(newpos))
+               newpositions, neworientations = reorient_train(train, newpos, 0.25)
+            elseif destination_station.direction == defines.direction.west then
+               newpos = {x=destination_station.position.x + 3, y=destination_station.position.y + 2}
+               debug_print("Adjusted offset to factory station " .. pos_str(newpos))
+               newpositions, neworientations = reorient_train(train, newpos, 0.75)
+            elseif destination_station.direction == defines.direction.north then
+               newpos = {x=destination_station.position.x - 2, y=destination_station.position.y + 3}
+               debug_print("Adjusted offset to factory station " .. pos_str(newpos))
+               newpositions, neworientations = reorient_train(train, newpos, 0.0)
+            elseif destination_station.direction == defines.direction.south then
+               newpos = {x=destination_station.position.x + 2, y=destination_station.position.y - 3}
+               debug_print("Adjusted offset to factory station " .. pos_str(newpos))
+               newpositions, neworientations = reorient_train(train, newpos, 0.5)
+            else
+               game.print("Unhandled orientation switch")
+            end
+            train.manual_mode = true
+            warp_array_newpos(wagons,newpositions,neworientations,destination_station.direction,destination)
             --Now we have to get destination train and switch it to automatic
          end
          local t2 = game.train_manager.get_trains({surface=destination})
          for a,b in ipairs(t2) do
-            b.manual_mode = false
+            b.manual_mode = true
          end
       end
    end
@@ -1852,33 +1982,6 @@ local function update_power(e)
     storage.warptorio.power_name = "warp-power-"..(level+1)
 end
 
-local function build_entity(e)
-    if e.entity.name == "warp_2x2-container" then
-       if storage.warptorio.container and storage.warptorio.container.valid then
-          game.print({"warptorio.container-placed-error"},{color={1,0,0}})
-          e.entity.destroy()
-          return
-       else
-          game.print({"warptorio.container-placed"})
-       end
-       storage.warptorio.container = e.entity
-    end
-    if e.entity.name == "warp-asteroid-chest" then
-       if storage.warptorio.collector_chest and storage.warptorio.collector_chest.valid then
-          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
-          e.entity.destroy()
-          return
-       elseif e.entity.surface.name ~= "factory" and e.entity.surface.name ~= "garden" then
-          game.print({"warptorio.placed-error-surface"},{color={1,0,0}})
-          e.entity.destroy()
-          return          
-       else
-          game.print({"warptorio.collector-placed"})
-          storage.warptorio.collector_chest = e.entity
-       end
-    end
-end
-
 local techs = {
    {
       name = warp_settings.techs.ground,
@@ -1959,11 +2062,30 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(e)
-  build_entity(e)
-end)
-
-script.on_event(defines.events.on_robot_built_entity, function(e)
-  build_entity(e)
+    if e.entity.name == "warp_2x2-container" then
+       if storage.warptorio.container and storage.warptorio.container.valid then
+          game.print({"warptorio.container-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       else
+          game.print({"warptorio.container-placed"})
+       end
+       storage.warptorio.container = e.entity
+    end
+    if e.entity.name == "warp-asteroid-chest" then
+       if storage.warptorio.collector_chest and storage.warptorio.collector_chest.valid then
+          game.print({"warptorio.collector-placed-error"},{color={1,0,0}})
+          e.entity.destroy()
+          return
+       elseif e.entity.surface.name ~= "factory" and e.entity.surface.name ~= "garden" then
+          game.print({"warptorio.placed-error-surface"},{color={1,0,0}})
+          e.entity.destroy()
+          return          
+       else
+          game.print({"warptorio.collector-placed"})
+          storage.warptorio.collector_chest = e.entity
+       end
+    end
 end)
 
 script.on_event(defines.events.on_player_mined_entity, function(e)
