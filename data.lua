@@ -203,46 +203,9 @@ data:extend{acc}
 
 -- change space science so it can be made anywhere
 
-data.raw["recipe"]["space-science-pack"] = {
-   allow_productivity = true,
-   enabled = false,
-   energy_required = 60,
-   icon = "__base__/graphics/icons/space-science-pack.png",
-   ingredients = {
-      {
-         amount = 2,
-         name = "iron-plate",
-         type = "item"
-      },
-      {
-         amount = 1,
-         name = "carbon",
-         type = "item"
-      },
-      {
-         amount = 1,
-         name = "ice",
-         type = "item"
-      }
-   },
-   main_product = "space-science-pack",
-   name = "space-science-pack",
-   results = {
-      {
-         amount = 5,
-         name = "space-science-pack",
-         type = "item"
-      }
-   },
-   surface_conditions = {
-      {
-         max = 10,
-         min = 0,
-         property = "gravity"
-      }
-   },
-   type = "recipe"
-}
+local space_science = data.raw.recipe["space-science-pack"]
+space_science.energy_required = 60
+space_science.surface_conditions = nil
 
 -- Change mining drills, so they have more modules with quality
 
