@@ -664,15 +664,20 @@ local function update_biochamber_platform(e)
     level = tonumber(level[#level])
   end
 
-  local platform = warp_settings.garden.levels[level]
+  if level == 4 then
+     level = game.forces["player"].technologies[e].level-1
+  end
 
+  -- Calculate platform dimensions dynamically for infinite levels
+  local platform = {
+    width = warp_settings.garden.platform.width * level,
+    height = warp_settings.garden.platform.height,
+    offset_x = math.floor(warp_settings.garden.platform.width * (level - 1) / 2),
+    offset_y = 0,
+    yumako = level,
+    jellynut = level
+  }
 
-	--for x=minx-1, maxx do
-	--	for y=miny-1, maxy do
-  --    table.insert(tiles, {name="warp_tile_platform", position={x,y}})
-  --  end
-	--end
-	
   if not game.surfaces["garden"] then
       local surface = new_random_surface("garden")
       local size = 10   
@@ -681,39 +686,42 @@ local function update_biochamber_platform(e)
       surface.request_to_generate_chunks({0,0}, size)
       surface.force_generate_chunk_requests()
   end
-	
-  local tiles = generate_rectangle(platform.width,platform.height,"warp_tile_platform",platform.offset_x,platform.offset_y)
+  
+  local tiles = generate_rectangle(platform.width, platform.height, "warp_tile_platform", platform.offset_x, platform.offset_y)
   game.surfaces["garden"].set_tiles(tiles)
   storage.warptorio.biochamber_level = level
 
-  for i=1,platform.yumako do
-      local center_y = warp_settings.garden.yumako.y+warp_settings.garden.yumako.offset
-      local center_x = warp_settings.garden.yumako.x*(i-1)
-      for _,part in ipairs(warp_settings.garden.yumako.parts) do
+  for i=1, platform.yumako do
+      local center_y = warp_settings.garden.yumako.y + warp_settings.garden.yumako.offset
+      local center_x = warp_settings.garden.yumako.x * (i-1)
+      for _, part in ipairs(warp_settings.garden.yumako.parts) do
         local x = center_x
         local y = center_y
         x = x + (part.x and part.x or 0)
         y = y + (part.y and part.y or 0)
-        local tiles = generate_rectangle(part.width,part.height,part.tile,x,y)
+        local tiles = generate_rectangle(part.width, part.height, part.tile, x, y)
         game.surfaces["garden"].set_tiles(tiles)
       end
   end
-  for i=1,platform.jellynut do
-      local center_y = warp_settings.garden.jellynut.y+warp_settings.garden.jellynut.offset
-      local center_x = warp_settings.garden.jellynut.x*(i-1)
-      for _,part in ipairs(warp_settings.garden.jellynut.parts) do
+
+  for i=1, platform.jellynut do
+      local center_y = warp_settings.garden.jellynut.y + warp_settings.garden.jellynut.offset
+      local center_x = warp_settings.garden.jellynut.x * (i-1)
+      for _, part in ipairs(warp_settings.garden.jellynut.parts) do
         local x = center_x
         local y = center_y
         x = x + (part.x and part.x or 0)
         y = y + (part.y and part.y or 0)
-        local tiles = generate_rectangle(part.width,part.height,part.tile,x,y)
+        local tiles = generate_rectangle(part.width, part.height, part.tile, x, y)
         game.surfaces["garden"].set_tiles(tiles)
       end
   end
+
   update_belt_biochamber()
   refresh_power_and_teleport()
+  
   if level == 1 then
-      local container = get_or_create("warp_2x2-container",{x=5,y=0,surface="garden"})
+      local container = get_or_create("warp_2x2-container", {x=5, y=0, surface="garden"})
       container.minable = false
       container.rotatable = false
   end
@@ -1433,6 +1441,9 @@ local function next_warp_zone_finish()
     local spawn = get_surface_offset(surface.name)
     game.forces.player.set_spawn_position({x=spawn.x,y=spawn.y}, surface)
 
+    if game.forces.player.technologies["warp-biochamber-platform-1"].researched then
+       update_belt_biochamber()
+    end
     update_belt()
     if storage.warptorio.factory_level > 0 then
       refresh_power_and_teleport()
@@ -1930,7 +1941,7 @@ local techs = {
 script.on_event(defines.events.on_research_finished, function(e)
     for _,v in ipairs(techs) do
        if string.find(e.research.name, v.name) then
-          game.print(e.research.name)
+          --game.print(e.research.name)
           v.func(e.research.name)
           return
        end

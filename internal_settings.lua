@@ -102,12 +102,9 @@ local local_settings = {
     shape = "cross"
   },
   garden = {
-    levels={
-        -- Width contains width of the garden as well. Same with height
-	    [1]={yumako=1,jellynut=1,height=2+31*2,width=31,offset_y=0,offset_x=0},
-	    [2]={yumako=2,jellynut=2,height=2+31*2,width=31*2,offset_y=0,offset_x=15},
-	    [3]={yumako=3,jellynut=3,height=2+31*2,width=31*3,offset_y=0,offset_x=31},
-	    [4]={yumako=4,jellynut=4,height=2+31*2,width=31*4,offset_y=0,offset_x=46},
+    platform = {
+       width = 31,
+       height = 2 + 31 *2
     },
     yumako={
         parts = {
