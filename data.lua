@@ -1,7 +1,8 @@
-	require("research")
+require("research")
 require("prototypes/entities")
 require("prototypes/containers")
 require("prototypes/collector_container")
+
 --shortcut
 local shortcut = {
   type="shortcut",
@@ -354,6 +355,12 @@ beacon.allowed_effects = {
    "pollution",
    "quality"
 }
+
+-- rebalance tesla turrets
+local tt = data.raw["electric-turret"]["tesla-turret"]
+tt.attack_parameters.ammo_type.energy_consumption = "36MJ"
+tt.energy_source.buffer_capacity = "72MJ"
+--tt.energy_source.input_flow_limit = tt.energy_source.input_flow_limit * 3
 
 --if mods["zzz-nonstandard-beacons"] then
 
