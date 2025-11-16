@@ -5,6 +5,7 @@ Date: 2025-10-31
     - Made it possible to make the game even harder
     - Fixed issue with robots building collector and warp chest
     - Changed garden floor to infinite research
+    - rebalance some of the weapons
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.11
 Date: 2025-10-18

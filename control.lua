@@ -2034,7 +2034,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
               if storage.warptorio.collector_chest then
                  local item = i.."-asteroid-chunk"
                  local container = storage.warptorio.collector_chest
-                 if container then
+                 if container and container.valid then
                     if container.can_insert({name=item, count=amount}) then
                        container.insert({name=item, count=amount})
                     end
