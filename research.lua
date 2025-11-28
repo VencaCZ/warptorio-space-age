@@ -267,7 +267,15 @@ t.research_trigger = nil
 ExtendTech(t,{name="warp-biochamber-platform-1",unit={count=500,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-ground-platform-3","warp-water"},effects={}})
 ExtendTech(t,{name="warp-biochamber-platform-2",unit={count=1000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1}),time=60}, prerequisites={"warp-biochamber-platform-1"},effects={}})
 ExtendTech(t,{name="warp-biochamber-platform-3",unit={count=5000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1,aquilo=1}),time=60}, prerequisites={"warp-biochamber-platform-2"},effects={}})
-ExtendTech(t,{name="warp-biochamber-platform-4",unit={count_formula="(10000*(L-3)*(L-3))",time=30},max_level="infinite",prerequisites={"warp-biochamber-platform-3","warp-end-prepare"}}, {red=3,green=3,blue=2,purple=1,yellow=1} )
+ExtendTech(t,{
+              name="warp-biochamber-platform-4",
+              unit={count_formula="(10000*(L-3)*(L-3))",time=30},
+              max_level="infinite",
+              prerequisites={"warp-biochamber-platform-3","warp-end-prepare"},
+              effects={}
+             },
+           {red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}
+)
 
 local t = table.deepcopy(data.raw["technology"]["logistics"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
