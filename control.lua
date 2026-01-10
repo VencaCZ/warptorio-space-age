@@ -1658,7 +1658,10 @@ end
 
 local function warp_array(array,destination)
    for i,v in ipairs(array) do
-      local new_entity = v.clone({position=v.position, surface=destination})
+      local source_offset = get_surface_offset(v.surface.name)
+      local dest_offset = get_surface_offset(destination)
+      local new_pos = {x = v.position.x - source_offset.x + dest_offset.x, y = v.position.y - source_offset.y + dest_offset.y}
+      local new_entity = v.clone({position=new_pos, surface=destination})
       if new_entity then
          new_entity.copy_settings(v)
          v.destroy()
