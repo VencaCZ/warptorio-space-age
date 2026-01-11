@@ -1658,7 +1658,6 @@ end
 
 -- Returns true if the full train footprint is clear on the destination surface
 -- destination_surface MUST be a LuaSurface
--- Returns true if the full train footprint is clear on the destination surface
 local function is_train_footprint_clear(train, destination_surface, source_station, target_station)
    local surface = destination_surface
 
