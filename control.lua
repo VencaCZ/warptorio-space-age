@@ -1689,6 +1689,31 @@ local function train_has_passengers(train)
    return false
 end
 
+local function is_station_out_of_bounds(station)
+    local surface_name = station.surface.name
+    local pos = station.position
+    local radius
+    local center = {x=0, y=0}
+
+    -- Factory is always valid
+    if surface_name == "factory" then return false end
+
+    center = get_surface_offset(surface_name)
+    if storage.warptorio and storage.warptorio.ground_size then
+      game.print("Ground size: " .. storage.warptorio.ground_size)
+      radius = storage.warptorio.ground_size / 2
+    else
+      radius = 100 -- Fallback for ground_size
+    end
+    --game.print("Range Check - Center: {x=" .. center.x .. ", y=" .. center.y .. "}, Radius: " .. radius .. ", Station Pos: {x=" .. pos.x .. ", y=" .. pos.y .. "}")
+    --game.print("Range Check - Delta: {dx=" .. (pos.x - center.x) .. ", dy=" .. (pos.y - center.y) .. "}")
+    if math.abs(pos.x - center.x) > radius or math.abs(pos.y - center.y) > radius then
+      game.print({"warptorio.train-warp-station-range-error"}, {color={1,0,0}})
+      return true
+    end
+    return false
+end
+
 local function warp_trains()
    if not game.forces["player"].technologies["warp-train"].researched then return end
    local stations = game.train_manager.get_train_stops({station_name="WarpStation"})
@@ -1697,11 +1722,18 @@ local function warp_trains()
       if not train then goto next_train_in_loop end
 
       local at_station = train.state == defines.train_state.wait_station
+      if not at_station then goto next_train_in_loop end
+      
       local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
       local target_station = get_free_warp_station(destination)
-      if not (at_station and target_station) then goto next_train_in_loop end
+      if not target_station then goto next_train_in_loop end
+      
+      -- Warp is possible, now check for conditions that would abort it and show an error.
+      if is_station_out_of_bounds(v) then goto next_train_in_loop end
+      if is_station_out_of_bounds(target_station) then goto next_train_in_loop end
       if train_has_passengers(train) then goto next_train_in_loop end
 
+      -- All checks passed.
       local wagons = train.carriages
       game.print({"warptorio.train-warp",destination})
       warp_array(wagons,destination,target_station,v)
