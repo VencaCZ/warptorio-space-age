@@ -1700,7 +1700,6 @@ local function is_station_out_of_bounds(station)
 
     center = get_surface_offset(surface_name)
     if storage.warptorio and storage.warptorio.ground_size then
-      game.print("Ground size: " .. storage.warptorio.ground_size)
       radius = storage.warptorio.ground_size / 2
     else
       radius = 100 -- Fallback for ground_size
