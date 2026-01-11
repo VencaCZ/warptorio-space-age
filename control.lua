@@ -1658,6 +1658,8 @@ end
 
 local function warp_array(array, destination, target_station, source_station)
    for i,v in ipairs(array) do
+      -- Subtract current station position from the train position
+      -- Add target station position to get new position
       local new_pos = {x = v.position.x - source_station.position.x + target_station.position.x, y = v.position.y - source_station.position.y + target_station.position.y}
       local new_entity = v.clone({position=new_pos, surface=destination})
       if new_entity then
@@ -1679,28 +1681,37 @@ local function get_free_warp_station(destination)
    return nil
 end
 
+local function train_has_passengers(train)
+   if #train.passengers > 0 then
+      game.print({"warptorio.train-warp-passenger-error"}, {color={1,0,0}})
+      return true
+   end
+   return false
+end
+
 local function warp_trains()
    if not game.forces["player"].technologies["warp-train"].researched then return end
    local stations = game.train_manager.get_train_stops({station_name="WarpStation"})
    for i,v in ipairs(stations) do
       local train = v.get_stopped_train()
-      if train then
-         --game.print("Train stoped at warp station")
-         --game.print(v.surface.name)
-         local at_station = train.state == defines.train_state.wait_station
-         local wagons = train.carriages
-         local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
-         local target_station = get_free_warp_station(destination)
-         if at_station and target_station then
-            game.print({"warptorio.train-warp",destination})
-            warp_array(wagons,destination,target_station,v)
-            --Now we have to get destination train and switch it to automatic
-         end
-         local t2 = game.train_manager.get_trains({surface=destination})
-         for a,b in ipairs(t2) do
-            b.manual_mode = false
-         end
+      if not train then goto next_train_in_loop end
+
+      local at_station = train.state == defines.train_state.wait_station
+      local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
+      local target_station = get_free_warp_station(destination)
+      if not (at_station and target_station) then goto next_train_in_loop end
+      if train_has_passengers(train) then goto next_train_in_loop end
+
+      local wagons = train.carriages
+      game.print({"warptorio.train-warp",destination})
+      warp_array(wagons,destination,target_station,v)
+      --Now we have to get destination train and switch it to automatic
+      local t2 = game.train_manager.get_trains({surface=destination})
+      for a,b in ipairs(t2) do
+         b.manual_mode = false
       end
+      
+      ::next_train_in_loop::
    end
 end
 
