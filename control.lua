@@ -1671,8 +1671,8 @@ local function warp_array(array, destination, target_station, source_station)
    end
 end
 
-local function get_free_warp_station(destination)
-   local stations = game.train_manager.get_train_stops({station_name="WarpStation", surface=destination})
+local function get_free_warp_station(destination, station_name)
+   local stations = game.train_manager.get_train_stops({station_name=station_name, surface=destination})
    for _, station in ipairs(stations) do
       if not station.get_stopped_train() then
          return station
@@ -1716,6 +1716,8 @@ end
 
 local function warp_trains()
    if not game.forces["player"].technologies["warp-train"].researched then return end
+   -- We could remove the WarpStation filter to warp all trains, but for now we keep it like this.
+   -- Because we don't keep the train schedule after warping you need the other stop on the line to be named the same.
    local stations = game.train_manager.get_train_stops({station_name="WarpStation"})
    for i,v in ipairs(stations) do
       local train = v.get_stopped_train()
@@ -1725,7 +1727,7 @@ local function warp_trains()
       if not at_station then goto next_train_in_loop end
       
       local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
-      local target_station = get_free_warp_station(destination)
+      local target_station = get_free_warp_station(destination, v.backer_name)
       if not target_station then goto next_train_in_loop end
       
       -- Warp is possible, now check for conditions that would abort it and show an error.
