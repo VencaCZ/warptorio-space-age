@@ -1656,6 +1656,74 @@ local function on_tick_power()
   end
 end
 
+-- Returns true if the full train footprint is clear on the destination surface
+-- destination_surface MUST be a LuaSurface
+-- Returns true if the full train footprint is clear on the destination surface
+local function is_train_footprint_clear(train, destination_surface, source_station, target_station)
+   local surface = destination_surface
+
+   for i, carriage in ipairs(train.carriages) do
+      local new_pos = {
+         x = carriage.position.x - source_station.position.x + target_station.position.x,
+         y = carriage.position.y - source_station.position.y + target_station.position.y
+      }
+
+      local box = carriage.prototype.collision_box
+      local area = {
+         { new_pos.x + box.left_top.x,     new_pos.y + box.left_top.y },
+         { new_pos.x + box.right_bottom.x, new_pos.y + box.right_bottom.y }
+      }
+
+      -- Debug: visualize the checked area
+      --[[
+      rendering.draw_rectangle{
+         color = {r=1, g=0, b=0, a=0.25},
+         filled = true,
+         left_top = area[1],
+         right_bottom = area[2],
+         surface = surface,
+         time_to_live = 120
+      }
+      ]]
+
+      local blockers = surface.find_entities_filtered{
+         area = area,
+         collision_mask = { "object", "player", "train" }
+      }
+
+      for _, ent in pairs(blockers) do
+         if ent.valid then
+            -- Explicit allow-list (important)
+            if ent.name == "entity-ghost"
+               or ent.type == "train-stop"
+               or ent.type == "straight-rail"
+               or ent.type == "curved-rail"
+            then
+               goto continue
+            end
+
+            -- debug: blocker found
+            -- Could be removed if not wanted
+            game.print({
+               "",
+               "[Train warp blocked] Carriage #", i,
+               " Entity=", ent.name,
+               " Type=", ent.type,
+               " Pos=(", math.floor(ent.position.x), ",", math.floor(ent.position.y), ")"
+            }, {color={1,0.2,0.2}})
+
+            return false
+         end
+
+         ::continue::
+      end
+   end
+
+   return true
+end
+
+
+
 local function warp_array(array, destination, target_station, source_station)
    for i,v in ipairs(array) do
       -- Subtract current station position from the train position
@@ -1700,6 +1768,7 @@ local function is_station_out_of_bounds(station)
 
     center = get_surface_offset(surface_name)
     if storage.warptorio and storage.warptorio.ground_size then
+      game.print("Ground size: " .. storage.warptorio.ground_size)
       radius = storage.warptorio.ground_size / 2
     else
       radius = 100 -- Fallback for ground_size
@@ -1734,10 +1803,16 @@ local function warp_trains()
       if is_station_out_of_bounds(target_station) then goto next_train_in_loop end
       if train_has_passengers(train) then goto next_train_in_loop end
 
-      -- All checks passed.
-      local wagons = train.carriages
+      -- Check that target area is free.
+      local dest_surface = game.surfaces[destination]
+      if not is_train_footprint_clear(train, dest_surface, v, target_station) then
+         game.print({"warptorio.train-warp-track-blocked"}, {color={1,0,0}})
+         goto next_train_in_loop
+      end
+
+      -- All checks passed, do the warp
       game.print({"warptorio.train-warp",destination})
-      warp_array(wagons,destination,target_station,v)
+      warp_array(train.carriages,destination,target_station,v)
       --Now we have to get destination train and switch it to automatic
       local t2 = game.train_manager.get_trains({surface=destination})
       for a,b in ipairs(t2) do
