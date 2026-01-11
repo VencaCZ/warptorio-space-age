@@ -1656,11 +1656,9 @@ local function on_tick_power()
   end
 end
 
-local function warp_array(array,destination)
+local function warp_array(array, destination, target_station, source_station)
    for i,v in ipairs(array) do
-      local source_offset = get_surface_offset(v.surface.name)
-      local dest_offset = get_surface_offset(destination)
-      local new_pos = {x = v.position.x - source_offset.x + dest_offset.x, y = v.position.y - source_offset.y + dest_offset.y}
+      local new_pos = {x = v.position.x - source_station.position.x + target_station.position.x, y = v.position.y - source_station.position.y + target_station.position.y}
       local new_entity = v.clone({position=new_pos, surface=destination})
       if new_entity then
          new_entity.copy_settings(v)
@@ -1669,6 +1667,16 @@ local function warp_array(array,destination)
          game.print({"warptorio.train-warp-error"},{color={1,0,0}})
       end
    end
+end
+
+local function get_free_warp_station(destination)
+   local stations = game.train_manager.get_train_stops({station_name="WarpStation", surface=destination})
+   for _, station in ipairs(stations) do
+      if not station.get_stopped_train() then
+         return station
+      end
+   end
+   return nil
 end
 
 local function warp_trains()
@@ -1682,9 +1690,10 @@ local function warp_trains()
          local at_station = train.state == defines.train_state.wait_station
          local wagons = train.carriages
          local destination = v.surface.name == "factory" and storage.warptorio.warp_zone or "factory"
-         if at_station then
+         local target_station = get_free_warp_station(destination)
+         if at_station and target_station then
             game.print({"warptorio.train-warp",destination})
-            warp_array(wagons,destination)
+            warp_array(wagons,destination,target_station,v)
             --Now we have to get destination train and switch it to automatic
          end
          local t2 = game.train_manager.get_trains({surface=destination})
