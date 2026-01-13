@@ -56,13 +56,13 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
 
             -- debug: blocker found
             -- Could be removed if not wanted
-            game.print({
-               "",
-               "[Train warp blocked] Carriage #", i,
-               " Entity=", ent.name,
-               " Type=", ent.type,
-               " Pos=(", math.floor(ent.position.x), ",", math.floor(ent.position.y), ")"
-            }, {color={1,0.2,0.2}})
+            --game.print({
+            --   "",
+            --   "[Train warp blocked] Carriage #", i,
+            --   " Entity=", ent.name,
+            --   " Type=", ent.type,
+            --   " Pos=(", math.floor(ent.position.x), ",", math.floor(ent.position.y), ")"
+            --}, {color={1,0.2,0.2}})
 
             return false
          end
@@ -126,7 +126,7 @@ function train_code.is_station_out_of_bounds(station)
 
     center = get_surface_offset(surface_name)
     if storage.warptorio and storage.warptorio.ground_size then
-      game.print("Ground size: " .. storage.warptorio.ground_size)
+      --game.print("Ground size: " .. storage.warptorio.ground_size)
       radius = storage.warptorio.ground_size / 2
     else
       radius = 100 -- Fallback for ground_size
@@ -181,10 +181,10 @@ function train_code.warp_trains(train, station_name)
       --Now we have to get destination train and switch it to automatic
       local t2 = game.train_manager.get_trains({surface=destination})
       for a,b in ipairs(t2) do
-         schedule.current = schedule.current + 1
-         if #schedule.records < schedule.current then
-            schedule.current = 1
-         end
+         --schedule.current = schedule.current + 1
+         --if #schedule.records < schedule.current then
+         --   schedule.current = 1
+         --end
          b.schedule = schedule
          b.manual_mode = false
       end
