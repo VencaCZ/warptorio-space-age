@@ -2046,9 +2046,15 @@ end)
 script.on_event(
    defines.events.on_train_changed_state,
    function (e)
-      if e.train.state == defines.train_state.wait_station and
+      local train = e.train
+      if train.state == defines.train_state.wait_station and
          e.old_state == defines.train_state.arrive_station then
-         train_code.warp_trains()
+         if train.carriages[1].surface.name == "factory" and
+            train.station then
+            train_code.warp_trains(train, warp_settings.train.ground_station)
+         else
+            train_code.warp_trains(train, warp_settings.train.factory_station)
+         end
       end
    end
 )

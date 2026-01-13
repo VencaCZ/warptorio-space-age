@@ -29,6 +29,10 @@ local local_settings = {
 	    [8]=70,
     }
   },
+  train = {
+     ground_station = "WarpGround",
+     factory_station = "WarpFactory"
+  },
   starter_items = {
      ["coal"]=1000,["iron-plate"]=500,["copper-plate"]=200,
      ["wooden-chest"]=10,["transport-belt"]=100,["underground-belt"]=25,["splitter"]=10,
