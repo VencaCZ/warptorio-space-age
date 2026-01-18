@@ -1,4 +1,5 @@
 require("research")
+require("tips")
 require("prototypes/entities")
 require("prototypes/containers")
 require("prototypes/collector_container")

@@ -174,7 +174,6 @@ function train_code.warp_trains(train, station_name)
          goto next_train_in_loop
       end
 
-      local manual = train.manual_mode
       -- All checks passed, do the warp
       game.print({"warptorio.train-warp",destination})
       local schedule = train.schedule
@@ -187,7 +186,7 @@ function train_code.warp_trains(train, station_name)
          --   schedule.current = 1
          --end
          b.schedule = schedule
-         b.manual_mode = manual
+         b.manual_mode = false
       end
       
       ::next_train_in_loop::
