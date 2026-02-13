@@ -1,6 +1,6 @@
 {
 	"name": "warptorio-space-age",
-    "version": "0.2.13",
+    "version": "0.3.0",
 	"title": "Warptorio 2.0 (Space Age)",
 	"author": "Venca",
 	"dependencies": ["base >= 1.1","space-age","?Toxic_biters","?Electric_flying_enemies","?Explosive_biters", "?Cold_biters", "?ArmouredBiters", "!Gun_Turret_Alerts"],

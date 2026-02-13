@@ -2072,5 +2072,6 @@ remote.add_interface("warptorio",
      spawn_ground_platform_design = platform_code.spawn,
      add_ground_platform_design = platform_code.add,
      list_ground_platform_design = platform_code.list,
+     
   }
 )

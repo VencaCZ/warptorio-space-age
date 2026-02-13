@@ -16,6 +16,19 @@ end
 
 local warp_sizes = require("factory_sizes")
 
+local function internal_loot()
+   local items = {}
+   if not prototypes then return {} end
+   for _,item in pairs(prototypes.item) do
+      if item.group.name == "intermediate-products"  and
+         item.name ~= "coin" and item.name ~= "science" and
+         item.hidden == false then
+         table.insert(items,item.name)
+      end
+   end
+   return items
+end
+
 local local_settings = {
   floor = {
     levels={
@@ -39,6 +52,27 @@ local local_settings = {
      ["burner-mining-drill"]=20,["assembling-machine-1"]=2,
      ["small-electric-pole"]=10,["steam-engine"]=1,["boiler"]=1,
      ["gun-turret"]=4,["firearm-magazine"]=400,
+  },
+  platforms = {
+       loot_items = internal_loot(),
+       save_triggers = {
+          "warp-ground-platform-2",
+          "warp-ground-platform-3",
+          "warp-ground-platform-4",
+          "warp-ground-platform-5",
+          "warp-ground-platform-6",
+          "warp-ground-platform-7",
+          "warp-ground-platform-8",
+          "warp-end-prepare",
+       },
+       position = {
+          x = {min=32*4,max=32*8},
+          y = {min=32*4,max=32*8}
+       },
+       weapons = {
+          {name="gun-turret",flud=false,ammo={ name = "firearm-magazine", count = 10 }},
+          {name="flamethrower-turret",flud=true,ammo={ name = "heavy-oil", ammount = 100 }}
+       }
   },
   surfaces = {
      -- Define Surfaces that will be used and sorted
@@ -78,7 +112,7 @@ local local_settings = {
      transition_spawn_amount = 5,
      speed_per_warp = 0.005,
      edge_chance = 0.25,
-     asteroid_chance = 10000,
+     asteroid_chance = 5000,
      base_time = 20,
      trigger_factory_level = 2,
      tresholds = {0,0.10,0.4,0.7},
@@ -86,6 +120,7 @@ local local_settings = {
         {"small-carbonic-asteroid","small-metallic-asteroid","small-oxide-asteroid"},
         {"medium-carbonic-asteroid","medium-metallic-asteroid","medium-oxide-asteroid"},
         {"big-carbonic-asteroid","big-metallic-asteroid","big-oxide-asteroid"},
+        {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid"},
         {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid","huge-promethium-asteroid"},
      }
   },
