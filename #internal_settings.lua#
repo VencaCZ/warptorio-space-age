@@ -79,7 +79,7 @@ local local_settings = {
        tresholds = {0,0.15,0.5,0.9},
        minimum_entities = 60,
        duration = 5*60*60,
-       items = {min=10,max=100}
+       items = {min=10,max=100,chance=0.75}
   },
   surfaces = {
      -- Define Surfaces that will be used and sorted

@@ -198,16 +198,19 @@ function module.spawn(name,x,y)
               direction = v.direction,
               force = game.forces.player,
               quality = v.quality
-            })
-         entity.insert(
-            {
-               name = items[math.random(1, #items)],
-               count = math.random(
-                  warp_settings.platforms.items.min,
-                  warp_settings.platforms.items.max
-               )
-            }
-         )
+                                                                                })
+         local chance = math.random(0.00,1.00)
+         if chance > warp_settings.platforms.items.chance then
+            entity.insert(
+               {
+                  name = items[math.random(1, #items)],
+                  count = math.random(
+                     warp_settings.platforms.items.min,
+                     warp_settings.platforms.items.max
+                  )
+               }
+            )
+         end
         else
             if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
                local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
