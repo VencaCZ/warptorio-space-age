@@ -22,6 +22,7 @@ local function internal_loot()
    for _,item in pairs(prototypes.item) do
       if item.group.name == "intermediate-products"  and
          item.name ~= "coin" and item.name ~= "science" and
+         item.subgroup.name ~= "barrel" and
          item.hidden == false then
          table.insert(items,item.name)
       end
@@ -70,9 +71,15 @@ local local_settings = {
           y = {min=32*4,max=32*8}
        },
        weapons = {
-          {name="gun-turret",flud=false,ammo={ name = "firearm-magazine", count = 10 }},
-          {name="flamethrower-turret",flud=true,ammo={ name = "heavy-oil", ammount = 100 }}
-       }
+          {name="gun-turret",fluid=false,ammo={ name = "firearm-magazine", count = 10 }},
+          {name="flamethrower-turret",fluid=true,ammo={ name = "heavy-oil", ammount = 100 }}
+       },
+       spawn_chance = 0.5,
+       spawn_timer = 60*60*8,
+       tresholds = {0,0.15,0.5,0.9},
+       minimum_entities = 60,
+       duration = 5*60*60,
+       items = {min=10,max=100}
   },
   surfaces = {
      -- Define Surfaces that will be used and sorted
@@ -112,6 +119,8 @@ local local_settings = {
      transition_spawn_amount = 5,
      speed_per_warp = 0.005,
      edge_chance = 0.25,
+     spawn_chance = 0.25,
+     -- not used
      asteroid_chance = 5000,
      base_time = 20,
      trigger_factory_level = 2,

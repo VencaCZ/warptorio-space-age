@@ -824,6 +824,10 @@ local function create_asteroids(amount, surface)
    local level = storage.warptorio.ground_level
    local size = warp_settings.floor.levels[level]
    local evolution = game.forces["enemy"].get_evolution_factor(storage.warptorio.warp_zone)
+   local chance = math.random(0.00,1.00)
+   if chance > warp_settings.space.spawn_chance then
+      return
+   end
    for i,v in ipairs(warp_settings.space.tresholds) do
       if v < evolution then
          for _=1,amount do
@@ -1458,6 +1462,7 @@ local function next_warp_zone_finish()
     end
    storage.warptorio.teleporting = false
    create_void_platform(source,true,"empty-space")
+   platform_code.on_warp(source,name)
 end
 
 local function shuffle(tbl)
@@ -1674,7 +1679,7 @@ script.on_event(defines.events.on_tick, function(event)
   end
   if not storage.warptorio.transition_timer then storage.warptorio.transition_timer = -1 end
   update_all_labels()
-
+  platform_code.on_tick()
   on_tick_power()
   
   if storage.warptorio.transition_timer > 0 then
@@ -1904,6 +1909,7 @@ local techs = {
 }
 
 script.on_event(defines.events.on_research_finished, function(e)
+    platform_code.on_research(e)
     for _,v in ipairs(techs) do
        if string.find(e.research.name, v.name) then
           --game.print(e.research.name)
@@ -2072,5 +2078,6 @@ remote.add_interface("warptorio",
      spawn_ground_platform_design = platform_code.spawn,
      add_ground_platform_design = platform_code.add,
      list_ground_platform_design = platform_code.list,
+     spawn_random_ground_platform_design = platform_code.spawn_random,
   }
 )

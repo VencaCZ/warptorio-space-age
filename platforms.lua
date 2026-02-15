@@ -6,6 +6,13 @@ local warptorio_test = {
     test = require("platforms.generated.test")
 }
 
+local function get_surface_offset(surface_name)
+  if storage.warptorio and storage.warptorio.surface_positions then
+    return storage.warptorio.surface_positions[surface_name] or zero_offset
+  end
+  return zero_offset
+end
+
 local function lootTable()
    local lt={}
    for _,v in ipairs(warp_settings.platforms.loot_items)do
@@ -87,9 +94,75 @@ local function serialize_ground_platform_design(surface_name)
   }
 end
 
+function module.on_tick()
+    if not storage.warptorio then return end
+    if not storage.warptorio.current_platforms then
+       return
+    end
+    if not module.has_platforms() then return end
+    if storage.warptorio.current_platforms.platform then
+       if storage.warptorio.current_platforms.duration < warp_settings.platforms.duration then
+          warp_settings.platforms.duration = warp_settings.platforms.duration + 1
+          return
+       end
+       warp_settings.platforms.duration = 0
+       module.delete()
+       return
+    end
+    if storage.warptorio.current_platforms.timer < warp_settings.platforms.spawn_timer then
+       storage.warptorio.current_platforms.timer = storage.warptorio.current_platforms.timer + 1
+       return
+    end
+    module.spawn_random()
+    storage.warptorio.current_platforms.timer = 0
+end
+
+function module.on_warp(source,name)
+    if not storage.warptorio then storage.warptorio = {} end
+    storage.warptorio.current_platforms = {
+       timer = 0,
+       -- Can be expanded to support more that one platform
+       platform = nil,
+       duration = 0,
+    }
+end
+
+function module.on_research(event)
+   for _,v in ipairs(warp_settings.platforms.save_triggers) do
+       if v == event.research.name then
+          module.save(v)
+       end
+    end
+end
+
+function module.has_platforms()
+   if not storage.warptorio then return nil end
+   if not storage.warptorio.platforms then return nil end
+   local names = {}
+   for name,_ in pairs(storage.warptorio.platforms) do
+      table.insert(names,name)
+   end
+   if #names == 0 then return nil end
+   return names
+end
+
+function module.spawn_random()
+   local chance = math.random(0.00,1.00)
+   if chance > warp_settings.platforms.spawn_chance then
+      return false
+   end
+   local names = module.has_platforms()
+   if not names or #names == 0 then return false end
+   module.spawn(names[math.random(1,#names)])
+   return true
+end
+
 function module.spawn(name,x,y)
    if not storage.warptorio then storage.warptorio = {} end
    if not storage.warptorio.platforms then storage.warptorio.platforms = {} end
+   if not storage.warptorio.current_platforms then
+       return
+    end
    local x = x or math.random(
       warp_settings.platforms.position.x.min,
       warp_settings.platforms.position.x.max) * math.random(-1,1)
@@ -126,7 +199,15 @@ function module.spawn(name,x,y)
               force = game.forces.player,
               quality = v.quality
             })
-            entity.insert({ name = items[math.random(1, #items)], count = math.random(50, 200) })
+         entity.insert(
+            {
+               name = items[math.random(1, #items)],
+               count = math.random(
+                  warp_settings.platforms.items.min,
+                  warp_settings.platforms.items.max
+               )
+            }
+         )
         else
             if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
                local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
@@ -136,7 +217,7 @@ function module.spawn(name,x,y)
                     force = game.forces.enemy
                })
                center = entity
-            else
+            elseif v.name ~= "entity-ghost" and prototypes.item[v.name] then
                local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
                   { name = v.name,
                     position = {x=v.position.x+x,y=v.position.y+y},
@@ -158,7 +239,10 @@ function module.spawn(name,x,y)
    end
    if center then
       -- TODO do this better. For now this is fine
+      -- TODO add sound
       game.forces.player.print(center)
+      storage.warptorio.current_platforms.platform = tiles
+      storage.warptorio.current_platforms.surface = storage.warptorio.warp_zone
    end
 end
 
@@ -172,6 +256,9 @@ function module.save(name, surface_name)
    local source_surface = surface_name or storage.warptorio.warp_zone
    local design, err = serialize_ground_platform_design(source_surface)
    if not design then return nil, err end
+   if #design.entities < warp_settings.platforms.minimum_entities then
+      return nil
+   end
    local file_name = design_name.."_"..source_surface..".json"
    game.print(file_name)
    helpers.write_file(file_name,helpers.table_to_json(design))
@@ -204,7 +291,17 @@ function module.add(name, design)
 end
 
 function module.delete()
-   -- TODO it would be cool if platforms can disapear
+   game.print("Deleting platform")
+    if not storage.warptorio then return end
+    if not storage.warptorio.current_platforms then
+       return
+    end
+    for _,v in ipairs(storage.warptorio.current_platforms.platform) do
+       v.name = "empty-space"
+    end
+    game.surfaces[storage.warptorio.current_platforms.surface].set_tiles(
+       storage.warptorio.current_platforms.platform)
+    storage.warptorio.current_platforms.platform = nil
 end
 
 return module
