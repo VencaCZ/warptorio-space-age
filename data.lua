@@ -3,6 +3,7 @@ require("tips")
 require("prototypes/entities")
 require("prototypes/containers")
 require("prototypes/collector_container")
+require("prototypes/warp_constant_combinator")
 
 --shortcut
 local shortcut = {

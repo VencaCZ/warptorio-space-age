@@ -351,3 +351,13 @@ t.hidden =false
 t.localised_name = nil
 ExtendTech(t,
            { name = "warp-train", unit = { count = 1000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-ground-platform-5", "warp-factory-platform-4" }, effects = {} })
+
+local t = table.deepcopy(data.raw["technology"]["circuit-network"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
+ExtendTech(t,
+           { name = "warp-circuit-network", unit = { count = 1000, ingredients = SciencePacks({ red = 1, green = 1, }), time = 30 }, prerequisites = { "warp-ground-platform-3", "warp-factory-platform-2" }, effects = {  {
+    type  = "unlock-recipe",
+    recipe = "warp-constant-combinator"
+  }} })

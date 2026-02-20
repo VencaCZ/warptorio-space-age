@@ -4,6 +4,7 @@ local warp_settings = require("internal_settings")
 local map_gens = require("map_gens")
 local train_code = require("train")
 local platform_code = require("platforms")
+local warp_constant_combinator = require("warp_constant_combinator")
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -287,6 +288,7 @@ local function on_init_or_load()
     ensure_surface_positions()
     ensure_surface_offset(storage.warptorio.warp_zone)
     starter_chest()
+    warp_constant_combinator.init()
 end
 
 local function pollution_settings()
@@ -1733,6 +1735,7 @@ script.on_event(defines.events.on_tick, function(event)
   --  game.forces["enemy"].set_evolution_factor(factor*100,storage.warptorio.warp_zone)
   --end
   check_wave()
+  warp_constant_combinator.refresh()
   --local tran_timer = (warp_settings.time.extra_transition_time*60)-1
   --if storage.warptorio.teleporting or storage.warptorio.transition_timer > -tran_timer then
   --   return
@@ -1837,6 +1840,7 @@ local function update_power(e)
 end
 
 local function build_entity(e)
+   warp_constant_combinator.register(e.entity)
     if e.entity.name == "warp_2x2-container" then
        if storage.warptorio.container and storage.warptorio.container.valid then
           game.print({"warptorio.container-placed-error"},{color={1,0,0}})
@@ -1956,6 +1960,7 @@ script.on_event(defines.events.on_player_mined_entity, function(e)
        game.print({"warptorio.container-removed"})
        storage.warptorio.container = nil
     end
+    warp_constant_combinator.unregister(e.entity)
 end)
 
 script.on_event(defines.events.on_robot_mined_entity, function(e)
@@ -1963,6 +1968,7 @@ script.on_event(defines.events.on_robot_mined_entity, function(e)
        game.print({"warptorio.container-removed"})
        storage.warptorio.container = nil
     end
+    warp_constant_combinator.unregister(e.entity)
 end)
 
 script.on_event(defines.events.on_research_started, function(e)
@@ -2068,6 +2074,28 @@ script.on_event(
       end
    end
 )
+
+script.on_configuration_changed(function()
+  on_init_or_load()
+  warp_constant_combinator.rescan()
+end)
+
+script.on_event(defines.events.script_raised_built, function(e)
+  build_entity(e)
+end)
+
+script.on_event(defines.events.script_raised_revive, function(e)
+  build_entity(e)
+end)
+
+script.on_event(defines.events.on_entity_died, function(e)
+    warp_constant_combinator.unregister(e.entity)
+end)
+
+script.on_event(defines.events.script_raised_destroy, function(e)
+    warp_constant_combinator.unregister(e.entity)
+end)
+
 
 remote.add_interface("warptorio",
   {

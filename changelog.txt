@@ -5,6 +5,7 @@ Date: 2026-01-27
     - Added enemy warp platforms.
     - Made transition time easier to survive and manage
     - Changed recipe cost for the garden floor
+    - Allow for more train stops per cardinal direction
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.13
 Date: 2026-01-27
