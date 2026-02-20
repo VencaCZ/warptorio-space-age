@@ -1269,6 +1269,8 @@ local function teleport_ground(source, target)
 
 end
 
+
+
 local function teleport_players(source,destination,factory)
 
   local level = storage.warptorio.ground_level or 0
@@ -1280,9 +1282,37 @@ local function teleport_players(source,destination,factory)
         local miny = source_offset.y - platform
         local maxy = source_offset.y + platform
 
+  local function teleport_to_factory_home(player)
+    local home_position = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false) or {0,-2}
+    player.teleport(home_position, destination)
+  end
+
+  local function player_on_factory_warp_belt(player)
+    if not player.character or player.character.surface.name ~= "factory" then return false end
+
+    local pos = player.character.position
+    local area = {{pos.x - 0.25, pos.y - 0.25}, {pos.x + 0.25, pos.y + 0.25}}
+    local nearby_belts = game.surfaces["factory"].find_entities_filtered({area = area, type = "linked-belt"})
+    for _,belt in ipairs(nearby_belts) do
+      if belt.name:find("^warp%-platform%-belt%-") then
+        return true
+      end
+    end
+
+    return false
+  end
+
   for i,v in pairs(game.players) do
     -- Add players to the list
-    if v.is_player() and v.connected and v.character and v.character.surface.name == source then
+    if v.is_player() and v.connected and v.character then
+       if factory and player_on_factory_warp_belt(v) then
+          teleport_to_factory_home(v)
+       end
+
+       if v.character.surface.name ~= source then
+          goto continue
+       end
+
        local character_pos = v.character.position
        if factory then
           --local factory_offset = get_surface_offset(destination)
@@ -1290,8 +1320,7 @@ local function teleport_players(source,destination,factory)
           --local fallback_center = {x = factory_offset.x, y = factory_offset.y}
           --local target = factory_surface and factory_surface.find_non_colliding_position("character", fallback_center, 0, platform, false) or fallback_center
           --v.teleport(target,destination)
-          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false)
-          v.teleport(player_pos, destination)
+          teleport_to_factory_home(v)
        elseif character_pos.x >= minx and character_pos.x <=maxx and character_pos.y >= miny and character_pos.y <= maxy then
           local relative = {x = character_pos.x - source_offset.x, y = character_pos.y - source_offset.y}
           local target = {x = dest_offset.x + relative.x, y = dest_offset.y + relative.y}
@@ -1301,6 +1330,7 @@ local function teleport_players(source,destination,factory)
           local target = game.surfaces[destination].find_non_colliding_position(v.character, fallback_center, 0, platform, false) or fallback_center
           v.teleport(target,destination)
        end
+       ::continue::
     end
   end
 end
@@ -1314,7 +1344,6 @@ local function create_space_platform()
     end
   end
 end
-
 
 local function next_warp_zone_prepare()
     --if true then return end
