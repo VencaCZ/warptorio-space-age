@@ -117,9 +117,9 @@ local local_settings = {
      transition = settings.startup["warptorio_space-transition"].value,
      transition_spawn_timer = 2,
      transition_spawn_amount = 5,
-     speed_per_warp = 0.005,
-     edge_chance = 0.25,
-     spawn_chance = 0.25,
+     speed = 0.15,
+     edge_chance = 0.75,
+     multiplier = 0.5,
      -- not used
      asteroid_chance = 5000,
      base_time = 20,

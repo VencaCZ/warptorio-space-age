@@ -822,23 +822,52 @@ local function update_ground_platform(e)
 end
 
 local function create_asteroids(amount, surface)
+   local int_amount = math.floor(amount*warp_settings.space.multiplier)
+   if int_amount == 0 then
+      return
+   end
    local dest = storage.warptorio.space
    local level = storage.warptorio.ground_level
    local size = warp_settings.floor.levels[level]
    local evolution = game.forces["enemy"].get_evolution_factor(storage.warptorio.warp_zone)
-   local chance = math.random(0.00,1.00)
-   if chance > warp_settings.space.spawn_chance then
-      return
+
+   local function roll_position()
+      local x = 0
+      local y = 0
+      while x == 0 and y == 0 do
+         x = math.random(
+            size*4,
+            size*8) * math.random(-1,1)
+         y = math.random(
+            size*4,
+            size*8) * math.random(-1,1)
+      end
+      if x == 0 then
+         x = math.random(-size*2,size*2)
+      end
+      if y == 0 then
+         y = math.random(-size*2,size*2)
+      end
+      return x,y
    end
+
+  
    for i,v in ipairs(warp_settings.space.tresholds) do
       if v < evolution then
-         for _=1,amount do
-            local x = math.random(-size*1.25,size*1.25)
+         for _=1,int_amount do
+            local x,y = roll_position()
+            local length = math.sqrt(x*x + y*y)
+            local speed = warp_settings.space.speed
+            local velocity = {x = 0, y = 0}
+            if length > 0 then
+               velocity = {x = -x / length * speed, y = -y / length * speed}
+            end
             local index = math.random(1,#warp_settings.space.asteroids[i])
             local asteroid = warp_settings.space.asteroids[i][index]
             game.surfaces[surface].create_entity{
                name=asteroid,
-               position={x,math.random(-size*8,-size*4)},
+               position={x,y},
+               velocity=velocity,
                target={0,0},
                force="enemy"}
          end
@@ -1555,7 +1584,7 @@ local function next_warp_zone_transition()
       return
    end
    local dest = "warp-space-transition"
-   if storage.warptorio.transition_timer % 60*warp_settings.space.transition_spawn_timer == 0 then
+   if storage.warptorio.transition_timer % (60*warp_settings.space.transition_spawn_timer) == 0 then
       create_asteroids(warp_settings.space.transition_spawn_amount,dest)
    end
    --[[local rand = math.random(0,warp_settings.space.asteroid_chance)
@@ -2049,7 +2078,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
                     end
                  end
               end
-              return
+              break
            end
         end
         if pos.x < -(size+2) or pos.x > size+2 or
