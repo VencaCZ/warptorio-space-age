@@ -265,8 +265,8 @@ t.hidden =false
 t.localised_name = nil
 t.research_trigger = nil
 ExtendTech(t,{name="warp-biochamber-platform-1",unit={count=500,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-ground-platform-3","warp-water"},effects={}})
-ExtendTech(t,{name="warp-biochamber-platform-2",unit={count=1000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1}),time=60}, prerequisites={"warp-biochamber-platform-1"},effects={}})
-ExtendTech(t,{name="warp-biochamber-platform-3",unit={count=5000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1,aquilo=1}),time=60}, prerequisites={"warp-biochamber-platform-2"},effects={}})
+ExtendTech(t,{name="warp-biochamber-platform-2",unit={count=1000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-biochamber-platform-1"},effects={}})
+ExtendTech(t,{name="warp-biochamber-platform-3",unit={count=5000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1}),time=60}, prerequisites={"warp-biochamber-platform-2"},effects={}})
 ExtendTech(t,{
               name="warp-biochamber-platform-4",
               unit={count_formula="(10000*(L-3)*(L-3))",time=30},

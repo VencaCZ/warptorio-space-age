@@ -90,8 +90,17 @@ function train_code.warp_array(array, destination, target_station, source_statio
 end
 
 function train_code.get_free_warp_station(destination, station_name, direction)
-   local stations = game.train_manager.get_train_stops({station_name=station_name, surface=destination})
+   local stations = game.train_manager.get_train_stops(
+      {
+         station_name=station_name,
+         surface=destination,
+         is_full=false,
+         is_disabled=false,
+         is_connected_to_rail=true
+      }
+   )
    local valid_dir = true
+
    for _, station in ipairs(stations) do
       if not station.get_stopped_train() then
          if station.direction == direction then

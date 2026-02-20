@@ -157,18 +157,27 @@ function module.spawn_random()
    return true
 end
 
+local function roll_position(b_x,b_y)
+   local x = 0
+   local y = 0
+   while x == 0 and y == 0 do
+      x = math.random(
+         warp_settings.platforms.position.x.min,
+         warp_settings.platforms.position.x.max) * math.random(-1,1)
+      y = math.random(
+         warp_settings.platforms.position.y.min,
+         warp_settings.platforms.position.y.max) * math.random(-1,1)
+   end
+   return b_x+x,b_y+y
+end
+
 function module.spawn(name,x,y)
    if not storage.warptorio then storage.warptorio = {} end
    if not storage.warptorio.platforms then storage.warptorio.platforms = {} end
    if not storage.warptorio.current_platforms then
        return
     end
-   local x = x or math.random(
-      warp_settings.platforms.position.x.min,
-      warp_settings.platforms.position.x.max) * math.random(-1,1)
-   local y = y or math.random(
-      warp_settings.platforms.position.y.min,
-      warp_settings.platforms.position.y.max) * math.random(-1,1)
+   local x,y = roll_position(x or 0,y or 0)
    local platform = warptorio_test[name]
    if not platform then
       platform = storage.warptorio.platforms[name]

@@ -1703,8 +1703,9 @@ script.on_event(defines.events.on_tick, function(event)
       storage.warptorio.warp_out = 0
     end
   end
+  local in_transition_period = storage.warptorio.transition_timer > -warp_settings.time.extra_transition_time*60
   if not storage.warptorio.planet_timer then storage.warptorio.planet_timer = 0
-  elseif storage.warptorio.warp_out <= 0 then
+  elseif storage.warptorio.warp_out <= 0 and not in_transition_period then
     storage.warptorio.planet_timer = storage.warptorio.planet_timer + 1/60
     if storage.warptorio.planet_timer > warp_settings.planet_timer or storage.warptorio.planet_next == nil
         or (storage.warptorio.planet_next == storage.warptorio.warp_zone and storage.warptorio.planet_next ~= "nauvis") then
@@ -1712,7 +1713,9 @@ script.on_event(defines.events.on_tick, function(event)
       roll_planet()
     end
   else
-    storage.warptorio.planet_timer = warp_settings.planet_timer
+    if storage.warptorio.warp_out > 0 then
+      storage.warptorio.planet_timer = warp_settings.planet_timer
+    end
   end
   local time_limit = warp_settings.time.round + (warp_settings.time.round*storage.warptorio.time_level)
   if storage.warptorio.time_passed > time_limit then
