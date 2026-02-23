@@ -6,6 +6,7 @@ Date: 2026-01-27
     - Made transition time easier to survive and manage
     - Changed recipe cost for the garden floor
     - Allow for more train stops per cardinal direction
+    - Asteroid rework is now done
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.13
 Date: 2026-01-27

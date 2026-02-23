@@ -198,6 +198,7 @@ function module.spawn(name,x,y)
    end
    local items = lootTable()
    local center = nil
+   local level = storage.warptorio.ground_level or 1
    game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
    for i, v in ipairs(platform.entities) do
       if v.type == "container" or v.type == "logistic-container" then
@@ -215,7 +216,7 @@ function module.spawn(name,x,y)
                   name = items[math.random(1, #items)],
                   count = math.random(
                      warp_settings.platforms.items.min,
-                     warp_settings.platforms.items.max
+                     warp_settings.platforms.items.max+(level*warp_settings.platforms.items.scale)
                   )
                }
             )
@@ -252,14 +253,14 @@ function module.spawn(name,x,y)
    if center then
       -- TODO do this better. For now this is fine
       -- TODO add sound
-      game.forces.player.print(center)
+      game.print({"warptorio.platform-spawn"})
       storage.warptorio.current_platforms.platform = tiles
       storage.warptorio.current_platforms.surface = storage.warptorio.warp_zone
    end
 end
 
 function module.save(name, surface_name)
-   game.print("Saving warp platform design")
+   --game.print("Saving warp platform design")
    if not storage.warptorio then storage.warptorio = {} end
    if not storage.warptorio.platforms then
       storage.warptorio.platforms = {}
@@ -272,7 +273,7 @@ function module.save(name, surface_name)
       return nil
    end
    local file_name = design_name.."_"..source_surface..".json"
-   game.print(file_name)
+   --game.print(file_name)
    helpers.write_file(file_name,helpers.table_to_json(design))
    storage.warptorio.platforms[design_name] = design
    return design

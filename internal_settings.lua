@@ -79,7 +79,7 @@ local local_settings = {
        tresholds = {0,0.15,0.5,0.9},
        minimum_entities = 60,
        duration = 5*60*60,
-       items = {min=10,max=100,chance=0.75}
+       items = {min=10,max=50,chance=0.75,scale=25}
   },
   surfaces = {
      -- Define Surfaces that will be used and sorted
@@ -115,9 +115,9 @@ local local_settings = {
   space = {
      time_per_warp = 0.75,
      transition = settings.startup["warptorio_space-transition"].value,
-     transition_spawn_timer = 2,
+     transition_spawn_timer = 10,
      transition_spawn_amount = 5,
-     speed = 0.15,
+     speed = 0.05,
      edge_chance = 0.75,
      multiplier = 0.5,
      -- not used
