@@ -5,6 +5,61 @@ require("prototypes/containers")
 require("prototypes/collector_container")
 require("prototypes/warp_constant_combinator")
 
+local function is_shadow(sprite)
+  if sprite.draw_as_shadow then return true end
+  if sprite.filename and string.find(sprite.filename, "shadow", 1, true) then return true end
+  if sprite.filenames then
+    for _, fn in ipairs(sprite.filenames) do
+      if type(fn) == "string" and string.find(fn, "shadow", 1, true) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+local function looks_like_sprite(t)
+  if type(t) ~= "table" then return false end
+  -- Common “sprite definition” indicators in Factorio prototypes:
+  return t.filename ~= nil
+      or t.filenames ~= nil
+      or t.stripes ~= nil
+      or t.layers ~= nil
+      or t.hr_version ~= nil
+end
+
+local function tint_any_graphics(root, tint, visited)
+  if type(root) ~= "table" then return end
+  visited = visited or {}
+  if visited[root] then return end
+  visited[root] = true
+
+  -- If this table is (or contains) a sprite definition, tint it and its known sub-shapes.
+  if looks_like_sprite(root) then
+    if not is_shadow(root) then
+      -- You can add extra guards here if you only want to tint certain sprites.
+      root.tint = tint
+    end
+
+    if root.layers then
+      for _, layer in pairs(root.layers) do
+        tint_any_graphics(layer, tint, visited)
+      end
+    end
+
+    if root.hr_version then
+      tint_any_graphics(root.hr_version, tint, visited)
+    end
+  end
+
+  -- Walk everything else too (this is what makes it catch belt_animation_set, etc.)
+  for _, v in pairs(root) do
+    if type(v) == "table" then
+      tint_any_graphics(v, tint, visited)
+    end
+  end
+end
+
 --shortcut
 local shortcut = {
   type="shortcut",
@@ -140,7 +195,7 @@ data:extend{tile_platform,tile_world}
    end
    end]]
 
-local belt_speeds = {15,30,45,60}
+local belt_speeds = { 15, 30, 45, 60 }
 local belt_color = {
   {1,1,0.5},
   {1,0.5,0.5},
@@ -154,6 +209,7 @@ for i,v in ipairs(belt_speeds) do
     minable = false
   }
   belt.name = "warp-platform-belt-"..v
+  tint_any_graphics(belt, belt_color[i])
   --belt.pictures.layers[1].tint = belt_color[i]
   data:extend{belt}
 end

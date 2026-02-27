@@ -1,12 +1,14 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
-Date: 2026-01-27
+Date: 2026-02-27
   Changes:
     - Added enemy warp platforms.
     - Made transition time easier to survive and manage
     - Changed recipe cost for the garden floor
     - Allow for more train stops per cardinal direction
     - Asteroid rework is now done
+    - Warp belts change color based on level
+    - Improved english translation thanks to vinaghost
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.13
 Date: 2026-01-27
