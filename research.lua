@@ -282,8 +282,23 @@ t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
 ExtendTech(t,{name="warp-belt-1",unit={count=30,ingredients = SciencePacks({red=1}),time=60}, prerequisites={"warp-ground-platform-1"},effects={}})
+
+local t = table.deepcopy(data.raw["technology"]["logistics-2"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
 ExtendTech(t,{name="warp-belt-2",unit={count=300,ingredients = SciencePacks({red=1,green=1}),time=60}, prerequisites={"warp-ground-platform-2","warp-belt-1"},effects={}})
+
+local t = table.deepcopy(data.raw["technology"]["logistics-3"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
 ExtendTech(t,{name="warp-belt-3",unit={count=600,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1}),time=60}, prerequisites={"warp-ground-platform-4","warp-belt-2"},effects={}})
+
+local t = table.deepcopy(data.raw["technology"]["turbo-transport-belt"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
 ExtendTech(t,{name="warp-belt-4",unit={count=1200,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1}),time=60}, prerequisites={"warp-ground-platform-6","warp-belt-3"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["radar"])
