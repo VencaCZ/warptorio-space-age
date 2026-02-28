@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.1
+Date: 2026-02-28
+  Changes:
+    - Evolution rework
+    - Fixed horizontal trains warping
+---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2026-02-27
   Changes:
@@ -9,6 +15,7 @@ Date: 2026-02-27
     - Asteroid rework is now done
     - Warp belts change color based on level
     - Improved english translation thanks to vinaghost
+    - Fix train schedule overwriting other trains while warping
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.13
 Date: 2026-01-27

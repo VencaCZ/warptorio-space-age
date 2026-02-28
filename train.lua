@@ -25,6 +25,13 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
          { new_pos.x + box.left_top.x,     new_pos.y + box.left_top.y },
          { new_pos.x + box.right_bottom.x, new_pos.y + box.right_bottom.y }
       }
+      if target_station.direction == defines.direction.east or target_station.direction == defines.direction.west then
+         -- Swap width and height for east/west facing stations
+         box = {
+            left_top = {x = box.left_top.y, y = box.left_top.x},
+            right_bottom = {x = box.right_bottom.y, y = box.right_bottom.x}
+         }
+      end
 
       -- Debug: visualize the checked area
       --[[
@@ -195,7 +202,9 @@ function train_code.warp_trains(train, station_name)
          --if #schedule.records < schedule.current then
          --   schedule.current = 1
          --end
-         b.schedule = schedule
+         if not b.schedule then
+            b.schedule = schedule
+         end
          b.manual_mode = manual
       end
       

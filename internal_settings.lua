@@ -130,7 +130,8 @@ local local_settings = {
         {"medium-carbonic-asteroid","medium-metallic-asteroid","medium-oxide-asteroid"},
         {"big-carbonic-asteroid","big-metallic-asteroid","big-oxide-asteroid"},
         {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid"},
-        {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid","huge-promethium-asteroid"},
+        {"huge-carbonic-asteroid","huge-metallic-asteroid","huge-oxide-asteroid"},
+        -- Promethium asterids should be handled differently
      }
   },
   tiles = {
@@ -223,15 +224,14 @@ local local_settings = {
       --vulcanus = {"warp-demolisher"}
       boss = {
         {"warp-demolisher"},
-        {"small-strafer-pentapod","small-stomper-pentapod"},
         {"medium-strafer-pentapod","medium-stomper-pentapod"},
         {"big-strafer-pentapod","big-stomper-pentapod"},
+        {"big-strafer-pentapod","big-stomper-pentapod", "small-demolisher"},
       }
     },
     tresholds = {0,0.15,0.5,0.9},
     extra_time_planet = {},
     extra_time_amount = 2*60,
-    quality_start = settings.startup["warptorio_quality-start"].value,
     quality_step = settings.startup["warptorio_quality-step"].value,
     quality = {
       "normal",
@@ -252,9 +252,23 @@ local local_settings = {
     min = 15,
     radius = 8,
     max_bosses = 7,
+    evolution = {
+       base = 0,
+       researches = {
+          {name = "warp-ground-platform-3", factor = 0.1},
+          {name = "warp-factory-platform-3", factor = 0.2},
+          {name = "warp-ground-platform-4", factor = 0.3},
+          {name = "warp-factory-platform-4", factor = 0.4},
+          {name = "warp-ground-platform-5", factor = 0.51},
+          {name = "warp-factory-platform-5", factor = 0.6},
+          {name = "warp-ground-platform-6", factor = 0.7},
+          {name = "warp-factory-platform-6", factor = 0.8},
+          {name = "warp-ground-platform-7", factor = 0.91},
+          {name = "warp-end-prepare", factor = 1.0},
+       }
+    },
   },
   polution = {
-    jumps = settings.startup["warptorio_jumps"].value,
     time = settings.startup["warptorio_warpout-time"].value,
     amount = 1
   },

@@ -229,6 +229,24 @@ local function get_or_create(name,pos)
   return game.surfaces[pos.surface].create_entity({name=name, position = {x,y}, direction = pos.dir, force=game.forces.player})
 end
 
+local function get_evolution_factor()
+    local settings = warp_settings.biter.evolution or {}
+    local evolution = settings.base or 0
+    local researches = settings.researches or {}
+    local technologies = game.forces["player"].technologies
+
+    for _, research in ipairs(researches) do
+       local tech = technologies[research.name]
+      if tech and tech.researched then
+        evolution = research.factor or evolution
+      end
+    end
+
+    if evolution < 0 then evolution = 0 end
+    if evolution > 1 then evolution = 1 end
+    return evolution
+end
+
 local function remove_resources(surface)
   if storage.warptorio.ground_level == 0 then return end
   local level = storage.warptorio.ground_level
@@ -1155,7 +1173,15 @@ local function replace_with_high_quality(old_entity, strquality)
 end
 
 local function choose_quality(index)
-   local step = index-warp_settings.biter.quality_start
+   local evolution = get_evolution_factor()
+   if evolution > 0.95 then
+      if storage.warptorio.quality_start == nil then
+         storage.warptorio.quality_start = index
+      end
+   else
+      return "normal"
+   end
+   local step = index-storage.warptorio.quality_start
    step = math.ceil(step/warp_settings.biter.quality_step)
    if step < 1 then step = 1 end
    if step > #warp_settings.biter.quality then
@@ -1166,7 +1192,10 @@ end
 
 local function replace_common(entity)
    if not entity.force.name == "enemy" then return end
-   if storage.warporio.index < warp_settings.biter.quality_start then return end
+   local evolution = get_evolution_factor()
+   if evolution < 0.94 then
+      return
+   end
    local types = {
       "unit","spider-unit","turret",
    }
@@ -1497,7 +1526,7 @@ local function next_warp_zone_finish()
       end
     end
     pollution_settings()
-    game.forces["enemy"].set_evolution_factor(storage.warporio.index/warp_settings.polution.jumps,name)
+    game.forces["enemy"].set_evolution_factor(get_evolution_factor(),name)
     
     if script.active_mods["rso-mod"] then
        remote.call("RSO", "resetGeneration", surface)

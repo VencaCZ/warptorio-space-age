@@ -50,17 +50,9 @@ data:extend(
 	setting_type="startup",default_value=120,
 	minimum_value=30,maximum_value=300},
 
-	{type="int-setting",name="warptorio_quality-start",order="11b",
-	setting_type="startup",default_value=400,
-	minimum_value=10,maximum_value=600},
-
 	{type="int-setting",name="warptorio_quality-step",order="11b",
 	setting_type="startup",default_value=40,
 	minimum_value=1,maximum_value=100},
-  
-	{type="int-setting",name="warptorio_jumps",order="11b",
-	setting_type="startup",default_value=400,
-	minimum_value=10,maximum_value=600},
 
 	{type="double-setting",name="warptorio_research-multiplier",order="11b",
 	setting_type="startup",default_value=1,
