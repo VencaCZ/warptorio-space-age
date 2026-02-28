@@ -25,5 +25,20 @@ data:extend({
     is_title = false,
     indent = 1,
     simulation = nil,
+  },
+  {
+    type = "tips-and-tricks-item",
+    name = "warptorio-evolution-scaling",
+    tag = "[entity=big-biter]",
+    order = "z[warptorio]-c[evolution-scaling]",
+    category = "warptorio",
+    trigger = {
+      type = "research",
+      technology = "warp-ground-platform-3"
+    },
+    is_title = false,
+    indent = 1,
+    simulation = nil,
   }
+
 })

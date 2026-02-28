@@ -4,6 +4,7 @@ Date: 2026-02-28
   Changes:
     - Evolution rework
     - Fixed horizontal trains warping
+    - Added tips abotu the new evolution rework
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2026-02-27
