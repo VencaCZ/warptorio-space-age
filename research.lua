@@ -144,7 +144,7 @@ for i=2,#triggers do
 end
 
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
-t.icons = {{icon="__warptorio-space-age__/graphics/destinations/asteroid.png",icon_size=256,}}
+t.icons = {{icon="__warptorio-space-age__/graphics/destinations/asteroid.png",icon_size=128,}}
 t.hidden =false
 t.localised_name = nil
 ExtendTech(t,{
