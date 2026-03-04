@@ -70,29 +70,32 @@ local function generate_hexagon(radius, tile,offset_x,offset_y)
     return tiles
 end
 
--- Function to generate an ellipse
-local function generate_ellipse(width, height,tile,offset_x,offset_y)
+local function generate_ellipse(width, height, tile, offset_x, offset_y)
     local tiles = {}
-    local half_width = math.floor(width / 2)
-    local half_height = math.floor(height / 2)
-    local offset_x = offset_x or 0
-    local offset_y = offset_y or 0
-    
+    offset_x = offset_x or 0
+    offset_y = offset_y or 0
 
-    -- Iterate over integer coordinates to keep the shape centred on the tile grid.
-    local min_y = math.ceil(-r_sqrt3_half)
-    local max_y = math.floor(r_sqrt3_half)
-    local min_x = -radius
-    local max_x = radius - 1
+    -- Radii in tiles (semi-axes)
+    local rx = width  / 2
+    local ry = height / 2
+
+    -- Integer bounds to iterate
+    local min_x = math.floor(-rx)
+    local max_x = math.ceil(rx)
+    local min_y = math.floor(-ry)
+    local max_y = math.ceil(ry)
+
+    -- Use ellipse equation: (x^2/rx^2) + (y^2/ry^2) <= 1
+    -- Add 0.5 to sample at tile centers (optional but usually looks better).
+    local inv_rx2 = (rx > 0) and (1 / (rx * rx)) or 0
+    local inv_ry2 = (ry > 0) and (1 / (ry * ry)) or 0
 
     for y = min_y, max_y do
-        local abs_y = math.abs(y)
+        local yy = (y + 0.5)
         for x = min_x, max_x do
-            local abs_x = math.abs(x)
-            if abs_y <= r_sqrt3_half and
-               abs_x <= radius and
-               sqrt3 * abs_x + abs_y <= 2 * radius then
-               table.insert(tiles, create_tile(tile, x+offset_x, y+offset_y))
+            local xx = (x + 0.5)
+            if (xx * xx) * inv_rx2 + (yy * yy) * inv_ry2 <= 1 then
+                tiles[#tiles + 1] = create_tile(tile, x + offset_x, y + offset_y)
             end
         end
     end
@@ -1541,7 +1544,7 @@ local function next_warp_zone_finish()
     end
     update_belt()
     if storage.warptorio.factory_level > 0 then
-      refresh_power_and_teleport()
+       refresh_power_and_teleport()
     end
    if storage.warptorio.factory_level >= warp_settings.space.trigger_factory_level and
       warp_settings.space.transition then
@@ -2080,18 +2083,18 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local name = event.source_entity.name
         local pos = event.source_entity.position
         local tile = "empty-space"
-        local explosion_size = 12
+        local explosion_size = 15
         local amount = 1
         if string.match(name, "small") then
-           explosion_size = 3
-        end
-        if string.match(name, "medium") then
            explosion_size = 5
         end
-        if string.match(name, "big") then
-           explosion_size = 9
+        if string.match(name, "medium") then
+           explosion_size = 8
         end
-        local tiles = generate_rectangle(explosion_size, explosion_size, tile,pos.x,pos.y)
+        if string.match(name, "big") then
+           explosion_size = 12
+        end
+        local tiles = generate_ellipse(explosion_size, explosion_size, tile,pos.x,pos.y)
         local level = storage.warptorio.ground_level
         local size = warp_settings.floor.levels[level]
         if not pos then return end
@@ -2110,8 +2113,8 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
               break
            end
         end
-        if pos.x < -(size+2) or pos.x > size+2 or
-           pos.y < -(size+2) or pos.y > size+2 then
+        if pos.x < -(size+explosion_size) or pos.x > size+explosion_size or
+           pos.y < -(size+explosion_size) or pos.y > size+explosion_size then
            return
         end
         game.surfaces[event.surface_index].set_tiles(tiles)
