@@ -162,7 +162,6 @@ local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
-t.localised_description = nil
 local prerequisites = { "automation" }
 if mods["exotic-space-industries"] then
    prerequisites = { "ei-burner-assembler" }
