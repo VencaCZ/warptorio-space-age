@@ -448,22 +448,7 @@ local function refresh_power_and_teleport(dest)
     set_ground_tiles({y=-1,x=1,tiles="hazard-concrete-left",surface="factory",size=1})
 
 
-	#warp belt factory
-    set_ground_tiles({y=0,x=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to garden
-    set_ground_tiles({y=-1,x=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to garden
 	
-    set_ground_tiles({x=0,y=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
-    set_ground_tiles({x=-1,y=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
-	
-    set_ground_tiles({x=0,y=4,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
-    set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
-
-	#warp belt ground	
-    set_ground_tiles({x=0,y=-5,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
-    set_ground_tiles({x=-1,y=-5,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
-	
-    set_ground_tiles({x=0,y=4,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
-    set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
 
     storage.warptorio.power = storage.warptorio.power or {}
     storage.warptorio.power[1] = power_1
@@ -477,11 +462,7 @@ local function refresh_power_and_teleport(dest)
         set_ground_tiles({y=-1,x=-3,tiles="blue-refined-concrete",surface="factory",size=1})
         set_ground_tiles({y=-1,x=1,tiles="red-refined-concrete",surface="factory",size=1})
         set_ground_tiles({y=-1,x=-3,tiles="red-refined-concrete",surface="garden",size=1})
-        set_ground_tiles({y=-1,x=1,tiles="blue-refined-concrete",surface="garden",size=1})
-		
-		#warp belt garden 	
-	    set_ground_tiles({y=0,x=-5,tiles="hazard-concrete-left",surface="garden",size=1}) #to factory
-	    set_ground_tiles({y=-1,x=-5,tiles="hazard-concrete-left",surface="garden",size=1}) #to factory
+        set_ground_tiles({y=-1,x=1,tiles="blue-refined-concrete",surface="garden",size=1})		
     end
 
     local connects = {defines.wire_connector_id.circuit_red,defines.wire_connector_id.circuit_green}
@@ -546,7 +527,7 @@ local function update_factory_platform(e)
   --    table.insert(tiles, {name="warp_tile_platform", position={x,y}})
   --  end
 	--end
-  game.surfaces["factory"].set_tiles(tiles)
+  game.surfaces["factory"].set_tiles(tiles)  
   storage.warptorio.factory_level = level
 
   if level == 1 and platform.width == 10 then
@@ -560,6 +541,11 @@ local function update_factory_platform(e)
   elseif level == 2 then
       game.print({"warptorio.help-text-2",warp_settings.trigger_research})
   end
+  
+  -- warp belt factory
+  set_ground_tiles({y=-1,x=-6,tiles="hazard-concrete-left",surface="factory",size=1}) -- to garden
+  set_ground_tiles({x=-1,y=-6,tiles="hazard-concrete-left",surface="factory",size=1}) -- to ground
+  set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface="factory",size=1}) -- to ground
 
   if storage.warptorio.factory_level > 0 then
     refresh_power_and_teleport()
@@ -735,7 +721,9 @@ local function update_biochamber_platform(e)
   end
   
   local tiles = generate_rectangle(platform.width, platform.height, "warp_tile_platform", platform.offset_x, platform.offset_y)
-  game.surfaces["garden"].set_tiles(tiles)
+  game.surfaces["garden"].set_tiles(tiles)  
+  -- warp belt garden 	
+  set_ground_tiles({y=-1,x=-6,tiles="hazard-concrete-left",surface="garden",size=1}) -- to factory
   storage.warptorio.biochamber_level = level
 
   for i=1, platform.yumako do
@@ -848,6 +836,10 @@ local function update_ground_platform(e)
   game.surfaces[dest].set_tiles(tiles)
   storage.warptorio.ground_level = level
   storage.warptorio.ground_size = platform*2
+  
+  -- warp belt ground	
+  set_ground_tiles({x=-1,y=-6,tiles="hazard-concrete-left",surface=dest,size=1}) -- to factory
+  set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface=dest,size=1}) -- to factory
 
   if level == 1 then
       local tiles = generate_surface_rectangle(dest, 2,6,"hazard-concrete-left")
