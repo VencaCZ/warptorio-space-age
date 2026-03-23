@@ -447,6 +447,24 @@ local function refresh_power_and_teleport(dest)
     set_ground_tiles({y=-1,x=-3,tiles="hazard-concrete-left",surface="factory",size=1})
     set_ground_tiles({y=-1,x=1,tiles="hazard-concrete-left",surface="factory",size=1})
 
+
+	#warp belt factory
+    set_ground_tiles({y=0,x=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to garden
+    set_ground_tiles({y=-1,x=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to garden
+	
+    set_ground_tiles({x=0,y=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
+    set_ground_tiles({x=-1,y=-5,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
+	
+    set_ground_tiles({x=0,y=4,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
+    set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface="factory",size=1}) #to ground
+
+	#warp belt ground	
+    set_ground_tiles({x=0,y=-5,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
+    set_ground_tiles({x=-1,y=-5,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
+	
+    set_ground_tiles({x=0,y=4,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
+    set_ground_tiles({x=-1,y=4,tiles="hazard-concrete-left",surface=dest,size=1}) #to factory
+
     storage.warptorio.power = storage.warptorio.power or {}
     storage.warptorio.power[1] = power_1
     storage.warptorio.power[2] = power_2
@@ -460,6 +478,10 @@ local function refresh_power_and_teleport(dest)
         set_ground_tiles({y=-1,x=1,tiles="red-refined-concrete",surface="factory",size=1})
         set_ground_tiles({y=-1,x=-3,tiles="red-refined-concrete",surface="garden",size=1})
         set_ground_tiles({y=-1,x=1,tiles="blue-refined-concrete",surface="garden",size=1})
+		
+		#warp belt garden 	
+	    set_ground_tiles({y=0,x=-5,tiles="hazard-concrete-left",surface="garden",size=1}) #to factory
+	    set_ground_tiles({y=-1,x=-5,tiles="hazard-concrete-left",surface="garden",size=1}) #to factory
     end
 
     local connects = {defines.wire_connector_id.circuit_red,defines.wire_connector_id.circuit_green}
