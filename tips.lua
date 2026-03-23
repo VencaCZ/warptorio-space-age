@@ -33,8 +33,16 @@ data:extend({
     order = "z[warptorio]-c[evolution-scaling]",
     category = "warptorio",
     trigger = {
-      type = "research",
-      technology = "warp-ground-platform-3"
+  	  type = "or",
+  	  triggers = {
+  	  {
+    		type = "research",
+    		technology = "warp-ground-platform-3"
+  	  },
+  	  {
+    		type = "research",
+    		technology = "warp-factory-platform-2"
+  	  }}
     },
     is_title = false,
     indent = 1,
