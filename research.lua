@@ -281,7 +281,7 @@ local t = table.deepcopy(data.raw["technology"]["logistics"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
-ExtendTech(t,{name="warp-belt-1",localised_description={"technology-description.warp-belt-1"},unit={count=30,ingredients = SciencePacks({red=1}),time=60}, prerequisites={"warp-ground-platform-1"},effects={}})
+ExtendTech(t,{name="warp-belt-1",localised_description={"technology-description.warp-belt-1"},unit={count=30,ingredients = SciencePacks({red=1}),time=60}, prerequisites={"warp-factory-platform-1"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["logistics-2"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
