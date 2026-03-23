@@ -124,7 +124,7 @@ local local_settings = {
      asteroid_chance = 5000,
      base_time = 20,
      trigger_factory_level = 2,
-     tresholds = {0,0.10,0.4,0.7},
+     tresholds = {0,0.25,0.61,0.81},
      asteroids = {
         {"small-carbonic-asteroid","small-metallic-asteroid","small-oxide-asteroid"},
         {"medium-carbonic-asteroid","medium-metallic-asteroid","medium-oxide-asteroid"},
