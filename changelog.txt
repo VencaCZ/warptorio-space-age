@@ -3,8 +3,9 @@ Version: 0.3.2
 Date: 2026-03-04
   Changes:
     - Improvements to asteroids and the destruction
-    - Improvements in English translation thanks to vinaghost
+    - Hazard concrete for warp-belt
     - Rebalance the evolution system
+    - Improvements in English translation
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 2026-02-28
