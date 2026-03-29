@@ -2112,7 +2112,7 @@ script.on_event(defines.events.on_script_trigger_effect, function(event)
         local level = storage.warptorio.ground_level
         local size = warp_settings.floor.levels[level]
         if not pos then return end
-        local types = {"carbonic","metallic","oxide","promethium"}
+        local types = {"carbonic","metallic","oxide"}
         for _,i in ipairs(types) do
            if string.match(name, i) then
               if storage.warptorio.collector_chest then
