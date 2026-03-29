@@ -196,15 +196,13 @@ function train_code.warp_trains(train, station_name)
       local schedule = train.schedule
       train_code.warp_array(train.carriages,destination,target_station,v)
       --Now we have to get destination train and switch it to automatic
-      local t2 = game.train_manager.get_trains({surface=destination})
+      local t2 = game.train_manager.get_trains({surface=destination,is_manual=true,is_moving=false})
       for a,b in ipairs(t2) do
          --schedule.current = schedule.current + 1
          --if #schedule.records < schedule.current then
          --   schedule.current = 1
          --end
-         if not b.schedule then
-            b.schedule = schedule
-         end
+         b.schedule = schedule
          b.manual_mode = manual
       end
       
