@@ -1,5 +1,6 @@
-## Warptorio (Space Age) [RU](README.md)
-
+## Warptorio (Space Age) 
+### [EN] [RU](locale/ru/README.md)
+-------
 Hi, I liked the original concept of this mod but no-one made it work in 2.0 so I just did it myself. Enjoy.
 New Features
 
