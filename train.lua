@@ -21,10 +21,6 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
       }
 
       local box = carriage.prototype.collision_box
-      local area = {
-         { new_pos.x + box.left_top.x,     new_pos.y + box.left_top.y },
-         { new_pos.x + box.right_bottom.x, new_pos.y + box.right_bottom.y }
-      }
       if target_station.direction == defines.direction.east or target_station.direction == defines.direction.west then
          -- Swap width and height for east/west facing stations
          box = {
@@ -32,6 +28,10 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
             right_bottom = {x = box.right_bottom.y, y = box.right_bottom.x}
          }
       end
+      local area = {
+         { new_pos.x + box.left_top.x,     new_pos.y + box.left_top.y },
+         { new_pos.x + box.right_bottom.x, new_pos.y + box.right_bottom.y }
+      }
 
       -- Debug: visualize the checked area
       --[[
