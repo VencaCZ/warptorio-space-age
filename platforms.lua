@@ -6,6 +6,8 @@ local warptorio_test = {
     test = require("platforms.generated.test")
 }
 
+local zero_offset = {x=0, y=0}
+
 local function get_surface_offset(surface_name)
   if storage.warptorio and storage.warptorio.surface_positions then
     return storage.warptorio.surface_positions[surface_name] or zero_offset

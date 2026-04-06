@@ -779,7 +779,7 @@ local function create_void_platform(surface, delete_entities,tile,multiplier)
        local entities = game.surfaces[surface].find_entities_filtered{
           area = area, force = "player"}
        for i,v in ipairs(entities) do
-          v.destroy()
+          v.destroy({raise_destroy=true})
        end
     end
 end
@@ -1061,7 +1061,13 @@ local function check_teleport(player,location,destination)
      player.position.y > location_pos.y-0.1 and
      player.position.y < location_pos.y+2.1 then
     local dest_pos = translate_surface_position(destination, {x=location.x, y=location.y})
-    local player_pos = game.surfaces[destination].find_non_colliding_position("character", {dest_pos.x,dest_pos.y}, 0, 0.5, false) or dest_pos
+    local player_pos = nil
+    if dest_pos then
+       player_pos = game.surfaces[destination].find_non_colliding_position("character", {dest_pos.x,dest_pos.y}, 0, 0.5, false) or dest_pos
+    end
+    if not player_pos then
+       error("No free space for destination. Looks like teleporter is blocked")
+    end
     player.teleport(player_pos, destination)
   end
 end
@@ -1179,7 +1185,7 @@ local function replace_with_high_quality(old_entity, strquality)
 	local surface = old_entity.surface
 	local position = old_entity.position
 	local force = old_entity.force
-	old_entity.destroy()
+	old_entity.destroy({raise_destroy=true})
 	local new_entity = surface.create_entity{
 		name = name,
 		position = position,
@@ -1334,9 +1340,9 @@ local function teleport_ground(source, target)
   })
 
   -- Delete teleported(generated) characters
-        local surface_player_list = game.surfaces[target].find_entities_filtered{type="character", area = destination_area}
+  local surface_player_list = game.surfaces[target].find_entities_filtered{type="character", area = destination_area}
   for i,v in ipairs(surface_player_list) do
-    v.destroy()
+    v.destroy({raise_destroy=true})
   end
 
   --Regenerate belts and power
@@ -1453,8 +1459,15 @@ local function next_warp_zone_prepare()
     local surface = nil
     if num < warp_settings.stuck_in_space_chance and not game.surfaces["space"] then
        surface = new_random_surface("space")
-    elseif num > 1-warp_settings.going_home_chance and storage.warptorio.surface_name ~= "nauvis" then
+       storage.warptorio.previous_surface_2 = nil
+       storage.warptorio.previous_surface_1 = nil
+    elseif num > 1-warp_settings.going_home_chance and
+       storage.warptorio.surface_name ~= "nauvis" and
+       storage.warptorio.warp_next ~= "nauvis" and
+       storage.warptorio.void ~= true then
        surface = new_random_surface("home")
+       storage.warptorio.previous_surface_2 = nil
+       storage.warptorio.previous_surface_1 = nil
     else
        surface = new_random_surface(name)
     end
@@ -1469,8 +1482,9 @@ local function next_warp_zone_finish()
    local surface = game.surfaces[name]
    local keep_time = false
    --game.print((storage.warptorio.previous_surface_2 or "none") .. " | " .. storage.warptorio.surface_name )
-   if storage.warptorio.previous_surface_2 == storage.warptorio.surface_name
-      and storage.warptorio.surface_name ~= "nauvis" then
+   if storage.warptorio.previous_surface_2 == storage.warptorio.surface_name and
+      storage.warptorio.surface_name ~= "nauvis" and
+      storage.warptorio.surface_name ~= nil then
       keep_time = true
       game.print({"warptorio.hopping-surfaces"},{color={1,0.25,0.25}})
    end
@@ -1569,6 +1583,7 @@ local function next_warp_zone_finish()
    storage.warptorio.teleporting = false
    create_void_platform(source,true,"empty-space")
    platform_code.on_warp(source,name)
+   warp_constant_combinator.rescan()
 end
 
 local function shuffle(tbl)

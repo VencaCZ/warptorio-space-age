@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.4
+Date: 2026-04-06
+  Changes:
+    - Raise on destroy
+    - Update RU translation thanks to Jimmy
+    - Fix east-west rotation in train_code.is_train_footprint_clear by  nwraback
+    - Fixed crash while upgrading platform in space or void
+    - Fixed warp combinators desync
+    - Rebalance asteroids
+---------------------------------------------------------------------------------------------------
 Version: 0.3.3
 Date: 2026-03-29
   Changes:
