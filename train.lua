@@ -82,6 +82,7 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
 end
 
 function train_code.warp_array(array, destination, target_station, source_station)
+   local new_train = nil
    for i,v in ipairs(array) do
       -- Subtract current station position from the train position
       -- Add target station position to get new position
@@ -90,10 +91,12 @@ function train_code.warp_array(array, destination, target_station, source_statio
       if new_entity then
          new_entity.copy_settings(v)
          v.destroy()
+         new_train = new_entity.train
       else
          game.print({"warptorio.train-warp-error"},{color={1,0,0}})
       end
    end
+   return new_train
 end
 
 function train_code.get_free_warp_station(destination, station_name, direction)
@@ -194,18 +197,14 @@ function train_code.warp_trains(train, station_name)
       -- All checks passed, do the warp
       game.print({"warptorio.train-warp",destination})
       local schedule = train.schedule
-      train_code.warp_array(train.carriages,destination,target_station,v)
-      --Now we have to get destination train and switch it to automatic
-      local t2 = game.train_manager.get_trains({surface=destination,is_manual=true,is_moving=false})
-      for a,b in ipairs(t2) do
-         --schedule.current = schedule.current + 1
-         --if #schedule.records < schedule.current then
-         --   schedule.current = 1
-         --end
-         b.schedule = schedule
-         b.manual_mode = manual
-      end
+      local new_train = train_code.warp_array(train.carriages,destination,target_station,v)
       
+      -- debug: ensure new_train was properly set by warp_array()
+      -- game.print({"", new_train}, {color={1, 0.2, 0.2}})
+
+      -- Add schedule back to the new train and return it to automatic mode.
+      new_train.schedule = schedule
+      new_train.manual_mode = manual
       ::next_train_in_loop::
    end
 end
