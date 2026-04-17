@@ -84,6 +84,12 @@ data:extend(
    setting_type="startup",default_value=0,
    minimum_value=0,maximum_value=10},
 
+  {type="bool-setting",name="warptorio_block-roboport-factory",order="11b",
+   setting_type="startup",default_value=false},
+
+  {type="bool-setting",name="warptorio_block-roboport-garden",order="11b",
+   setting_type="startup",default_value=false},
+
   {
      type = "string-setting",
      name = "warptorio_size-difficulty",

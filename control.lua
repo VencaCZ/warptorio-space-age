@@ -2019,7 +2019,21 @@ end
 
 local function build_entity(e)
    warp_constant_combinator.register(e.entity)
-    if e.entity.name == "warp_2x2-container" then
+   if e.entity.type == "roboport" then
+      local surface = e.entity.surface.name
+      if (surface == "factory" and warp_settings.block_roboport_factory) or
+         (surface == "garden" and warp_settings.block_roboport_garden) then
+         if e.player_index then
+            game.players[e.player_index].insert({name=e.entity.name, count=1, quality=e.entity.quality.name})
+         end
+         e.entity.destroy()
+         if e.player_index then
+            game.players[e.player_index].print({"warptorio.roboport-blocked"},{color={1,0,0}})
+         end
+         return
+      end
+   end
+   if e.entity.name == "warp_2x2-container" then
        if storage.warptorio.container and storage.warptorio.container.valid then
           game.print({"warptorio.container-placed-error"},{color={1,0,0}})
           e.entity.destroy()
