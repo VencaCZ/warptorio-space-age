@@ -172,8 +172,8 @@ ExtendTech(t,{name="warp-ground-platform-3",localised_description={"technology-d
 ExtendTech(t,{name="warp-ground-platform-4",localised_description={"technology-description.warp-ground-platform-4"},unit={count=250,ingredients = SciencePacks({red=1,green=1}),time=60}, prerequisites={"warp-ground-platform-3"},effects={}})
 ExtendTech(t,{name="warp-ground-platform-5",localised_description={"technology-description.warp-ground-platform-5"},unit={count=500,ingredients = SciencePacks({red=1,green=1,blue=1}),time=60}, prerequisites={"warp-ground-platform-4","warp-factory-platform-3"},effects={}})
 ExtendTech(t,{name="warp-ground-platform-6",localised_description={"technology-description.warp-ground-platform-6"},unit={count=1000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1}),time=60}, prerequisites={"warp-ground-platform-5"},effects={}})
-ExtendTech(t,{name="warp-ground-platform-7",localised_description={"technology-description.warp-ground-platform-7"},unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1}),time=60}, prerequisites={"warp-ground-platform-6"},effects={}})
-ExtendTech(t,{name="warp-ground-platform-8",localised_description={"technology-description.warp-ground-platform-8"},unit={count=10000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1}),time=60}, prerequisites={"warp-ground-platform-7"},effects={}})
+ExtendTech(t,{name="warp-ground-platform-7",localised_description={"technology-description.warp-ground-platform-7"},unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1}),time=60}, prerequisites={"warp-ground-platform-6","rocket-turret"},effects={}})
+ExtendTech(t,{name="warp-ground-platform-8",localised_description={"technology-description.warp-ground-platform-8"},unit={count=10000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1}),time=60}, prerequisites={"warp-ground-platform-7","railgun"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}

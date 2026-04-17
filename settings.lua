@@ -80,6 +80,10 @@ data:extend(
   {type="bool-setting",name="warptorio_space-transition",order="11b",
 	setting_type="startup",default_value=true},
 
+  {type="double-setting",name="warptorio_nauvis-timer",order="11b",
+   setting_type="startup",default_value=0,
+   minimum_value=0,maximum_value=10},
+
   {
      type = "string-setting",
      name = "warptorio_size-difficulty",

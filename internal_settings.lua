@@ -283,6 +283,7 @@ local local_settings = {
   random_position_offset = 3,
   next_planet_text = settings.startup["warptorio_next-planet-text"].value,
   next_planet_sound = settings.startup["warptorio_next-planet-sound"].value,
+  nauvis_timer = math.floor(settings.startup["warptorio_nauvis-timer"].value * 60 * 60 * 60),
   trigger_research = "chemical-science-pack",
   trigger_wave = "logistic-science-pack",
   trigger_space = "space-science-pack",

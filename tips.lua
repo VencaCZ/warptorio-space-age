@@ -47,6 +47,20 @@ data:extend({
     is_title = false,
     indent = 1,
     simulation = nil,
+  },
+  {
+    type = "tips-and-tricks-item",
+    name = "warptorio-asteroids",
+    tag = "[entity=big-carbonic-asteroid]",
+    order = "z[warptorio]-d[asteroids]",
+    category = "warptorio",
+    trigger = {
+      type = "research",
+      technology = "warp-factory-platform-2"
+    },
+    is_title = false,
+    indent = 1,
+    simulation = nil,
   }
 
 })

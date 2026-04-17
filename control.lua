@@ -1151,7 +1151,10 @@ local function update_all_labels()
   end
   if storage.warptorio.planet_next and
      game.forces["player"].technologies[warp_settings.trigger_research].researched then
-     update_label("next-planet",storage.warptorio.planet_next)
+     if storage.warptorio.previous_surface_2 == storage.warptorio.planet_next then
+        next_planet = "[color=red]" .. storage.warptorio.planet_next .. "[/color]"
+     end
+     update_label("next-planet", next_planet)
   else
      update_label("next-planet",{"warptorio.gui-unknown-planet"})
   end
@@ -1784,6 +1787,61 @@ local function on_tick_power()
   end
 end
 
+local function update_nauvis_timer()
+   if warp_settings.nauvis_timer <= 0 then return end
+   if not storage.warporio or (storage.warporio.index or 0) > 0 then return end
+   if storage.warptorio.warp_zone ~= "nauvis" then
+      if storage.warptorio.nauvis_timer_render and storage.warptorio.nauvis_timer_render.valid then
+         storage.warptorio.nauvis_timer_render.destroy()
+      end
+      storage.warptorio.nauvis_timer_render = nil
+      return
+   end
+
+   if not storage.warptorio.nauvis_timer_remaining then
+      storage.warptorio.nauvis_timer_remaining = warp_settings.nauvis_timer
+   end
+
+   storage.warptorio.nauvis_timer_remaining = storage.warptorio.nauvis_timer_remaining - 1
+   local remaining = storage.warptorio.nauvis_timer_remaining
+
+   local color
+   if remaining <= 60 * 60 then
+      color = {1, 0, 0}
+   elseif remaining <= 60 * 60 * 5 then
+      color = {1, 0.5, 0}
+   else
+      color = {1, 1, 0}
+   end
+
+   if remaining % 60 == 0 or not (storage.warptorio.nauvis_timer_render and storage.warptorio.nauvis_timer_render.valid) then
+      local secs = math.max(math.ceil(remaining / 60), 0)
+      local text = string.format("%d:%02d", math.floor(secs / 60), secs % 60)
+      if storage.warptorio.nauvis_timer_render and storage.warptorio.nauvis_timer_render.valid then
+         storage.warptorio.nauvis_timer_render.text = text
+         storage.warptorio.nauvis_timer_render.color = color
+      else
+         storage.warptorio.nauvis_timer_render = rendering.draw_text{
+            surface = "nauvis",
+            text = text,
+            scale = 4,
+            target = {x=0, y=-6},
+            color = color,
+            alignment = "center",
+         }
+      end
+   end
+
+   if remaining <= 0 then
+      if storage.warptorio.nauvis_timer_render and storage.warptorio.nauvis_timer_render.valid then
+         storage.warptorio.nauvis_timer_render.destroy()
+      end
+      storage.warptorio.nauvis_timer_render = nil
+      storage.warptorio.nauvis_timer_remaining = nil
+      next_warp_zone()
+   end
+end
+
 script.on_event(defines.events.on_tick, function(event)
    if storage.warptorio and storage.warporio then
       local dest = storage.warptorio.space or "none"
@@ -1800,6 +1858,7 @@ script.on_event(defines.events.on_tick, function(event)
   end
   if not storage.warptorio.transition_timer then storage.warptorio.transition_timer = -1 end
   update_all_labels()
+  update_nauvis_timer()
   platform_code.on_tick()
   on_tick_power()
   
@@ -2215,6 +2274,22 @@ script.on_event(defines.events.script_raised_destroy, function(e)
     warp_constant_combinator.unregister(e.entity)
 end)
 
+
+commands.add_command("warptorio-set-warp-amount", "Set the current warp count (debug). Usage: /warptorio-set-warp-amount <number>", function(cmd)
+  if not game.players[cmd.player_index].admin then
+    game.players[cmd.player_index].print("Only admins can use this command.")
+    return
+  end
+  local value = tonumber(cmd.parameter)
+  if not value or value < 0 or math.floor(value) ~= value then
+    game.players[cmd.player_index].print("Usage: /warptorio-set-warp-amount <non-negative integer>")
+    return
+  end
+  if not storage.warporio then storage.warporio = {} end
+  storage.warporio.index = value
+  update_label("amount", value)
+  game.players[cmd.player_index].print("Warp amount set to " .. value)
+end)
 
 remote.add_interface("warptorio",
   {

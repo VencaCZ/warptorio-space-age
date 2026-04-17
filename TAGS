@@ -1,0 +1,243 @@
+
+prototypes/containers.lua,58
+function make_item(8,321
+function make_container(35,867
+
+prototypes/entities.lua,37
+local function make_warp_unit(6,254
+
+prototypes/warp_constant_combinator.lua,36
+local function tint_sprite(26,1115
+
+train.lua,740
+local function get_surface_offset(5,55
+function train_code.is_train_footprint_clear(14,403
+function train_code.is_train_footprint_clear(is_train_footprint_clear14,403
+function train_code.warp_array(84,2675
+function train_code.warp_array(warp_array84,2675
+function train_code.get_free_warp_station(99,3342
+function train_code.get_free_warp_station(get_free_warp_station99,3342
+function train_code.train_has_passengers(126,4042
+function train_code.train_has_passengers(train_has_passengers126,4042
+function train_code.is_station_out_of_bounds(134,4245
+function train_code.is_station_out_of_bounds(is_station_out_of_bounds134,4245
+function train_code.warp_trains(159,5294
+function train_code.warp_trains(warp_trains159,5294
+
+planets/json_to_lua.lua,102
+local function serializeTable(3,31
+local function readJsonFile(48,1278
+local function main(58,1513
+
+research.lua,308
+local function mysplit 58,1557
+local function istable(69,1817
+local function rgb(70,1871
+function table.deepmerge(71,1955
+function table.deepmerge(deepmerge71,1955
+function table.merge(72,2101
+function table.merge(merge72,2101
+local function SciencePacks(86,3195
+local function ExtendTech(87,3309
+
+platforms/json_to_lua.lua,102
+local function serializeTable(3,31
+local function readJsonFile(48,1278
+local function main(58,1513
+
+data.lua,194
+local function is_shadow(8,190
+local function looks_like_sprite(21,575
+local function tint_any_graphics(31,868
+local function set_destructable(166,4028
+local function set_my_data(420,10408
+
+internal_settings.lua,102
+local function SciencePacks(3,402
+local function mysplit 5,517
+local function internal_loot(19,814
+
+warp_constant_combinator.lua,753
+local function ensure_storage(7,141
+local function get_warp_amount(13,360
+local function set_parameters(20,503
+local function get_planet_signal(34,809
+local function update_entity(44,1023
+function warp_constant_combinator.register(102,2839
+function warp_constant_combinator.register(register102,2839
+function warp_constant_combinator.unregister(113,3101
+function warp_constant_combinator.unregister(unregister113,3101
+function warp_constant_combinator.init(121,3362
+function warp_constant_combinator.init(init121,3362
+function warp_constant_combinator.rescan(125,3427
+function warp_constant_combinator.rescan(rescan125,3427
+function warp_constant_combinator.refresh(139,3793
+function warp_constant_combinator.refresh(refresh139,3793
+
+map_gens.lua,184
+local function deepcopy(58,855
+local function single_number(78,1265
+local function copyValues(84,1407
+local function numbers_to_values(99,1822
+local function fill_planet(107,2086
+
+control.lua,3008
+local function create_tile(10,314
+local function generate_rectangle(15,438
+local function generate_cross(36,1163
+local function generate_hexagon(55,1771
+local function generate_ellipse(73,2384
+local function ensure_surface_positions(108,3397
+local function get_surface_offset(114,3617
+local function ensure_surface_offset(121,3841
+local function set_surface_offset(129,4062
+local function translate_surface_position(135,4266
+local function translate_surface_coordinates(140,4451
+local function translate_surface_area(145,4607
+local function generate_surface_rectangle(162,5062
+local function prepare_surface_spawn(169,5341
+local function get_or_create(212,7079
+local function get_evolution_factor(235,7921
+local function remove_resources(253,8481
+local function remove_recipes(265,8901
+local function starter_chest(285,9668
+local function on_init_or_load(293,9912
+local function pollution_settings(315,11070
+local function average(387,13457
+local function delete_items(394,13594
+function mysplit 402,13861
+local function set_ground_tiles(413,14115
+local function refresh_power_and_teleport(432,14628
+local function update_factory_platform(500,18039
+local function new_random_surface(555,20239
+local function belt_pair(636,23222
+local function update_belt_biochamber(662,23903
+local function update_biochamber_platform(693,25187
+local function create_void_platform(765,27766
+local function set_hidden_tiles(787,28589
+local function update_ground_platform(808,29251
+local function create_asteroids(859,30918
+   local function roll_position(869,31317
+local function create_angry_biters(913,32579
+local function create_angry_boss(958,34081
+local function update_belt(1021,36858
+local function check_teleport(1055,38302
+function sec_to_time(1075,39229
+local function warp_gui(1081,39402
+function update_label(1116,40874
+local function update_all_labels(1134,41386
+local function technology_check(1160,42448
+local function spawn_boss_check(1168,42735
+local function replace_with_high_quality(1182,43164
+local function choose_quality(1198,43539
+local function replace_common(1216,44088
+local function check_wave(1238,44635
+local function teleport_ground(1318,48483
+local function teleport_players(1355,49514
+  local function teleport_to_factory_home(1366,49978
+  local function player_on_factory_warp_belt(1371,50208
+local function create_space_platform(1419,52281
+local function next_warp_zone_prepare(1429,52623
+local function next_warp_zone_finish(1479,54849
+local function shuffle(1589,59218
+local function getPointAndVector(1597,59360
+local function next_warp_zone_space(1606,59726
+local function next_warp_zone_transition(1643,60759
+local function next_warp_zone(1668,61853
+local function get_all_surfaces(1703,63202
+local function roll_planet(1717,63617
+local function on_tick_power(1771,65539
+local function update_time(1945,73073
+local function update_power(1953,73268
+local function build_entity(1961,73484
+   function (e)(e2183,81486
+
+platforms.lua,934
+local function get_surface_offset(11,178
+local function lootTable(18,402
+local function serialize_ground_platform_design(29,646
+function module.on_tick(99,2765
+function module.on_tick(on_tick99,2765
+function module.on_warp(122,3603
+function module.on_warp(on_warp122,3603
+function module.on_research(132,3878
+function module.on_research(on_research132,3878
+function module.has_platforms(140,4065
+function module.has_platforms(has_platforms140,4065
+function module.spawn_random(151,4375
+function module.spawn_random(spawn_random151,4375
+local function roll_position(162,4689
+function module.spawn(176,5103
+function module.spawn(spawn176,5103
+function module.save(264,8536
+function module.save(save264,8536
+function module.list(284,9321
+function module.list(list284,9321
+function module.add(292,9480
+function module.add(add292,9480
+function module.delete(308,9942
+function module.delete(delete308,9942
+
+surfaces.lua,0
+
+gui.lua,0
+
+map_gens_base.lua,0
+
+tips.lua,0
+
+platforms/generated/test.lua,0
+
+settings.lua,0
+
+planets/generated/vulcanus_ribon.lua,0
+
+planets/generated/aquilo_rich.lua,0
+
+planets/generated/vulcanus_rich.lua,0
+
+planets/generated/gleba_dwarf.lua,0
+
+planets/generated/vulcanus_dwarf.lua,0
+
+planets/generated/gleba_rich.lua,0
+
+planets/generated/vulcanus_dangerous.lua,0
+
+planets/generated/fulgora_rich.lua,0
+
+planets/generated/nauvis_dangerous.lua,0
+
+planets/generated/gleba_ribon.lua,0
+
+planets/generated/nauvis_dwarf.lua,0
+
+planets/generated/fulgora_dangerous.lua,0
+
+planets/generated/gleba_dangerous.lua,0
+
+planets/generated/aquilo_dangerous.lua,0
+
+planets/generated/nauvis_ribon.lua,0
+
+planets/generated/aquilo_dwarf.lua,0
+
+planets/generated/fulgora_dwarf.lua,0
+
+planets/generated/aquilo_ribon.lua,0
+
+planets/generated/nauvis_rich.lua,0
+
+planets/generated/fulgora_ribon.lua,0
+
+planets/init.lua,0
+
+planets/planets.lua,0
+
+data-updates.lua,0
+
+prototypes/collector_container.lua,0
+
+prototypes/animations.lua,0
+
+factory_sizes.lua,0

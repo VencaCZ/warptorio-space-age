@@ -8,6 +8,8 @@ Date: 2026-04-06
     - Fixed crash while upgrading platform in space or void
     - Fixed warp combinators desync
     - Rebalance asteroids
+    - Some platform upgrades are now locked behind research to make sure that player has it
+    - Added tips and tricks about asteroids
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.3
 Date: 2026-03-29
