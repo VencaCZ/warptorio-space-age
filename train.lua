@@ -82,6 +82,7 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
 end
 
 function train_code.warp_array(array, destination, target_station, source_station)
+   local new_train = nil
    for i,v in ipairs(array) do
       -- Subtract current station position from the train position
       -- Add target station position to get new position
@@ -90,10 +91,12 @@ function train_code.warp_array(array, destination, target_station, source_statio
       if new_entity then
          new_entity.copy_settings(v)
          v.destroy()
+         new_train = new_entity.train
       else
          game.print({"warptorio.train-warp-error"},{color={1,0,0}})
       end
    end
+   return new_train
 end
 
 function train_code.get_free_warp_station(destination, station_name, direction)
@@ -190,24 +193,41 @@ function train_code.warp_trains(train, station_name)
          goto next_train_in_loop
       end
 
-      local manual = train.manual_mode
       -- All checks passed, do the warp
-      game.print({"warptorio.train-warp",destination})
-      local schedule = train.schedule
-      train_code.warp_array(train.carriages,destination,target_station,v)
-      --Now we have to get destination train and switch it to automatic
-      local t2 = game.train_manager.get_trains({surface=destination,is_manual=true,is_moving=false})
-      for a,b in ipairs(t2) do
-         --schedule.current = schedule.current + 1
-         --if #schedule.records < schedule.current then
-         --   schedule.current = 1
-         --end
-         b.schedule = schedule
-         b.manual_mode = manual
-      end
-      
+      train_code.warp_single_train(train,destination,target_station,v)
+
       ::next_train_in_loop::
    end
+end
+
+function train_code.warp_single_train(train, destination, target_station, source_station)
+   game.print({"warptorio.train-warp",destination})
+   
+   --[[
+   The call to copy_settings() in warp_array() makes a perfect copy of the train including its group and schedule, except for the following caveats we need to handle:
+     1. The new train is in manual mode, and thus...
+     2. The new train doesn't remember what station it was going to.
+     3. If the train was in a group, any temporary stops that were in its schedule will not be included for the new train (presumably because it gets assigned to its old group, which updates its schedule)
+   
+   To be able to restore the train's state perfectly, we retrieve the missing pieces of the old train's schedule before the warp, and then add them back afterwards in a way that doesn't have any unwanted side effects on other parts of the state.
+   ]]
+
+   -- Retrieve and hold onto specific parts of train schedule that we lose after warp_array()
+   local schedule = train.get_schedule()                 -- use get_schedule() for a LuaSchedule, because setting train.schedule (a TrainSchedule) later appears to removes interrupts.
+   local schedule_records = schedule.get_records()       -- these records include temporary stops in the train's schedule, which we'll need to restore working state of a grouped train.
+   local schedule_index = train.schedule.current         -- record index in the schedule that the train is currently travelling to
+
+   -- Create copied train on destination surface and destroy the original. Retains train group, interrupts, and non-temporary train stops. (Temp train stops included for ungrouped trains)
+   local new_train = train_code.warp_array(train.carriages,destination,target_station,source_station)
+   
+   -- debug: ensure new_train was properly set by warp_array()
+   -- game.print({"", new_train}, {color={1, 0.2, 0.2}})
+   
+
+   -- Add missing pieces of train schedule back to the new train and return it to automatic mode.
+   local new_train_schedule = new_train.get_schedule()   -- get the LuaSchedule owned by the new train.
+   new_train_schedule.set_records(schedule_records)      -- Replace the schedule with the previous one. This safely adds back temporary stops for trains in a group, without adding those temporary stops to the schedules of other trains in the group.
+   new_train_schedule.go_to_station(schedule_index)      -- Sets current index of the new train's schedule to match the old one's, and puts the train in automatic mode.
 end
 
 return train_code
