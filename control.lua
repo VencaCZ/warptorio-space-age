@@ -705,7 +705,7 @@ local function update_biochamber_platform(e)
   local platform = {
     width = warp_settings.garden.platform.width * level,
     height = warp_settings.garden.platform.height,
-    offset_x = math.floor(warp_settings.garden.platform.width * (level - 1) / 2),
+    offset_x = math.ceil(warp_settings.garden.platform.width * (level - 1) / 2),
     offset_y = 0,
     yumako = level,
     jellynut = level
