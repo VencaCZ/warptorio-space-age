@@ -701,16 +701,17 @@ local function update_biochamber_platform(e)
      level = game.forces["player"].technologies[e].level-1
   end
 
-  -- Calculate platform dimensions dynamically for infinite levels
+  -- Calculate platform offset dynamically for infinite levels
   local platform = {
-    width = warp_settings.garden.platform.width * level,
+    width = warp_settings.garden.platform.width,
     height = warp_settings.garden.platform.height,
-    offset_x = math.floor(warp_settings.garden.platform.width * (level - 1) / 2),
+    offset_x = warp_settings.garden.platform.width * (level - 1),
     offset_y = 0,
     yumako = level,
     jellynut = level
   }
 
+  -- Create garden surface if it doesn't already exist
   if not game.surfaces["garden"] then
       local surface = new_random_surface("garden")
       local size = 10   
@@ -720,15 +721,18 @@ local function update_biochamber_platform(e)
       surface.force_generate_chunk_requests()
   end
   
+  -- Generate warp_tile_platform base for this upgrade's extension.
   local tiles = generate_rectangle(platform.width, platform.height, "warp_tile_platform", platform.offset_x, platform.offset_y)
-  game.surfaces["garden"].set_tiles(tiles)  
+  game.surfaces["garden"].set_tiles(tiles) 
+
   -- warp belt garden 	
   set_ground_tiles({y=-1,x=-6,tiles="hazard-concrete-left",surface="garden",size=1}) -- to factory
   storage.warptorio.biochamber_level = level
 
-  for i=1, platform.yumako do
+  -- add concrete, water, and soil for the yumako side of the platform. Only affects section added by this upgrade.
+   do 
       local center_y = warp_settings.garden.yumako.y + warp_settings.garden.yumako.offset
-      local center_x = warp_settings.garden.yumako.x * (i-1)
+      local center_x = warp_settings.garden.yumako.x * (platform.yumako-1)
       for _, part in ipairs(warp_settings.garden.yumako.parts) do
         local x = center_x
         local y = center_y
@@ -737,11 +741,12 @@ local function update_biochamber_platform(e)
         local tiles = generate_rectangle(part.width, part.height, part.tile, x, y)
         game.surfaces["garden"].set_tiles(tiles)
       end
-  end
+   end
 
-  for i=1, platform.jellynut do
+   -- add concrete, water, and soil for the jellynut side of the platform. Only affects section added by this upgrade.
+   do
       local center_y = warp_settings.garden.jellynut.y + warp_settings.garden.jellynut.offset
-      local center_x = warp_settings.garden.jellynut.x * (i-1)
+      local center_x = warp_settings.garden.jellynut.x * (platform.jellynut-1)
       for _, part in ipairs(warp_settings.garden.jellynut.parts) do
         local x = center_x
         local y = center_y
@@ -750,7 +755,7 @@ local function update_biochamber_platform(e)
         local tiles = generate_rectangle(part.width, part.height, part.tile, x, y)
         game.surfaces["garden"].set_tiles(tiles)
       end
-  end
+   end
 
   update_belt_biochamber()
   refresh_power_and_teleport()
