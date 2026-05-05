@@ -1151,6 +1151,7 @@ local function update_all_labels()
   end
   if storage.warptorio.planet_next and
      game.forces["player"].technologies[warp_settings.trigger_research].researched then
+     local next_planet = storage.warptorio.planet_next
      if storage.warptorio.previous_surface_2 == storage.warptorio.planet_next then
         next_planet = "[color=red]" .. storage.warptorio.planet_next .. "[/color]"
      end
