@@ -104,10 +104,10 @@ function module.on_tick()
     if not module.has_platforms() then return end
     if storage.warptorio.current_platforms.platform then
        if storage.warptorio.current_platforms.duration < warp_settings.platforms.duration then
-          warp_settings.platforms.duration = warp_settings.platforms.duration + 1
+          storage.warptorio.current_platforms.duration = storage.warptorio.current_platforms.duration + 1
           return
        end
-       warp_settings.platforms.duration = 0
+       storage.warptorio.current_platforms.duration = 0
        module.delete()
        return
     end

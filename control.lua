@@ -606,7 +606,9 @@ local function new_random_surface(name)
   end
 
   ms.seed = math.random(0,math.pow(2,32))
-  storage.warptorio.warp_next = name
+  if name ~= "garden" then
+    storage.warptorio.warp_next = name
+  end
   --ms = space_gen_settings
   
   if surface_name == "nauvis" then
@@ -1293,7 +1295,7 @@ local function check_wave()
 
       create_angry_biters(biter_type,angry_amount,storage.warptorio.warp_zone,quality)
     end
-    if (spawn_boss and storage.warptorio.surface_name ~= "aquilo") or technology_check() then
+    if spawn_boss or technology_check() then
        if storage.warptorio.wave_index == 10 and (not technology_check()) then
           game.print({"warptorio.boss-warning"},{volume_modifier=0})
           game.play_sound({path="boss-spawn"})
@@ -1364,14 +1366,14 @@ end
 local function teleport_players(source,destination,factory)
 
   local level = storage.warptorio.ground_level or 0
-  local platform = warp_settings.floor.levels[level]
+  local platform = warp_settings.floor.levels[level] or 0
   local source_offset = get_surface_offset(source)
   local dest_offset = get_surface_offset(destination)
-        local minx = source_offset.x - platform
-        local maxx = source_offset.x + platform
-        local miny = source_offset.y - platform
-        local maxy = source_offset.y + platform
-
+  local minx = source_offset.x - platform
+  local maxx = source_offset.x + platform
+  local miny = source_offset.y - platform
+  local maxy = source_offset.y + platform
+  
   local function teleport_to_factory_home(player)
     local home_position = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false) or {0,-2}
     player.teleport(home_position, destination)
@@ -1777,16 +1779,20 @@ local function roll_planet()
 
 end
 
+local function battery_check(index)
+   return storage.warptorio.power[index] and storage.warptorio.power[index].valid
+end
+
 local function on_tick_power()
   if storage.warptorio.power then
-    if storage.warptorio.power[2].valid and storage.warptorio.power[1].valid then
+     if battery_check(2) and battery_check(1) then
       local ave = average(storage.warptorio.power[2].energy,storage.warptorio.power[1].energy)
-      if storage.warptorio.power[3] then
+      if battery_check(3) then
         ave = (storage.warptorio.power[1].energy + storage.warptorio.power[2].energy + storage.warptorio.power[3].energy)/3
       end
       storage.warptorio.power[1].energy = ave
       storage.warptorio.power[2].energy = ave
-      if storage.warptorio.power[3] then
+      if battery_check(3) then
         storage.warptorio.power[3].energy = ave
       end
     end

@@ -9,20 +9,22 @@ local function make_warp_unit(6,254
 prototypes/warp_constant_combinator.lua,36
 local function tint_sprite(26,1115
 
-train.lua,740
+train.lua,856
 local function get_surface_offset(5,55
 function train_code.is_train_footprint_clear(14,403
 function train_code.is_train_footprint_clear(is_train_footprint_clear14,403
 function train_code.warp_array(84,2675
 function train_code.warp_array(warp_array84,2675
-function train_code.get_free_warp_station(99,3342
-function train_code.get_free_warp_station(get_free_warp_station99,3342
-function train_code.train_has_passengers(126,4042
-function train_code.train_has_passengers(train_has_passengers126,4042
-function train_code.is_station_out_of_bounds(134,4245
-function train_code.is_station_out_of_bounds(is_station_out_of_bounds134,4245
-function train_code.warp_trains(159,5294
-function train_code.warp_trains(warp_trains159,5294
+function train_code.get_free_warp_station(102,3425
+function train_code.get_free_warp_station(get_free_warp_station102,3425
+function train_code.train_has_passengers(129,4125
+function train_code.train_has_passengers(train_has_passengers129,4125
+function train_code.is_station_out_of_bounds(137,4328
+function train_code.is_station_out_of_bounds(is_station_out_of_bounds137,4328
+function train_code.warp_trains(162,5377
+function train_code.warp_trains(warp_trains162,5377
+function train_code.warp_single_train(203,7387
+function train_code.warp_single_train(warp_single_train203,7387
 
 planets/json_to_lua.lua,102
 local function serializeTable(3,31
@@ -81,7 +83,7 @@ local function copyValues(84,1407
 local function numbers_to_values(99,1822
 local function fill_planet(107,2086
 
-control.lua,3008
+control.lua,3055
 local function create_tile(10,314
 local function generate_rectangle(15,438
 local function generate_cross(36,1163
@@ -113,46 +115,47 @@ local function new_random_surface(555,20239
 local function belt_pair(636,23222
 local function update_belt_biochamber(662,23903
 local function update_biochamber_platform(693,25187
-local function create_void_platform(765,27766
-local function set_hidden_tiles(787,28589
-local function update_ground_platform(808,29251
-local function create_asteroids(859,30918
-   local function roll_position(869,31317
-local function create_angry_biters(913,32579
-local function create_angry_boss(958,34081
-local function update_belt(1021,36858
-local function check_teleport(1055,38302
-function sec_to_time(1075,39229
-local function warp_gui(1081,39402
-function update_label(1116,40874
-local function update_all_labels(1134,41386
-local function technology_check(1160,42448
-local function spawn_boss_check(1168,42735
-local function replace_with_high_quality(1182,43164
-local function choose_quality(1198,43539
-local function replace_common(1216,44088
-local function check_wave(1238,44635
-local function teleport_ground(1318,48483
-local function teleport_players(1355,49514
-  local function teleport_to_factory_home(1366,49978
-  local function player_on_factory_warp_belt(1371,50208
-local function create_space_platform(1419,52281
-local function next_warp_zone_prepare(1429,52623
-local function next_warp_zone_finish(1479,54849
-local function shuffle(1589,59218
-local function getPointAndVector(1597,59360
-local function next_warp_zone_space(1606,59726
-local function next_warp_zone_transition(1643,60759
-local function next_warp_zone(1668,61853
-local function get_all_surfaces(1703,63202
-local function roll_planet(1717,63617
-local function on_tick_power(1771,65539
-local function update_time(1945,73073
-local function update_power(1953,73268
-local function build_entity(1961,73484
-   function (e)(e2183,81486
+local function create_void_platform(770,28079
+local function set_hidden_tiles(792,28902
+local function update_ground_platform(813,29564
+local function create_asteroids(864,31231
+   local function roll_position(874,31630
+local function create_angry_biters(918,32892
+local function create_angry_boss(963,34394
+local function update_belt(1026,37171
+local function check_teleport(1060,38615
+function sec_to_time(1080,39542
+local function warp_gui(1086,39715
+function update_label(1121,41187
+local function update_all_labels(1139,41699
+local function technology_check(1169,42974
+local function spawn_boss_check(1177,43261
+local function replace_with_high_quality(1191,43690
+local function choose_quality(1207,44065
+local function replace_common(1225,44614
+local function check_wave(1247,45161
+local function teleport_ground(1327,49009
+local function teleport_players(1364,50040
+  local function teleport_to_factory_home(1375,50504
+  local function player_on_factory_warp_belt(1380,50734
+local function create_space_platform(1428,52807
+local function next_warp_zone_prepare(1438,53149
+local function next_warp_zone_finish(1488,55375
+local function shuffle(1598,59744
+local function getPointAndVector(1606,59886
+local function next_warp_zone_space(1615,60252
+local function next_warp_zone_transition(1652,61285
+local function next_warp_zone(1677,62379
+local function get_all_surfaces(1712,63728
+local function roll_planet(1726,64143
+local function on_tick_power(1780,66065
+local function update_nauvis_timer(1796,66692
+local function update_time(2010,75652
+local function update_power(2018,75847
+local function build_entity(2026,76063
+   function (e)(e2262,84655
 
-platforms.lua,934
+platforms.lua,936
 local function get_surface_offset(11,178
 local function lootTable(18,402
 local function serialize_ground_platform_design(29,646
@@ -167,16 +170,16 @@ function module.has_platforms(has_platforms140,4065
 function module.spawn_random(151,4375
 function module.spawn_random(spawn_random151,4375
 local function roll_position(162,4689
-function module.spawn(176,5103
-function module.spawn(spawn176,5103
-function module.save(264,8536
-function module.save(save264,8536
-function module.list(284,9321
-function module.list(list284,9321
-function module.add(292,9480
-function module.add(add292,9480
-function module.delete(308,9942
-function module.delete(delete308,9942
+function module.spawn(174,5108
+function module.spawn(spawn174,5108
+function module.save(263,8646
+function module.save(save263,8646
+function module.list(283,9431
+function module.list(list283,9431
+function module.add(291,9590
+function module.add(add291,9590
+function module.delete(307,10052
+function module.delete(delete307,10052
 
 surfaces.lua,0
 

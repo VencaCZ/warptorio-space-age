@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.6
+Date: 2026-05-09
+  Changes:
+    - Fix bug when time runs out durring first warp
+    - Fix issue with power check not working properly for garden floor
+    - Fix warping to the garden floor if its researched durring warp transition
+    - Added tips about planet hopping
+---------------------------------------------------------------------------------------------------
 Version: 0.3.5
 Date: 2026-04-06
   Changes:

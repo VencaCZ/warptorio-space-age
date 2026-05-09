@@ -61,6 +61,20 @@ data:extend({
     is_title = false,
     indent = 1,
     simulation = nil,
+  },
+  {
+    type = "tips-and-tricks-item",
+    name = "warptorio-planet-hopping",
+    tag = "[planet=nauvis]",
+    order = "z[warptorio]-e[planet-hopping]",
+    category = "warptorio",
+    trigger = {
+      type = "research",
+      technology = "chemical-science-pack"
+    },
+    is_title = false,
+    indent = 1,
+    simulation = nil,
   }
 
 })
