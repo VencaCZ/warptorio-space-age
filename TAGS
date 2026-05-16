@@ -83,7 +83,7 @@ local function copyValues(84,1407
 local function numbers_to_values(99,1822
 local function fill_planet(107,2086
 
-control.lua,3055
+control.lua,3096
 local function create_tile(10,314
 local function generate_rectangle(15,438
 local function generate_cross(36,1163
@@ -112,48 +112,49 @@ local function set_ground_tiles(413,14115
 local function refresh_power_and_teleport(432,14628
 local function update_factory_platform(500,18039
 local function new_random_surface(555,20239
-local function belt_pair(636,23222
-local function update_belt_biochamber(662,23903
-local function update_biochamber_platform(693,25187
-local function create_void_platform(770,28079
-local function set_hidden_tiles(792,28902
-local function update_ground_platform(813,29564
-local function create_asteroids(864,31231
-   local function roll_position(874,31630
-local function create_angry_biters(918,32892
-local function create_angry_boss(963,34394
-local function update_belt(1026,37171
-local function check_teleport(1060,38615
-function sec_to_time(1080,39542
-local function warp_gui(1086,39715
-function update_label(1121,41187
-local function update_all_labels(1139,41699
-local function technology_check(1169,42974
-local function spawn_boss_check(1177,43261
-local function replace_with_high_quality(1191,43690
-local function choose_quality(1207,44065
-local function replace_common(1225,44614
-local function check_wave(1247,45161
-local function teleport_ground(1327,49009
-local function teleport_players(1364,50040
-  local function teleport_to_factory_home(1375,50504
-  local function player_on_factory_warp_belt(1380,50734
-local function create_space_platform(1428,52807
-local function next_warp_zone_prepare(1438,53149
-local function next_warp_zone_finish(1488,55375
-local function shuffle(1598,59744
-local function getPointAndVector(1606,59886
-local function next_warp_zone_space(1615,60252
-local function next_warp_zone_transition(1652,61285
-local function next_warp_zone(1677,62379
-local function get_all_surfaces(1712,63728
-local function roll_planet(1726,64143
-local function on_tick_power(1780,66065
-local function update_nauvis_timer(1796,66692
-local function update_time(2010,75652
-local function update_power(2018,75847
-local function build_entity(2026,76063
-   function (e)(e2262,84655
+local function belt_pair(638,23257
+local function update_belt_biochamber(664,23938
+local function update_biochamber_platform(695,25222
+local function create_void_platform(772,28114
+local function set_hidden_tiles(794,28937
+local function update_ground_platform(815,29599
+local function create_asteroids(866,31266
+   local function roll_position(876,31665
+local function create_angry_biters(920,32927
+local function create_angry_boss(965,34429
+local function update_belt(1028,37206
+local function check_teleport(1062,38650
+function sec_to_time(1082,39577
+local function warp_gui(1088,39750
+function update_label(1123,41222
+local function update_all_labels(1141,41734
+local function technology_check(1171,43009
+local function spawn_boss_check(1179,43296
+local function replace_with_high_quality(1193,43725
+local function choose_quality(1209,44100
+local function replace_common(1227,44649
+local function check_wave(1249,45196
+local function teleport_ground(1329,48995
+local function teleport_players(1366,50026
+  local function teleport_to_factory_home(1377,50473
+  local function player_on_factory_warp_belt(1382,50703
+local function create_space_platform(1430,52776
+local function next_warp_zone_prepare(1440,53118
+local function next_warp_zone_finish(1490,55344
+local function shuffle(1600,59713
+local function getPointAndVector(1608,59855
+local function next_warp_zone_space(1617,60221
+local function next_warp_zone_transition(1654,61254
+local function next_warp_zone(1679,62348
+local function get_all_surfaces(1714,63697
+local function roll_planet(1728,64112
+local function battery_check(1782,66034
+local function on_tick_power(1786,66157
+local function update_nauvis_timer(1802,66733
+local function update_time(2016,75693
+local function update_power(2024,75888
+local function build_entity(2032,76104
+   function (e)(e2268,84696
 
 platforms.lua,936
 local function get_surface_offset(11,178
@@ -161,25 +162,25 @@ local function lootTable(18,402
 local function serialize_ground_platform_design(29,646
 function module.on_tick(99,2765
 function module.on_tick(on_tick99,2765
-function module.on_warp(122,3603
-function module.on_warp(on_warp122,3603
-function module.on_research(132,3878
-function module.on_research(on_research132,3878
-function module.has_platforms(140,4065
-function module.has_platforms(has_platforms140,4065
-function module.spawn_random(151,4375
-function module.spawn_random(spawn_random151,4375
-local function roll_position(162,4689
-function module.spawn(174,5108
-function module.spawn(spawn174,5108
-function module.save(263,8646
-function module.save(save263,8646
-function module.list(283,9431
-function module.list(list283,9431
-function module.add(291,9590
-function module.add(add291,9590
-function module.delete(307,10052
-function module.delete(delete307,10052
+function module.on_warp(122,3639
+function module.on_warp(on_warp122,3639
+function module.on_research(132,3914
+function module.on_research(on_research132,3914
+function module.has_platforms(140,4101
+function module.has_platforms(has_platforms140,4101
+function module.spawn_random(151,4411
+function module.spawn_random(spawn_random151,4411
+local function roll_position(162,4725
+function module.spawn(174,5144
+function module.spawn(spawn174,5144
+function module.save(274,8787
+function module.save(save274,8787
+function module.list(294,9572
+function module.list(list294,9572
+function module.add(302,9731
+function module.add(add302,9731
+function module.delete(318,10193
+function module.delete(delete318,10193
 
 surfaces.lua,0
 

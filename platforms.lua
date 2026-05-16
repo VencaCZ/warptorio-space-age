@@ -200,6 +200,7 @@ function module.spawn(name,x,y)
    local items = lootTable()
    local center = nil
    local level = storage.warptorio.ground_level or 1
+   local chests = {}
    game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
    for i, v in ipairs(platform.entities) do
       if v.type == "container" or v.type == "logistic-container" then
@@ -209,19 +210,9 @@ function module.spawn(name,x,y)
               direction = v.direction,
               force = game.forces.player,
               quality = v.quality
-                                                                                })
-         local chance = math.random(0.00,1.00)
-         if chance > warp_settings.platforms.items.chance then
-            entity.insert(
-               {
-                  name = items[math.random(1, #items)],
-                  count = math.random(
-                     warp_settings.platforms.items.min,
-                     warp_settings.platforms.items.max+(level*warp_settings.platforms.items.scale)
-                  )
-               }
-            )
-         end
+            }
+         )
+         table.insert(chests,entity)
         else
             if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
                local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
@@ -257,6 +248,26 @@ function module.spawn(name,x,y)
       game.print({"warptorio.platform-spawn"})
       storage.warptorio.current_platforms.platform = tiles
       storage.warptorio.current_platforms.surface = storage.warptorio.warp_zone
+   end
+   local max = math.min(warp_settings.platforms.chests,#chests)
+   for _=1,max do
+      local index = 1
+      if #chests > 2 then
+         index = math.random(1,#chests)
+      else
+         return
+      end
+      local entity = chests[index]
+      entity.insert(
+         {
+            name = items[math.random(1, #items)],
+            count = math.random(
+               warp_settings.platforms.items.min,
+               warp_settings.platforms.items.max+(level*warp_settings.platforms.items.scale)
+            )
+         }
+      )
+      table.remove(chests,index)
    end
 end
 
