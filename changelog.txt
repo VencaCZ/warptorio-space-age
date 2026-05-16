@@ -7,6 +7,7 @@ Date: 2026-05-09
     - Fix warping to the garden floor if its researched during warp transition
     - Fix resource spawning on platforms from the past
     - Remove old dead code
+    - Remove warp container exports (Thanks muuuuura and CommonSapientToaster)
     - Added tips about planet hopping
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.5

@@ -477,6 +477,13 @@ local function refresh_power_and_teleport(dest)
       end
     end
 
+    local t_surface = game.surfaces[dest]
+    if t_surface and t_surface.valid then
+       for _, c in pairs(t_surface.find_entities_filtered{name="warp_2x2-container"}) do
+          if c.valid then c.destroy() end
+       end
+    end
+    
     if storage.warptorio.container_left_enabled then
       local container = get_or_create("warp_2x2-container",{x=-2,y=0,surface=dest})
       local inventory = container.get_inventory(defines.inventory.chest)
@@ -1520,6 +1527,13 @@ local function next_warp_zone_finish()
     if warp_settings.reset_recipe then
        remove_recipes(source)
     end
+    local source_surface_obj = game.surfaces[source]
+    if source_surface_obj and source_surface_obj.valid then
+       for _, c in pairs(source_surface_obj.find_entities_filtered{name="warp_2x2-container"}) do
+          if c.valid then c.destroy() end
+       end
+    end
+    storage.warptorio.container = nil
     teleport_ground(source,name)
     --teleport_players(source,name,true)
     if storage.warptorio.factory_level > 0 then
@@ -1626,7 +1640,14 @@ local function next_warp_zone_space()
    end
 
    create_void_platform(dest,true,"empty-space",2)
-   
+
+   local space_source_surface = game.surfaces[source]
+   if space_source_surface and space_source_surface.valid then
+      for _, c in pairs(space_source_surface.find_entities_filtered{name="warp_2x2-container"}) do
+         if c.valid then c.destroy() end
+      end
+   end
+   storage.warptorio.container = nil
    teleport_ground(source,dest)
    teleport_players(source,"factory",true)
    --set_hidden_tiles(dest,"empty-space")
