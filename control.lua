@@ -945,11 +945,26 @@ local function create_angry_biters(biter_type,number,surface,quality,target)
    local y = center.y + math.sin(angle)*(dist+range)
    
    local unit_group = game.surfaces[surface].create_unit_group({ position = {x=x,y=y}, force = "enemy" })
-   
+
+   local dx = center.x - x
+   local dy = center.y - y
+   local four_directions = {
+      north = defines.direction.north,
+      east  = defines.direction.east,
+      south = defines.direction.south,
+      west  = defines.direction.west,
+   }
+   local facing
+   if math.abs(dx) > math.abs(dy) then
+      facing = dx > 0 and four_directions.east or four_directions.west
+   else
+      facing = dy > 0 and four_directions.south or four_directions.north
+   end
+
    for j = 1,number do
-      
+
       pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
-      
+
       local angry_bitter = game.surfaces[surface].create_entity{
          name = biter_type,
          position = pos,
@@ -959,11 +974,12 @@ local function create_angry_biters(biter_type,number,surface,quality,target)
    end
    
    unit_group.set_command({
-         type=defines.command.go_to_location,
+         type=defines.command.attack_area,
          destination={
             x=center.x,
             y=center.y
-         }
+         },
+         radius=dist
    })
    unit_group.start_moving()
 end
@@ -1010,23 +1026,44 @@ local function create_angry_boss(biter_type,number,surface,quality,target)
   local range = 125
   local offset = get_surface_offset(surface)
   local center = {x = offset.x + (target.x or 0), y = offset.y + (target.y or 0)}
-
+   local x = center.x + math.cos(angle)*(dist+range)
+   local y = center.y + math.sin(angle)*(dist+range)
+   local dx = center.x - x
+   local dy = center.y - y
+   local four_directions = {
+      north = defines.direction.north,
+      east  = defines.direction.east,
+      south = defines.direction.south,
+      west  = defines.direction.west,
+   }
+   local facing
+   if math.abs(dx) > math.abs(dy) then
+      facing = dx > 0 and four_directions.east or four_directions.west
+   else
+      facing = dy > 0 and four_directions.south or four_directions.north
+   end
+  
         for j = 1,number do
           local x = center.x + math.cos(angle)*(dist+range)
           local y = center.y + math.sin(angle)*(dist+range)
                 pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
 
-                local angry_bitter = game.surfaces[surface].create_entity{name = biter_type, position = pos,quality=quality }
+                local angry_bitter = game.surfaces[surface].create_entity{
+                   name = biter_type,
+                   position = pos,
+                   direction=facing,
+                   quality=quality }
     --angry_bitter.autopilot_destination = k.position
         end
 
   game.surfaces[surface].set_multi_command{
     command={
-      type=defines.command.go_to_location,
+      type=defines.command.attack_area,
       destination={
         x=center.x + math.cos(angle)*dist,
         y=center.y + math.sin(angle)*(dist+range)
-      }
+      },
+      radius=dist,
     },
     unit_count=range
   }
@@ -1214,15 +1251,18 @@ local function replace_with_high_quality(old_entity, strquality)
 end
 
 local function choose_quality(index)
+   -- During the final research, lock enemy quality to "warp" instead of scaling it
+   -- from evolution/index like normal waves.
+   if game.forces["player"].current_research and game.forces["player"].current_research.name == "warp-end-win" then
+      return "warp"
+   end
    local evolution = get_evolution_factor()
-   if evolution > 0.95 then
-      if storage.warptorio.quality_start == nil then
-         storage.warptorio.quality_start = index
-      end
-   else
+   if evolution < 0.95 then
+      storage.warptorio.last_normal = index
       return "normal"
    end
-   local step = index-storage.warptorio.quality_start
+   local start = storage.warptorio.last_normal or 400
+   local step = index-start
    step = math.ceil(step/warp_settings.biter.quality_step)
    if step < 1 then step = 1 end
    if step > #warp_settings.biter.quality then
@@ -1261,6 +1301,10 @@ local function check_wave()
   end
   local limit = storage.warptorio.wave_time
 
+  if technology_check() and limit > warp_settings.biter.min then
+     storage.warptorio.wave_time = warp_settings.biter.min
+  end
+  
   if not game.surfaces[storage.warptorio.warp_zone] then
      game.print("ERROR: Surface not found | "..storage.warptorio.warp_zone)
      return
@@ -1285,7 +1329,8 @@ local function check_wave()
   local quality = choose_quality(storage.warporio.index)  
   
   if limit <= 0 then
-    local amount = warp_settings.biter.wave_amount*math.floor((storage.warptorio.wave_index+1)*warp_settings.biter.wave_increase)
+     local wave_index = storage.warptorio.wave_index+1
+     local amount = warp_settings.biter.wave_amount*math.floor((wave_index)*warp_settings.biter.wave_increase)
     for i=1,amount do
       if technology_check() or spawn_boss then break end
       local biter_group = warp_settings.biter.entity_type["default"]
@@ -1321,6 +1366,11 @@ local function check_wave()
       end
     end
     storage.warptorio.wave_index = storage.warptorio.wave_index + 1
+    if game.forces["player"].current_research and game.forces["player"].current_research.name == "warp-end-win" then
+       if storage.warptorio.wave_index < warp_settings.biter.final_offset then
+          storage.warptorio.wave_index = warp_settings.biter.final_offset
+       end
+    end
     storage.warptorio.wave_time = warp_settings.biter.time - (storage.warptorio.wave_index*warp_settings.biter.change)
     if technology_check() then
         storage.warptorio.wave_time = warp_settings.biter.min
@@ -1783,7 +1833,6 @@ local function roll_planet()
         storage.warptorio.travel_to_edge = false
      elseif r < warp_settings.space.edge_chance then
         storage.warptorio.travel_to_edge = true
-        game.print({"warptorio.next-edge"},{color={1,0,0}})
      end
   end
   

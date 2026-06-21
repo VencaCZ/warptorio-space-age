@@ -51,7 +51,7 @@ data:extend(
 	minimum_value=30,maximum_value=300},
 
 	{type="int-setting",name="warptorio_quality-step",order="11b",
-	setting_type="startup",default_value=40,
+	setting_type="startup",default_value=10,
 	minimum_value=1,maximum_value=100},
 
 	{type="double-setting",name="warptorio_research-multiplier",order="11b",

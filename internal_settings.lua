@@ -233,6 +233,7 @@ local local_settings = {
     tresholds = {0,0.15,0.5,0.9},
     extra_time_planet = {},
     extra_time_amount = 2*60,
+    final_offset = 40,
     quality_step = settings.startup["warptorio_quality-step"].value,
     quality = {
       "normal",

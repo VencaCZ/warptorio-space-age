@@ -381,6 +381,30 @@ beacon.allowed_effects = {
 local tt = data.raw["electric-turret"]["tesla-turret"]
 tt.attack_parameters.ammo_type.energy_consumption = "36MJ"
 tt.energy_source.buffer_capacity = "72MJ"
+local cat = data.raw["chain-active-trigger"]
+cat["chain-tesla-gun-chain"].fork_chance_increase_per_quality_level = 0
+cat["chain-tesla-turret-chain"].fork_chance_increase_per_quality_level = 0
+
+-- add new quality
+data.extend({
+   {
+      type = "quality",
+      name = "warp",
+      level = 11,
+      color = {194, 54, 22},
+      order = "f",
+      subgroup = "qualities",
+      icon = "__warptorio-space-age__/graphics/quality.png",
+      beacon_power_usage_multiplier = 1,
+      mining_drill_resource_drain_multiplier = 1,
+      hidden_in_factoriopedia = true,
+      hidden = true,
+	}
+})
+
+local legendary = data.raw.quality["legendary"]
+legendary.next = "warp"
+legendary.next_probability = 0.01
 --tt.energy_source.input_flow_limit = tt.energy_source.input_flow_limit * 3
 
 --if mods["zzz-nonstandard-beacons"] then

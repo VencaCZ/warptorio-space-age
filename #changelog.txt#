@@ -7,7 +7,7 @@ Date: 2026-06-21
     - Remove shattered planet references as they are no longer used (For now)
     - Improve balance around final research
     - Demolishers should start attacking faster and waste less time
-    - More balancing around tesla turrets
+    - More balancing around tesla turrets (chain does not scale with quality)
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.6
 Date: 2026-05-09
