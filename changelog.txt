@@ -1,4 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+Date: TBD
+  Changes:
+    - Defaults to only one hour on first planet before force warp out
+    - Added support for more ground platform shapes
+    - By default blocks roboports on garden floor
+    - Fixed hexagon shape from strange octagon to proper hexagon
+    - Prevent players from doing final research while in transition
+    - Reorganized researches to better reflect dificulty
+    - Remove 1 size upgrades from factory floor and move them after the final research
+    - Add more upgrades to garden floor (space only no "garden")
+    - Original garden floor upgrades no longer require aquilo science
+    - Support for trains in garden floor
+    - INPROGRESS: Swap one of the belts on garden so it can take items from factory floor
+    - INPROGRESS: Limit amount of biolabs (can be increased with research)
+---------------------------------------------------------------------------------------------------
 Version: 0.3.7
 Date: 2026-06-21
   Changes:
@@ -7,7 +23,8 @@ Date: 2026-06-21
     - Remove shattered planet references as they are no longer used (For now)
     - Improve balance around final research
     - Demolishers should start attacking faster and waste less time
-    - More balancing around tesla turrets
+    - More balancing around tesla turrets (chain does not scale with quality)
+    - Improved damage of atomic bomb and artilery to shift balance
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.6
 Date: 2026-05-09

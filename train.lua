@@ -140,8 +140,8 @@ function train_code.is_station_out_of_bounds(station)
     local radius
     local center = {x=0, y=0}
 
-    -- Factory is always valid
-    if surface_name == "factory" then return false end
+    -- Factory and garden are fixed internal floors at the origin, always valid
+    if surface_name == "factory" or surface_name == "garden" then return false end
 
     center = get_surface_offset(surface_name)
     if storage.warptorio and storage.warptorio.ground_size then
@@ -159,7 +159,9 @@ function train_code.is_station_out_of_bounds(station)
     return false
 end
 
-function train_code.warp_trains(train, station_name)
+-- destination is the surface name the train should warp to. The caller decides it based on
+-- which warp station the train stopped at (ground floor, garden floor, or back to the factory).
+function train_code.warp_trains(train, station_name, destination)
    if not game.forces["player"].technologies["warp-train"].researched then return end
    if not train then return end
    
@@ -174,12 +176,6 @@ function train_code.warp_trains(train, station_name)
       local at_station = train.state == defines.train_state.wait_station
       if not at_station then goto next_train_in_loop end
       
-      -- During a warp transition the ground platform (and its train stations) is moved to the
-      -- "warp-space-transition" surface, while warp_zone still points at the planet surface.
-      -- Trains warping to the ground floor must target the transition surface so they have
-      -- somewhere to go instead of failing with "nowhere to warp to".
-      local ground_surface = storage.warptorio.teleporting and "warp-space-transition" or storage.warptorio.warp_zone
-      local destination = v.surface.name == "factory" and ground_surface or "factory"
       local target_station = train_code.get_free_warp_station(destination, v.backer_name, v.direction)
       if not target_station then
          game.print({"warptorio.train-warp-no-destination", station_name}, {color={1,0,0}})

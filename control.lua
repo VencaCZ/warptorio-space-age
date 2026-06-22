@@ -55,15 +55,25 @@ end
 local function generate_hexagon(radius, tile,offset_x,offset_y)
     local tiles = {}
     local sqrt3 = math.sqrt(3)
-    local r_sqrt3_half = radius * sqrt3 / 2
     local offset_x = offset_x or 0
     local offset_y = offset_y or 0
-    for y = -radius * sqrt3 / 2, radius * sqrt3 / 2 do
-        for x = -radius, radius do
-            if math.abs(y) <= r_sqrt3_half and
-               math.abs(x) <= radius and
-               sqrt3 * math.abs(x) + math.abs(y) <= 2 * radius then
-                table.insert(tiles, create_tile(tile, x+offset_x, y+offset_y))
+
+    -- Distance from the center to the flat top/bottom edges of a regular hexagon.
+    local height = radius * sqrt3 / 2
+
+    local min_x = math.floor(-radius)
+    local max_x = math.ceil(radius)
+    local min_y = math.floor(-height)
+    local max_y = math.ceil(height)
+
+    -- Iterate integer tiles and test at tile centers (coord + 0.5) so the shape stays
+    -- symmetric around the platform center.
+    for y = min_y, max_y do
+        local yy = math.abs(y + 0.5)
+        for x = min_x, max_x do
+            local xx = math.abs(x + 0.5)
+            if yy <= height and sqrt3 * xx + yy <= sqrt3 * radius then
+                tiles[#tiles + 1] = create_tile(tile, x + offset_x, y + offset_y)
             end
         end
     end
@@ -164,6 +174,19 @@ local function generate_surface_rectangle(surface_name, width, height, tile, off
   local x = (offset_x or 0) + base.x
   local y = (offset_y or 0) + base.y
   return generate_rectangle(width, height, tile, x, y)
+end
+
+-- Generates the ground floor tiles in the shape configured by warp_settings.floor.shape.
+-- size is the full diameter/side length of the platform.
+local function generate_ground_shape(surface_name, size, tile)
+  local base = get_surface_offset(surface_name)
+  local shape = warp_settings.floor.shape
+  if shape == "circle" then
+    return generate_ellipse(size, size, tile, base.x, base.y)
+  elseif shape == "hexagon" then
+    return generate_hexagon(size / 2, tile, base.x, base.y)
+  end
+  return generate_rectangle(size, size, tile, base.x, base.y)
 end
 
 local function prepare_surface_spawn(surface, surface_name, allow_random)
@@ -706,7 +729,7 @@ local function update_biochamber_platform(e)
     level = tonumber(level[#level])
   end
 
-  if level == 4 then
+  if level == 3 then
      level = game.forces["player"].technologies[e].level-1
   end
 
@@ -776,6 +799,36 @@ local function update_biochamber_platform(e)
   end
 end
 
+local function update_reactor_platform(e)
+
+  local level = game.forces["player"].technologies[e].level
+
+  -- Calculate platform offset dynamically for infinite levels
+  local platform = {
+    width = warp_settings.garden.platform.width,
+    height = warp_settings.garden.platform.height,
+    offset_x = warp_settings.garden.platform.width * (level - 1),
+    offset_y = 0,
+    yumako = level,
+    jellynut = level
+  }
+
+  -- Create garden surface if it doesn't already exist
+  if not game.surfaces["garden"] then
+      local surface = new_random_surface("garden")
+      local size = 10   
+      surface.create_global_electric_network()
+      surface.always_day = true
+      surface.request_to_generate_chunks({0,0}, size)
+      surface.force_generate_chunk_requests()
+  end
+  
+  -- Generate warp_tile_platform base for this upgrade's extension.
+  local tiles = generate_rectangle(platform.width, platform.height, "warp_tile_platform", -platform.offset_x, -platform.offset_y)
+  game.surfaces["garden"].set_tiles(tiles) 
+
+end
+
 local function create_void_platform(surface, delete_entities,tile,multiplier)
    local tile = tile or "out-of-map"
    local multiplier = multiplier or 1
@@ -783,7 +836,7 @@ local function create_void_platform(surface, delete_entities,tile,multiplier)
     local level = storage.warptorio.ground_level
     local platform = warp_settings.floor.levels[level]
 
-    local tiles = generate_surface_rectangle(surface, platform * 2*multiplier, platform * 2*multiplier, tile)
+    local tiles = generate_ground_shape(surface, platform * 2 * multiplier, tile)
 
     game.surfaces[surface].set_tiles(tiles)
 
@@ -846,7 +899,7 @@ local function update_ground_platform(e)
 
   --remove_resources(storage.warptorio.warp_zone)
 
-  local tiles = generate_surface_rectangle(dest, platform*2,platform*2,"warp_tile_world")
+  local tiles = generate_ground_shape(dest, platform*2,"warp_tile_world")
   game.surfaces[dest].set_tiles(tiles)
   storage.warptorio.ground_level = level
   storage.warptorio.ground_size = platform*2
@@ -1389,19 +1442,31 @@ local function teleport_ground(source, target)
   if level == 0 then return end
 
   local platform = warp_settings.floor.levels[level]
-  local source_area = translate_surface_area(source, nil, platform)
+  local source_offset = get_surface_offset(source)
+  local dest_offset = get_surface_offset(target)
   local destination_area = translate_surface_area(target, nil, platform)
 
   -- Basic is generated time to set it as main surface
   --storage.warptorio.warp_zone = target
 
+  -- Build the brush from the actual ground floor shape so the corners are not teleported.
+  -- generate_ground_shape returns tiles at absolute source positions, which is exactly what
+  -- clone_brush expects for source_positions.
+  local shape_tiles = generate_ground_shape(source, platform * 2, "warp_tile_world")
+  local source_positions = {}
+  for i = 1, #shape_tiles do
+    source_positions[i] = shape_tiles[i].position
+  end
+
   -- Teleport base part
-  game.surfaces[source].clone_area({
-    source_area=source_area,
-    destination_area=destination_area,
+  game.surfaces[source].clone_brush({
+    source_offset={source_offset.x, source_offset.y},
+    destination_offset={dest_offset.x, dest_offset.y},
+    source_positions=source_positions,
     destination_surface=target,
     expand_map=true,
     clone_tiles=true,
+    clone_entities=true,
     clear_destination_entities=true,
     clear_destination_decoratives=true,
     clone_decoratives=false,
@@ -1929,6 +1994,9 @@ script.on_event(defines.events.on_tick, function(event)
     if v == storage.warptorio.surface_name and technology_check() then
       game.forces["player"].research_progress = 0
     end
+    if storage.warptorio.teleporting and technology_check() then
+       game.forces["player"].research_progress = 0
+    end
   end
   if not storage.warptorio.transition_timer then storage.warptorio.transition_timer = -1 end
   update_all_labels()
@@ -2147,6 +2215,10 @@ local techs = {
       func = update_biochamber_platform
    },
    {
+      name = warp_settings.techs.reactor,
+      func = update_reactor_platform
+   },
+   {
       name = warp_settings.techs.container_left,
       func = function ()
          --game.print("Container will be added after the teleport")
@@ -2329,13 +2401,45 @@ script.on_event(
    defines.events.on_train_changed_state,
    function (e)
       local train = e.train
-      if train.state == defines.train_state.wait_station and
-         e.old_state == defines.train_state.arrive_station then
-         if train.carriages[1].surface.name == "factory" and
-            train.station then
-            train_code.warp_trains(train, warp_settings.train.ground_station)
-         else
-            train_code.warp_trains(train, warp_settings.train.factory_station)
+      if not (train.state == defines.train_state.wait_station and
+              e.old_state == defines.train_state.arrive_station) then
+         return
+      end
+      if not train.station then return end
+
+      -- The ground floor lives on the current planet surface, or on the transition surface
+      -- while a warp is in progress.
+      local ground_surface = storage.warptorio.teleporting and "warp-space-transition" or storage.warptorio.warp_zone
+
+      -- All 6 directed warps between the factory, ground and garden floors. The decision is
+      -- made from the floor the train is on and the name of the station it stopped at.
+      local train_decision = {
+         {surface="factory",      station=warp_settings.train.ground_station,  destination=ground_surface},
+         {surface=ground_surface, station=warp_settings.train.factory_station, destination="factory"},
+      }
+
+      if game.forces["player"].technologies[warp_settings.train.garden_research].researched then
+         table.insert(
+            train_decision,
+            {surface="garden",       station=warp_settings.train.ground_station,  destination=ground_surface})
+         table.insert(
+            train_decision,
+            {surface="garden",       station=warp_settings.train.factory_station, destination="factory"})
+         table.insert(
+            train_decision,
+            {surface=ground_surface, station=warp_settings.train.garden_station,  destination="garden"})
+         table.insert(
+            train_decision,
+            {surface="factory",      station=warp_settings.train.garden_station,  destination="garden"})
+      end
+
+      local current = train.station.surface.name
+      local station_name = train.station.backer_name
+
+      for _, d in ipairs(train_decision) do
+         if d.surface == current and d.station == station_name then
+            train_code.warp_trains(train, station_name, d.destination)
+            break
          end
       end
    end
@@ -2377,6 +2481,14 @@ commands.add_command("warptorio-set-warp-amount", "Set the current warp count (d
   storage.warporio.index = value
   update_label("amount", value)
   game.players[cmd.player_index].print("Warp amount set to " .. value)
+end)
+
+commands.add_command("warptorio-spawn-random-platform", "Spawn random platform", function(cmd)
+  if not game.players[cmd.player_index].admin then
+    game.players[cmd.player_index].print("Only admins can use this command.")
+    return
+  end
+  platform_code.spawn_random()
 end)
 
 remote.add_interface("warptorio",

@@ -106,6 +106,15 @@ data:extend(
      default_value = "cross",
      allowed_values = {"cross","ellipse","hexagon"},
      order = "a1"
+  },
+
+  {
+     type = "string-setting",
+     name = "warptorio_ground-shape",
+     setting_type = "startup",
+     default_value = "square",
+     allowed_values = {"square","circle","hexagon"},
+     order = "a1"
   }
 }
 )

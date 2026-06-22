@@ -385,6 +385,35 @@ local cat = data.raw["chain-active-trigger"]
 cat["chain-tesla-gun-chain"].fork_chance_increase_per_quality_level = 0
 cat["chain-tesla-turret-chain"].fork_chance_increase_per_quality_level = 0
 
+-- rebalance automic bomb
+-- atomic-bomb-wave: 400 -> 800
+local wave = data.raw["projectile"]["atomic-bomb-wave"]
+for _, eff in ipairs(wave.action[1].action_delivery.target_effects) do
+  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+end
+
+-- atomic-bomb-ground-zero-projectile: 100 -> 200
+local gz = data.raw["projectile"]["atomic-bomb-ground-zero-projectile"]
+for _, eff in ipairs(gz.action[1].action_delivery.target_effects) do
+  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+end
+
+-- atomic-rocket direct effect: 400 -> 800
+local rocket = data.raw["projectile"]["atomic-rocket"]
+for _, eff in ipairs(rocket.action.action_delivery.target_effects) do
+  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+end
+
+-- artillery-projectile: physical + explosion damage +50%
+local art = data.raw["artillery-projectile"]["artillery-projectile"]
+for _, eff in ipairs(art.action.action_delivery.target_effects) do
+  if eff.type == "nested-result" then
+    for _, sub in ipairs(eff.action.action_delivery.target_effects) do
+      if sub.type == "damage" then sub.damage.amount = sub.damage.amount * 1.5 end
+    end
+  end
+end
+
 -- add new quality
 data.extend({
    {

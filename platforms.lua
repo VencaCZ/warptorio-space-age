@@ -41,15 +41,19 @@ local function serialize_ground_platform_design(surface_name)
     {center.x + platform, center.y + platform}
   }
 
+  -- Only capture the platform itself (foundation tiles). With non-square ground shapes the
+  -- bounding box corners are planet terrain, which we must not bake into the saved design.
   local tiles = {}
   for _, tile in ipairs(surface.find_tiles_filtered{area = area}) do
-    tiles[#tiles + 1] = {
-      name = tile.name,
-      position = {
-        x = tile.position.x - center.x,
-        y = tile.position.y - center.y,
+    if tile.prototype.is_foundation then
+      tiles[#tiles + 1] = {
+        name = tile.name,
+        position = {
+          x = tile.position.x - center.x,
+          y = tile.position.y - center.y,
+        }
       }
-    }
+    end
   end
 
   local entities = {}
@@ -131,7 +135,8 @@ end
 
 function module.on_research(event)
    for _,v in ipairs(warp_settings.platforms.save_triggers) do
-       if v == event.research.name then
+      if v == event.research.name then
+         game.print("Save")
           module.save(v)
        end
     end

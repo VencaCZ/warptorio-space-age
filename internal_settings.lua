@@ -41,11 +41,14 @@ local local_settings = {
 	    [6]=36,
 	    [7]=52,
 	    [8]=70,
-    }
+    },
+    shape = "square"
   },
   train = {
      ground_station = "WarpGround",
-     factory_station = "WarpFactory"
+     factory_station = "WarpFactory",
+     garden_station = "WarpGarden",
+     garden_research = "warp-train-biochamber"
   },
   starter_items = {
      ["coal"]=1000,["iron-plate"]=500,["copper-plate"]=200,
@@ -303,7 +306,8 @@ local local_settings = {
      belt = "warp%-belt",
      power = "warp%-power",
      time = "warp%-time",
-     win = "warp%-end%-win"
+     win = "warp%-end%-win",
+     reactor = "warp%-reactor%-platform",
   },
   gui = {
      holder = "WarptorioGUI",
@@ -347,6 +351,7 @@ local local_settings = {
 local_settings.factory.levels = warp_sizes[settings.startup["warptorio_size-difficulty"].value].factory
 local_settings.floor.levels = warp_sizes[settings.startup["warptorio_size-difficulty"].value].floor
 local_settings.factory.shape = settings.startup["warptorio_factory-shape"].value
+local_settings.floor.shape = settings.startup["warptorio_ground-shape"].value
 
 if not script then return local_settings end
 

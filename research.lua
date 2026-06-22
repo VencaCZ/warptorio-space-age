@@ -149,14 +149,14 @@ t.hidden =false
 t.localised_name = nil
 ExtendTech(t,{
   name="warp-end-prepare",
-  unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=120},
-  prerequisites={"warp-ground-platform-7","warp-factory-platform-6","warp-time-4"},
+  unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=240},
+  prerequisites={"warp-ground-platform-7","warp-factory-platform-5","warp-time-4","warp-reactor-platform-1","railgun","epic-quality"},
   effects={{recipe = "warp-promethium",type = "unlock-recipe"}}})
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon="__warptorio-space-age__/graphics/locations/black-hole.png",icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
-ExtendTech(t,{name="warp-end-win",unit={count=25000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}),time=120}, prerequisites={"warp-end-prepare"},effects={}})
+ExtendTech(t,{name="warp-end-win",unit={count=25000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}),time=240}, prerequisites={"warp-end-prepare"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
@@ -171,9 +171,9 @@ ExtendTech(t,{name="warp-ground-platform-2",localised_description={"technology-d
 ExtendTech(t,{name="warp-ground-platform-3",localised_description={"technology-description.warp-ground-platform-3"},unit={count=100,ingredients = SciencePacks({red=1,green=1}),time=60}, prerequisites={"warp-ground-platform-2"},effects={}})
 ExtendTech(t,{name="warp-ground-platform-4",localised_description={"technology-description.warp-ground-platform-4"},unit={count=250,ingredients = SciencePacks({red=1,green=1}),time=60}, prerequisites={"warp-ground-platform-3"},effects={}})
 ExtendTech(t,{name="warp-ground-platform-5",localised_description={"technology-description.warp-ground-platform-5"},unit={count=500,ingredients = SciencePacks({red=1,green=1,blue=1}),time=60}, prerequisites={"warp-ground-platform-4","warp-factory-platform-3"},effects={}})
-ExtendTech(t,{name="warp-ground-platform-6",localised_description={"technology-description.warp-ground-platform-6"},unit={count=1000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1}),time=60}, prerequisites={"warp-ground-platform-5"},effects={}})
-ExtendTech(t,{name="warp-ground-platform-7",localised_description={"technology-description.warp-ground-platform-7"},unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1}),time=60}, prerequisites={"warp-ground-platform-6","rocket-turret"},effects={}})
-ExtendTech(t,{name="warp-ground-platform-8",localised_description={"technology-description.warp-ground-platform-8"},unit={count=10000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1}),time=60}, prerequisites={"warp-ground-platform-7","railgun"},effects={}})
+ExtendTech(t,{name="warp-ground-platform-6",localised_description={"technology-description.warp-ground-platform-6"},unit={count=1000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1}),time=60}, prerequisites={"warp-ground-platform-5","rocket-turret"},effects={}})
+ExtendTech(t,{name="warp-ground-platform-7",localised_description={"technology-description.warp-ground-platform-7"},unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1}),time=60}, prerequisites={"warp-ground-platform-6","tesla-weapons"},effects={}})
+ExtendTech(t,{name="warp-ground-platform-8",localised_description={"technology-description.warp-ground-platform-8"},unit={count=10000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1}),time=60}, prerequisites={"warp-ground-platform-7","warp-end-prepare"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
@@ -230,8 +230,8 @@ ExtendTech(t,{name="warp-factory-platform-2",localised_description={"technology-
 ExtendTech(t,{name="warp-factory-platform-3",localised_description={"technology-description.warp-factory-platform-3"},unit={count=200,ingredients = SciencePacks({red=1,green=1,gleba=1}),time=60}, prerequisites={"warp-factory-platform-2"},effects={}})
 ExtendTech(t,{name="warp-factory-platform-4",localised_description={"technology-description.warp-factory-platform-4"},unit={count=500,ingredients = SciencePacks({red=1,green=1,fulgora=1}),time=60}, prerequisites={"warp-factory-platform-3"},effects={}})
 ExtendTech(t,{name="warp-factory-platform-5",localised_description={"technology-description.warp-factory-platform-5"},unit={count=1000,ingredients = SciencePacks({red=1,green=1,vulcanus=1}),time=60}, prerequisites={"warp-factory-platform-4"},effects={}})
-ExtendTech(t,{name="warp-factory-platform-6",localised_description={"technology-description.warp-factory-platform-6"},unit={count=2000,ingredients = SciencePacks({red=1,green=1,aquilo=1}),time=60}, prerequisites={"warp-factory-platform-5"},effects={}})
-ExtendTech(t,{name="warp-factory-platform-7",localised_description={"technology-description.warp-factory-platform-7"},unit={count=10000,ingredients = SciencePacks({vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=60}, prerequisites={"warp-factory-platform-6"},effects={}})
+ExtendTech(t,{name="warp-factory-platform-6",localised_description={"technology-description.warp-factory-platform-6"},unit={count=10000,ingredients = SciencePacks({red=1,green=1,aquilo=1}),time=60}, prerequisites={"warp-factory-platform-5"},effects={}})
+ExtendTech(t,{name="warp-factory-platform-7",localised_description={"technology-description.warp-factory-platform-7"},unit={count=20000,ingredients = SciencePacks({vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=60}, prerequisites={"warp-factory-platform-6","warp-end-win"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["space-platform"])
 t.research_trigger = nil
@@ -266,15 +266,44 @@ t.localised_name = nil
 t.research_trigger = nil
 ExtendTech(t,{name="warp-biochamber-platform-1",unit={count=500,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-ground-platform-3","warp-water"},effects={}})
 ExtendTech(t,{name="warp-biochamber-platform-2",unit={count=1000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1}),time=60}, prerequisites={"warp-biochamber-platform-1"},effects={}})
-ExtendTech(t,{name="warp-biochamber-platform-3",unit={count=5000,ingredients = SciencePacks({red=1,green=1,gleba=1,blue=1,white=1}),time=60}, prerequisites={"warp-biochamber-platform-2"},effects={}})
 ExtendTech(t,{
-              name="warp-biochamber-platform-4",
-              unit={count_formula="(10000*(L-3)*(L-3))",time=30},
+              name="warp-biochamber-platform-3",
+              unit={count_formula="(5000*(L-2)*(L-2))",time=30},
               max_level="infinite",
-              prerequisites={"warp-biochamber-platform-3","warp-end-prepare"},
+              prerequisites={"warp-biochamber-platform-2","warp-end-prepare"},
               effects={}
              },
-           {red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}
+           {red=1,green=1,blue=1,white=1,gleba=1}
+)
+
+local t = table.deepcopy(data.raw["technology"]["fusion-reactor"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
+t.research_trigger = nil
+ExtendTech(t,{
+              name="warp-reactor-platform-1",
+              unit={count_formula="(3500*(L)*(L))",time=60},
+              max_level="infinite",
+              prerequisites={"warp-biochamber-platform-2","cryogenic-science-pack"},
+              effects={}
+             },
+           {red=1,green=1,blue=1,white=1,aquilo=1}
+)
+
+local t = table.deepcopy(data.raw["technology"]["biolab"])
+t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
+t.hidden =false
+t.localised_name = nil
+t.research_trigger = nil
+ExtendTech(t,{
+              name="warp-biolab-limit-1",
+              unit={count_formula="(4000*(L)*(L))",time=120},
+              max_level="infinite",
+              prerequisites={"warp-biochamber-platform-2","cryogenic-science-pack"},
+              effects={}
+             },
+           {red=1,green=1,blue=1,yellow=1,purple=1,black=1,white=1,gleba=1}
 )
 
 local t = table.deepcopy(data.raw["technology"]["logistics"])
@@ -309,7 +338,7 @@ ExtendTech(t,{name="warp-time-1",unit={count=100,ingredients = SciencePacks({red
 ExtendTech(t,{name="warp-time-2",unit={count=250,ingredients = SciencePacks({gleba=1}),time=60}, prerequisites={"warp-factory-platform-2","warp-belt-1","warp-time-1"},effects={}})
 ExtendTech(t,{name="warp-time-3",unit={count=500,ingredients = SciencePacks({fulgora=1}),time=60}, prerequisites={"warp-factory-platform-4","warp-belt-2","warp-time-2"},effects={}})
 ExtendTech(t,{name="warp-time-4",unit={count=1000,ingredients = SciencePacks({vulcanus=1}),time=60}, prerequisites={"warp-factory-platform-6","warp-belt-3","warp-time-3"},effects={}})
-ExtendTech(t,{name="warp-time-5",unit={count=1000,ingredients = SciencePacks({white=1}),time=60}, prerequisites={"warp-factory-platform-6","warp-belt-3","warp-time-4"},effects={}})
+ExtendTech(t,{name="warp-time-5",unit={count=1000,ingredients = SciencePacks({white=1}),time=60}, prerequisites={"warp-factory-platform-5","warp-belt-3","warp-time-4"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["mining-productivity-1"])
 t.icons[1].tint={r=0.3,g=0.3,b=1,a=1}
@@ -366,6 +395,13 @@ t.hidden =false
 t.localised_name = nil
 ExtendTech(t,
            { name = "warp-train", unit = { count = 1000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-ground-platform-5", "warp-factory-platform-4" }, effects = {} })
+local t2 = table.deepcopy(data.raw["technology"]["biochamber"])
+t.icons = {
+   {icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,},
+   { icon = t2.icon, tint = { r = 0.3, g = 0.3, b = 1, a = 1 }, icon_size = 256, scale=0.5, shift={32,32} },
+}
+ExtendTech(t,
+           { name = "warp-train-biochamber", unit = { count = 4000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-train", "warp-reactor-platform-1" }, effects = {} })
 
 local t = table.deepcopy(data.raw["technology"]["circuit-network"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
