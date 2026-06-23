@@ -81,14 +81,14 @@ data:extend(
 	setting_type="startup",default_value=true},
 
   {type="double-setting",name="warptorio_nauvis-timer",order="11b",
-   setting_type="startup",default_value=0,
+   setting_type="startup",default_value=1,
    minimum_value=0,maximum_value=10},
 
   {type="bool-setting",name="warptorio_block-roboport-factory",order="11b",
    setting_type="startup",default_value=false},
 
   {type="bool-setting",name="warptorio_block-roboport-garden",order="11b",
-   setting_type="startup",default_value=false},
+   setting_type="startup",default_value=true},
 
   {
      type = "string-setting",
