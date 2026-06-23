@@ -150,7 +150,7 @@ t.localised_name = nil
 ExtendTech(t,{
   name="warp-end-prepare",
   unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=240},
-  prerequisites={"warp-ground-platform-7","warp-factory-platform-5","warp-time-4","warp-reactor-platform-1","railgun","epic-quality"},
+  prerequisites={"warp-ground-platform-7","warp-factory-platform-5","warp-time-4","warp-reactor-platform-1","railgun"},
   effects={{recipe = "warp-promethium",type = "unlock-recipe"}}})
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon="__warptorio-space-age__/graphics/locations/black-hole.png",icon_size=256,}}

@@ -457,8 +457,8 @@ local function refresh_power_and_teleport(dest)
     storage.warptorio.power_name = storage.warptorio.power_name or "warp-power"
     local power_1 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface=dest})
     local power_2 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface="factory"})
-    power_1.minable = false
-    power_2.minable = false
+    power_1.minable_flag = false
+    power_2.minable_flag = false
     power_1.rotatable = false
     power_2.rotatable = false
     set_ground_tiles({x=-1,y=-3,tiles="green-refined-concrete",surface=dest,size=1})
@@ -479,7 +479,7 @@ local function refresh_power_and_teleport(dest)
 
     if storage.warptorio.biochamber_level then
         local power_3 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface="garden"})
-        power_3.minable = false
+        power_3.minable_flag = false
         power_3.rotatable = false
         storage.warptorio.power[3] = power_3
         set_ground_tiles({y=-1,x=-3,tiles="blue-refined-concrete",surface="factory",size=1})
@@ -513,7 +513,7 @@ local function refresh_power_and_teleport(dest)
       if inventory.get_item_count("warp_2x2-container") == 0 then
         container.insert({name="warp_2x2-container", count=1})
       end
-      container.minable = false
+      container.minable_flag = false
       container.rotatable = false
     end
     if storage.warptorio.container_right_enabled then
@@ -522,7 +522,7 @@ local function refresh_power_and_teleport(dest)
       if inventory.get_item_count("warp_2x2-container") == 0 then
         container.insert({name="warp_2x2-container", count=1})
       end
-      container.minable = false
+      container.minable_flag = false
       container.rotatable = false
     end
 end
@@ -685,8 +685,8 @@ local function belt_pair(pos1,pos2,speed)
     belt2.linked_belt_type = "output"
     belt.linked_belt_type = "input"
     belt.connect_linked_belts(belt2)
-    belt.minable = false
-    belt2.minable = false
+    belt.minable_flag = false
+    belt2.minable_flag = false
     belt.rotatable = false
     belt2.rotatable = false
 end
@@ -794,7 +794,7 @@ local function update_biochamber_platform(e)
   
   if level == 1 then
       local container = get_or_create("warp_2x2-container", {x=5, y=0, surface="garden"})
-      container.minable = false
+      container.minable_flag = false
       container.rotatable = false
   end
 end
@@ -1304,6 +1304,9 @@ local function replace_with_high_quality(old_entity, strquality)
 end
 
 local function choose_quality(index)
+   if not script.active_mods["quality"] then
+      return "normal"
+   end
    -- During the final research, lock enemy quality to "warp" instead of scaling it
    -- from evolution/index like normal waves.
    if game.forces["player"].current_research and game.forces["player"].current_research.name == "warp-end-win" then
@@ -2197,6 +2200,24 @@ local function build_entity(e)
        else
           game.print({"warptorio.collector-placed"})
           storage.warptorio.collector_chest = e.entity
+       end
+    end
+    if e.entity.name == "biolab" then
+       -- Base limit, raised by each level of the infinite biolab-limit research.
+       local tech = game.forces.player.technologies[warp_settings.ground.biolab_research]
+       local levels = tech.level-1
+       local limit = warp_settings.ground.biolab_limit + warp_settings.ground.biolab_increase * levels
+       -- Count includes the biolab that was just built, so going over rejects the new one.
+       local count = #e.entity.surface.find_entities_filtered{name="biolab"}
+       if count > limit then
+          if e.player_index then
+             game.players[e.player_index].insert({name=e.entity.name, count=1, quality=e.entity.quality.name})
+          end
+          e.entity.destroy()
+          if e.player_index then
+             game.players[e.player_index].print({"warptorio.biolab-limit-reached", limit},{color={1,0,0}})
+          end
+          return
        end
     end
 end

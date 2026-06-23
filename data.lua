@@ -414,6 +414,7 @@ for _, eff in ipairs(art.action.action_delivery.target_effects) do
   end
 end
 
+if mods["quality"] then
 -- add new quality
 data.extend({
    {
@@ -434,6 +435,7 @@ data.extend({
 local legendary = data.raw.quality["legendary"]
 legendary.next = "warp"
 legendary.next_probability = 0.01
+end
 --tt.energy_source.input_flow_limit = tt.energy_source.input_flow_limit * 3
 
 --if mods["zzz-nonstandard-beacons"] then

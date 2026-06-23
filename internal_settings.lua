@@ -297,6 +297,11 @@ local local_settings = {
   trigger_end = "promethium-science-pack",
   blocked_planets = {"nauvis","void"},
   dmg_research = true,
+  ground = {
+     biolab_limit = 4,
+     biolab_increase = 2,
+     biolab_research = "warp-biolab-limit-1"
+  },
   -- This character - has to be escaped with %-
   techs = {
      ground = "warp%-ground%-platform",

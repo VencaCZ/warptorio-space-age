@@ -136,8 +136,7 @@ end
 function module.on_research(event)
    for _,v in ipairs(warp_settings.platforms.save_triggers) do
       if v == event.research.name then
-         game.print("Save")
-          module.save(v)
+         module.save(v)
        end
     end
 end
