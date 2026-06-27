@@ -2020,7 +2020,7 @@ script.on_event(defines.events.on_tick, function(event)
   elseif storage.warptorio.transition_timer > -warp_settings.time.extra_transition_time*60 then
      storage.warptorio.transition_timer = storage.warptorio.transition_timer - 1
   end
-  if storage.warporio.index > 0 then
+  if storage.warptorio.ground_level > 0 or storage.warporio.index > 0 then
     if not technology_check() then
       storage.warptorio.time_passed = storage.warptorio.time_passed + 1/60
     end
