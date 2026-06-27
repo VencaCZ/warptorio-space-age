@@ -315,24 +315,26 @@ end
 
 local function on_init_or_load()
 
-    storage.warptorio = storage.warptorio or {}
-    storage.warptorio.warp_zone = storage.warptorio.warp_zone or "nauvis"
-    storage.warptorio.factory_level = storage.warptorio.factory_level or 0
-    storage.warptorio.ground_level = storage.warptorio.ground_level or 0
-    storage.warptorio.belt_level = storage.warptorio.belt_level or 0
-    storage.warptorio.power_level = storage.warptorio.power_level or 0
-    storage.warptorio.time_passed = storage.warptorio.time_passed or 0
-    storage.warptorio.time_level = storage.warptorio.time_level or 0
-    storage.warptorio.wave_time = storage.warptorio.wave_time or 0
-    storage.warptorio.wave_index = storage.warptorio.wave_index or 0
-    storage.warptorio.warp_out = storage.warptorio.warp_out or 0
-    storage.warptorio.surface_name = storage.warptorio.surface_name or "nauvis"
-    storage.warptorio.planet_timer = storage.warptorio.planet_timer or 0
-    storage.warptorio.planet_next = storage.warptorio.planet_next or nil
-    ensure_surface_positions()
-    ensure_surface_offset(storage.warptorio.warp_zone)
-    starter_chest()
-    warp_constant_combinator.init()
+   storage.warporio = storage.warporio or {}
+   storage.warptorio = storage.warptorio or {}
+   storage.warporio.index = storage.warporio.index or 0
+   storage.warptorio.warp_zone = storage.warptorio.warp_zone or "nauvis"
+   storage.warptorio.factory_level = storage.warptorio.factory_level or 0
+   storage.warptorio.ground_level = storage.warptorio.ground_level or 0
+   storage.warptorio.belt_level = storage.warptorio.belt_level or 0
+   storage.warptorio.power_level = storage.warptorio.power_level or 0
+   storage.warptorio.time_passed = storage.warptorio.time_passed or 0
+   storage.warptorio.time_level = storage.warptorio.time_level or 0
+   storage.warptorio.wave_time = storage.warptorio.wave_time or 0
+   storage.warptorio.wave_index = storage.warptorio.wave_index or 0
+   storage.warptorio.warp_out = storage.warptorio.warp_out or 0
+   storage.warptorio.surface_name = storage.warptorio.surface_name or "nauvis"
+   storage.warptorio.planet_timer = storage.warptorio.planet_timer or 0
+   storage.warptorio.planet_next = storage.warptorio.planet_next or nil
+   ensure_surface_positions()
+   ensure_surface_offset(storage.warptorio.warp_zone)
+   starter_chest()
+   warp_constant_combinator.init()
 end
 
 local function pollution_settings()
