@@ -1995,6 +1995,7 @@ local function update_nauvis_timer()
 end
 
 script.on_event(defines.events.on_tick, function(event)
+  if not storage.warporio then storage.warporio = {} end
   for i,v in ipairs(warp_settings.blocked_planets) do
     if v == storage.warptorio.surface_name and technology_check() then
       game.forces["player"].research_progress = 0
