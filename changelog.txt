@@ -14,6 +14,7 @@ Date: TBD
     - Support for trains in garden floor
     - INPROGRESS: Swap one of the belts on garden so it can take items from factory floor
     - INPROGRESS: Limit amount of biolabs (can be increased with research)
+    - Timer will now properly start once it runs out on first planet
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.7
 Date: 2026-06-21
