@@ -12,8 +12,7 @@ Date: TBD
     - Add more upgrades to garden floor (space only no "garden")
     - Original garden floor upgrades no longer require aquilo science
     - Support for trains in garden floor
-    - INPROGRESS: Swap one of the belts on garden so it can take items from factory floor
-    - INPROGRESS: Limit amount of biolabs (can be increased with research)
+    - Limit amount of biolabs (can be increased with research)
     - Timer will now properly start once it runs out on first planet
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.7
