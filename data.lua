@@ -309,13 +309,13 @@ data:extend{{
       type = "sound",
       name = "planet-change",
       filename = "__warptorio-space-age__/sounds/planet_change.wav",
-      category = "environment",
+      category = "alert",
 } }
 data:extend{{
       type = "sound",
       name = "boss-spawn",
       filename = "__warptorio-space-age__/sounds/boss_spawn.wav",
-      category = "environment",
+      category = "alert",
 }}
 
 -- Change bio-labs
