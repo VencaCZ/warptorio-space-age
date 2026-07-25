@@ -2436,6 +2436,7 @@ script.on_event(
          return
       end
       if not train.station then return end
+      if not train.id then game.print("ERROR") end
 
       -- The ground floor lives on the current planet surface, or on the transition surface
       -- while a warp is in progress.

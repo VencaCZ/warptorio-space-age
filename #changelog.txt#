@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.2
+Date: 2026-07-25
+  Changes:
+    - add blacklist to the chest items so they cant spawn certain items
+    - Fixed trains for aquilo liquids
+    - Fixed aquilo enemies not spawning after certain time
+    - fixed issue with making final research during warp transition
+---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2026-07-22
   Changes:

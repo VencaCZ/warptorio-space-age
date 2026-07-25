@@ -164,13 +164,21 @@ end
 function train_code.warp_trains(train, station_name, destination)
    if not game.forces["player"].technologies["warp-train"].researched then return end
    if not train then return end
+   if not train.valid then return end
+   if not train.id then return end
    
    -- We could remove the WarpStation filter to warp all trains, but for now we keep it like this.
    -- Because we don't keep the train schedule after warping you need the other stop on the line to be named the same.
    local stations = game.train_manager.get_train_stops({station_name=station_name})
    for i,v in ipairs(stations) do
+      -- We lost train maybe its already teleported?
+      if not train then return end
+      if not train.valid then return end
+      if not train.id then return end
+      
       local tmp_train = v.get_stopped_train()
       if not tmp_train then goto next_train_in_loop end
+      if not tmp_train.valid then goto next_train_in_loop end
       if not tmp_train.id == train.id then goto next_train_in_loop end
 
       local at_station = train.state == defines.train_state.wait_station
