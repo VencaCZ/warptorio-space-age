@@ -9,6 +9,7 @@ Date: 2026-08-01
     - Fixed issue with synthetic promethium research dependency
     - Fixed that wires were connecting to warp container
     - Fixed compatibility with Krastorio 2 spaced out
+    - Change category for the sounds (planet-change and boss-spawn) to alert (thanks to SimonMossmyr)
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2026-07-22
