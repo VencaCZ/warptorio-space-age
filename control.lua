@@ -1018,7 +1018,7 @@ local function create_angry_biters(biter_type,number,surface,quality,target)
 
    for j = 1,number do
 
-      pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
+      local pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false) or {x,y}
 
       local angry_bitter = game.surfaces[surface].create_entity{
          name = biter_type,
@@ -1101,7 +1101,7 @@ local function create_angry_boss(biter_type,number,surface,quality,target)
         for j = 1,number do
           local x = center.x + math.cos(angle)*(dist+range)
           local y = center.y + math.sin(angle)*(dist+range)
-                pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false)
+                local pos = game.surfaces[surface].find_non_colliding_position(biter_type, {x,y}, 0, 2, false) or {x,y}
 
                 local angry_bitter = game.surfaces[surface].create_entity{
                    name = biter_type,
@@ -1268,6 +1268,7 @@ local function update_all_labels()
 end
 
 local function technology_check()
+  if storage.warptorio.transition_timer > 60 then return false end
   if not game.forces["player"].current_research then return false end
   if game.forces["player"].current_research.name == "warp-end-prepare" or game.forces["player"].current_research.name == "warp-end-win" then
     return true

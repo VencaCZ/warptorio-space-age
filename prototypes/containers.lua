@@ -2,20 +2,21 @@ local entity_base = table.deepcopy(data.raw["linked-container"]["linked-chest"])
 local item_base = table.deepcopy(data.raw["item"]["linked-chest"])
 entity_base.gui_mode = "none"
 
-ei_containers_entity_path = "__warptorio-space-age__/graphics/entities/"
-ei_containers_item_path = "__warptorio-space-age__/graphics/items/"
+local ei_containers_entity_path = "__warptorio-space-age__/graphics/entities/"
+local ei_containers_item_path = "__warptorio-space-age__/graphics/items/"
 
-function make_item(size, typus)
+local function make_item(size, typus)
     local item = table.deepcopy(item_base)
-
+    local typename = nil
+    
     if typus then
         typename = "_"..typus
     else
         typename = ""
     end
 
-    name = size.."x"..size.."-container"
-    fullname = "warp_"..name..typename
+    local name = size.."x"..size.."-container"
+    local fullname = "warp_"..name..typename
 
     item.name = fullname
     item.place_result = fullname
@@ -32,11 +33,12 @@ function make_item(size, typus)
     data:extend({item})
 end
 
-function make_container(size, slots, typus, animation)
+local function make_container(size, slots, typus, animation)
     -- size can be 1 for 1x1, 2 for 2x2, 3 for 3x3, etc.
     -- type can be blue, red, pink, filter, green, yellow
 
-    local container = table.deepcopy(entity_base)
+   local container = table.deepcopy(entity_base)
+   local typename, name, fullname, image_size, adjust
 
     if typus then
         typename = "_"..typus
@@ -78,6 +80,10 @@ function make_container(size, slots, typus, animation)
     -- inventory
     container.minable.result = nil
     container.inventory_size = slots
+
+    --wire connectors
+    container.circuit_wire_max_distance = 0
+    container.circuit_connector = nil   -- also kills the connector sprites/shadow
 
     -- animation
     if animation then

@@ -16,15 +16,29 @@ end
 
 local warp_sizes = require("factory_sizes")
 
+local item_blacklist = {
+   "coin",
+   "science",
+   "promethium-science-pack",
+   "biter-egg"
+}
+
 local function internal_loot()
    local items = {}
    if not prototypes then return {} end
    for _,item in pairs(prototypes.item) do
       if item.group.name == "intermediate-products"  and
-         item.name ~= "coin" and item.name ~= "science" and
-         item.subgroup.name ~= "barrel" and
+         --item.subgroup.name ~= "barrel" and
          item.hidden == false then
-         table.insert(items,item.name)
+         local add = true
+         for _,black in ipairs(item_blacklist) do
+            if black == item.name then
+               add = false
+            end
+         end
+         if add then
+            table.insert(items,item.name)
+         end
       end
    end
    return items
@@ -84,6 +98,7 @@ local local_settings = {
        duration = 5*60*60,
        items = {min=10,max=50,chance=0.75,scale=25},
        chests = 25,
+       -- TODO add blacklist to the chest items so they cant spawn certain items
   },
   surfaces = {
      -- Define Surfaces that will be used and sorted

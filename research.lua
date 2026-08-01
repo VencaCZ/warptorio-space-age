@@ -150,7 +150,7 @@ t.localised_name = nil
 ExtendTech(t,{
   name="warp-end-prepare",
   unit={count=5000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1}),time=240},
-  prerequisites={"warp-ground-platform-7","warp-factory-platform-5","warp-time-4","warp-reactor-platform-1","railgun"},
+  prerequisites={"warp-ground-platform-7","warp-factory-platform-5","warp-time-4","warp-biochamber-platform-2","railgun"},
   effects={{recipe = "warp-promethium",type = "unlock-recipe"}}})
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon="__warptorio-space-age__/graphics/locations/black-hole.png",icon_size=256,}}
@@ -401,7 +401,7 @@ t.icons = {
    { icon = t2.icon, tint = { r = 0.3, g = 0.3, b = 1, a = 1 }, icon_size = 256, scale=0.5, shift={32,32} },
 }
 ExtendTech(t,
-           { name = "warp-train-biochamber", unit = { count = 4000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-train", "warp-reactor-platform-1" }, effects = {} })
+           { name = "warp-train-biochamber", unit = { count = 4000, ingredients = SciencePacks({ blue = 1, fulgora = 1, gleba = 1 }), time = 60 }, prerequisites = { "warp-train", "warp-biochamber-platform-2" }, effects = {} })
 
 local t = table.deepcopy(data.raw["technology"]["circuit-network"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
