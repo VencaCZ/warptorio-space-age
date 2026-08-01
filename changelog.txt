@@ -8,6 +8,7 @@ Date: 2026-08-01
     - fixed issue with making final research during warp transition
     - Fixed issue with synthetic promethium research dependency
     - Fixed that wires were connecting to warp container
+    - Fixed compatibility with Krastorio 2 spaced out
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 2026-07-22

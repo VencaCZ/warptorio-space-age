@@ -1268,7 +1268,7 @@ local function update_all_labels()
 end
 
 local function technology_check()
-  if storage.warptorio.transition_timer > 60 then return false end
+  if storage.warptorio and storage.warptorio.transition_timer and storage.warptorio.transition_timer > 60 then return false end
   if not game.forces["player"].current_research then return false end
   if game.forces["player"].current_research.name == "warp-end-prepare" or game.forces["player"].current_research.name == "warp-end-win" then
     return true
