@@ -51,10 +51,10 @@ local function update_entity(entity, remaining_time, wave_index, wave_time, warp
   local section = control_behavior.get_section(1)
 
   entity.combinator_description = [[
-  signal-T - Remaining time
-  signal-W - Wave index
-  signal-V - Wave time
-  signal-A - Warp amount
+  signal-T - Remaining time before forced warp
+  signal-W - Wave count
+  signal-V - Remaining time before next enemy wave
+  signal-A - Warp count
   planet-signal - Value 1 current planet
   planet-signal - Value 2 next planet
   ]]
