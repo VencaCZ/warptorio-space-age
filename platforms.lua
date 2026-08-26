@@ -15,6 +15,60 @@ local function get_surface_offset(surface_name)
   return zero_offset
 end
 
+-- Saved platform designs store raw prototype names. A design captured while another mod was
+-- installed can reference entities/tiles/qualities that no longer exist once that mod is removed
+-- or renamed, and create_entity/set_tiles raise a non-recoverable error on unknown names.
+-- Everything that replays a design must go through these checks.
+local function entity_exists(name)
+   return name ~= nil and prototypes.entity[name] ~= nil
+end
+
+local function tile_exists(name)
+   return name ~= nil and prototypes.tile[name] ~= nil
+end
+
+local function valid_quality(name)
+   if name ~= nil and prototypes.quality[name] then
+      return name
+   end
+   return nil
+end
+
+-- Drops entities and tiles whose prototypes no longer exist from a saved design (in place) and
+-- clears qualities that are gone. Returns the number of removed entries.
+local function prune_design(design)
+   if type(design) ~= "table" then return 0 end
+   local removed = 0
+   if type(design.entities) == "table" then
+      local kept = {}
+      for _, v in ipairs(design.entities) do
+         if entity_exists(v.name) then
+            if v.quality ~= nil and not valid_quality(v.quality) then
+               v.quality = nil
+            end
+            kept[#kept + 1] = v
+         else
+            removed = removed + 1
+         end
+      end
+      design.entities = kept
+      if design.entity_count ~= nil then design.entity_count = #kept end
+   end
+   if type(design.tiles) == "table" then
+      local kept = {}
+      for _, v in ipairs(design.tiles) do
+         if tile_exists(v.name) then
+            kept[#kept + 1] = v
+         else
+            removed = removed + 1
+         end
+      end
+      design.tiles = kept
+      if design.tile_count ~= nil then design.tile_count = #kept end
+   end
+   return removed
+end
+
 local function lootTable()
    local lt={}
    for _,v in ipairs(warp_settings.platforms.loot_items)do
@@ -191,15 +245,25 @@ function module.spawn(name,x,y)
       game.print("ERROR: There is no platform with name:"..name)
       return
    end
+   -- Anything referencing a prototype that no longer exists is skipped instead of crashing.
+   local skipped = {}
+   local function skip(prototype_name)
+      prototype_name = tostring(prototype_name)
+      skipped[prototype_name] = (skipped[prototype_name] or 0) + 1
+   end
    local tiles = {}
    for _,v in ipairs(platform.tiles) do
-      table.insert(
-         tiles,
-         {
-            name=v.name,
-            position = {x=v.position.x+x,y=v.position.y+y}
-         }
-      )
+      if tile_exists(v.name) then
+         table.insert(
+            tiles,
+            {
+               name=v.name,
+               position = {x=v.position.x+x,y=v.position.y+y}
+            }
+         )
+      else
+         skip(v.name)
+      end
    end
    local items = lootTable()
    local center = nil
@@ -207,16 +271,20 @@ function module.spawn(name,x,y)
    local chests = {}
    game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
    for i, v in ipairs(platform.entities) do
-      if v.type == "container" or v.type == "logistic-container" then
+      if not entity_exists(v.name) then
+         skip(v.name)
+      elseif v.type == "container" or v.type == "logistic-container" then
          local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
             { name = v.name,
               position = {x=v.position.x+x,y=v.position.y+y},
               direction = v.direction,
               force = game.forces.player,
-              quality = v.quality
+              quality = valid_quality(v.quality)
             }
          )
-         table.insert(chests,entity)
+         if entity then
+            table.insert(chests,entity)
+         end
         else
             if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
                local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
@@ -232,19 +300,30 @@ function module.spawn(name,x,y)
                     position = {x=v.position.x+x,y=v.position.y+y},
                     direction = v.direction,
                     force = game.forces.enemy,
-                    quality = v.quality
+                    quality = valid_quality(v.quality)
                   })
-               for _,weapon in ipairs(warp_settings.platforms.weapons) do
-                  if v.name == weapon.name then
-                     if weapon.fluid then
-                        entity.insert_fluid(weapon.ammo)
-                     else
-                        entity.insert(weapon.ammo)
+               if entity then
+                  for _,weapon in ipairs(warp_settings.platforms.weapons) do
+                     if v.name == weapon.name then
+                        if weapon.fluid then
+                           entity.insert_fluid(weapon.ammo)
+                        else
+                           entity.insert(weapon.ammo)
+                        end
                      end
                   end
                end
             end
         end
+   end
+   if next(skipped) then
+      local parts = {}
+      for prototype_name, count in pairs(skipped) do
+         parts[#parts + 1] = prototype_name.." x"..count
+      end
+      table.sort(parts)
+      log("Warptorio: skipped entries with unknown prototypes while spawning platform '"
+          ..tostring(name).."': "..table.concat(parts, ", "))
    end
    if center then
       -- TODO do this better. For now this is fine
@@ -316,7 +395,21 @@ function module.add(name, design)
         game.print("Could not add platform design without design")
         return
     end
+    prune_design(design)
     storage.warptorio.platforms[name] = design
+end
+
+-- Saved backups outlive the mods they were captured with. Prune entries whose prototypes
+-- disappeared so old saves self-heal instead of crashing the next time that design is spawned.
+function module.on_configuration_changed()
+   if not storage.warptorio or not storage.warptorio.platforms then return end
+   local removed = 0
+   for _, design in pairs(storage.warptorio.platforms) do
+      removed = removed + prune_design(design)
+   end
+   if removed > 0 then
+      log("Warptorio: removed "..removed.." entries referencing missing prototypes from saved platform designs")
+   end
 end
 
 function module.delete()

@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.3
+Date: 2026-08-26
+  Bugfixes:
+    - Fixed crash when spawning a saved platform backup that references entities, tiles or qualities from a mod that has since been removed (e.g. af-alc-signals-chest). Such entries are now skipped, and existing backups are cleaned up when the mod configuration changes.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.2
 Date: 2026-08-01
   Changes:

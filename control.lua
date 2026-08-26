@@ -2480,6 +2480,7 @@ script.on_event(
 script.on_configuration_changed(function()
   on_init_or_load()
   warp_constant_combinator.rescan()
+  platform_code.on_configuration_changed()
 end)
 
 script.on_event(defines.events.script_raised_built, function(e)
