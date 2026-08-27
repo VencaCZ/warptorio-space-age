@@ -1526,7 +1526,17 @@ local function teleport_players(source,destination,factory)
 
   for i,v in pairs(game.players) do
     -- Add players to the list
-    if v.is_player() and v.connected and v.character then
+    if v.is_player() and v.connected then
+       -- Players can be in map view while the warp is resolving; explicitly exit map view
+       -- before relocating them so they are back in normal character control and can be
+       -- teleported to the correct warp destination.
+       if v.controller_type ~= defines.controllers.character and v.exit_remote_view then
+          v.exit_remote_view()
+       end
+       if not v.character then
+          goto continue
+       end
+
        if factory and player_on_factory_warp_belt(v) then
           teleport_to_factory_home(v)
        end
