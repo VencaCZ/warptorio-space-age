@@ -1444,6 +1444,23 @@ local function check_wave()
   end
 end
 
+local function clean_ground_tiles(surface_name, area)
+  local surface = game.surfaces[surface_name]
+  local tiles = surface.find_tiles_filtered{area = area}
+  local replacement = {}
+  for _, t in ipairs(tiles) do
+    local base_name = t.name:match("^frozen%-(.+)$")
+    if base_name then
+      table.insert(replacement, {name = base_name, position = t.position})
+    elseif t.name:find("^lava") then
+      table.insert(replacement, {name = "warp_tile_world", position = t.position})
+    end
+  end
+  if #replacement > 0 then
+    surface.set_tiles(replacement)
+  end
+end
+
 local function teleport_ground(source, target)
   local level = storage.warptorio.ground_level or 0
 
@@ -1479,6 +1496,8 @@ local function teleport_ground(source, target)
     clear_destination_decoratives=true,
     clone_decoratives=false,
   })
+
+  clean_ground_tiles(target, destination_area)
 
   -- Delete teleported(generated) characters
   local surface_player_list = game.surfaces[target].find_entities_filtered{type="character", area = destination_area}
