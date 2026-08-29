@@ -1520,6 +1520,7 @@ local function teleport_ground(source, target)
   train_code.restore_clone_states(game.surfaces[target], dest_offset, captured_modes)
   clean_ground_tiles(target, destination_area)
 
+  clean_ground_tiles(target, destination_area)
   -- Delete teleported(generated) characters
   local surface_player_list = game.surfaces[target].find_entities_filtered{type="character", area = destination_area}
   for i,v in ipairs(surface_player_list) do
