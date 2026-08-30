@@ -1319,7 +1319,7 @@ local function choose_quality(index)
 end
 
 local function replace_common(entity)
-  if not entity.force.name == "enemy" then return end
+  if entity.force.name ~= "enemy" then return end
   local evolution = get_evolution_factor()
   if evolution < 0.94 then
     return
