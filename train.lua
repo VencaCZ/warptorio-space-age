@@ -1,12 +1,12 @@
 local train_code = {}
 
-local zero_offset = {x=0, y=0}
+local zero_offset = { x = 0, y = 0 }
 
 local function get_surface_offset(surface_name)
-  if storage.warptorio and storage.warptorio.surface_positions then
-    return storage.warptorio.surface_positions[surface_name] or zero_offset
-  end
-  return zero_offset
+   if storage.warptorio and storage.warptorio.surface_positions then
+      return storage.warptorio.surface_positions[surface_name] or zero_offset
+   end
+   return zero_offset
 end
 
 -- Returns true if the full train footprint is clear on the destination surface
@@ -24,8 +24,8 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
       if target_station.direction == defines.direction.east or target_station.direction == defines.direction.west then
          -- Swap width and height for east/west facing stations
          box = {
-            left_top = {x = box.left_top.y, y = box.left_top.x},
-            right_bottom = {x = box.right_bottom.y, y = box.right_bottom.x}
+            left_top = { x = box.left_top.y, y = box.left_top.x },
+            right_bottom = { x = box.right_bottom.y, y = box.right_bottom.x }
          }
       end
       local area = {
@@ -45,7 +45,7 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
       }
       ]]
 
-      local blockers = surface.find_entities_filtered{
+      local blockers = surface.find_entities_filtered {
          area = area,
          collision_mask = { "object", "player", "train" }
       }
@@ -54,9 +54,9 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
          if ent.valid then
             -- Explicit allow-list (important)
             if ent.name == "entity-ghost"
-               or ent.type == "train-stop"
-               or ent.type == "straight-rail"
-               or ent.type == "curved-rail"
+                or ent.type == "train-stop"
+                or ent.type == "straight-rail"
+                or ent.type == "curved-rail"
             then
                goto continue
             end
@@ -83,17 +83,18 @@ end
 
 function train_code.warp_array(array, destination, target_station, source_station)
    local new_train = nil
-   for i,v in ipairs(array) do
+   for i, v in ipairs(array) do
       -- Subtract current station position from the train position
       -- Add target station position to get new position
-      local new_pos = {x = v.position.x - source_station.position.x + target_station.position.x, y = v.position.y - source_station.position.y + target_station.position.y}
-      local new_entity = v.clone({position=new_pos, surface=destination})
+      local new_pos = { x = v.position.x - source_station.position.x + target_station.position.x, y = v.position.y -
+      source_station.position.y + target_station.position.y }
+      local new_entity = v.clone({ position = new_pos, surface = destination })
       if new_entity then
          new_entity.copy_settings(v)
          v.destroy()
          new_train = new_entity.train
       else
-         game.print({"warptorio.train-warp-error"},{color={1,0,0}})
+         game.print({ "warptorio.train-warp-error" }, { color = { 1, 0, 0 } })
       end
    end
    return new_train
@@ -102,11 +103,11 @@ end
 function train_code.get_free_warp_station(destination, station_name, direction)
    local stations = game.train_manager.get_train_stops(
       {
-         station_name=station_name,
-         surface=destination,
-         is_full=false,
-         is_disabled=false,
-         is_connected_to_rail=true
+         station_name = station_name,
+         surface = destination,
+         is_full = false,
+         is_disabled = false,
+         is_connected_to_rail = true
       }
    )
    local valid_dir = true
@@ -120,7 +121,7 @@ function train_code.get_free_warp_station(destination, station_name, direction)
       end
    end
    if not valid_dir then
-      game.print({"warptorio.train-warp-direction-error"}, {color={1,0,0}})
+      game.print({ "warptorio.train-warp-direction-error" }, { color = { 1, 0, 0 } })
       return nil
    end
    return nil
@@ -128,35 +129,35 @@ end
 
 function train_code.train_has_passengers(train)
    if #train.passengers > 0 then
-      game.print({"warptorio.train-warp-passenger-error"}, {color={1,0,0}})
+      game.print({ "warptorio.train-warp-passenger-error" }, { color = { 1, 0, 0 } })
       return true
    end
    return false
 end
 
 function train_code.is_station_out_of_bounds(station)
-    local surface_name = station.surface.name
-    local pos = station.position
-    local radius
-    local center = {x=0, y=0}
+   local surface_name = station.surface.name
+   local pos = station.position
+   local radius
+   local center = { x = 0, y = 0 }
 
-    -- Factory and garden are fixed internal floors at the origin, always valid
-    if surface_name == "factory" or surface_name == "garden" then return false end
+   -- Factory and garden are fixed internal floors at the origin, always valid
+   if surface_name == "factory" or surface_name == "garden" then return false end
 
-    center = get_surface_offset(surface_name)
-    if storage.warptorio and storage.warptorio.ground_size then
+   center = get_surface_offset(surface_name)
+   if storage.warptorio and storage.warptorio.ground_size then
       --game.print("Ground size: " .. storage.warptorio.ground_size)
       radius = storage.warptorio.ground_size / 2
-    else
+   else
       radius = 100 -- Fallback for ground_size
-    end
-    --game.print("Range Check - Center: {x=" .. center.x .. ", y=" .. center.y .. "}, Radius: " .. radius .. ", Station Pos: {x=" .. pos.x .. ", y=" .. pos.y .. "}")
-    --game.print("Range Check - Delta: {dx=" .. (pos.x - center.x) .. ", dy=" .. (pos.y - center.y) .. "}")
-    if math.abs(pos.x - center.x) > radius or math.abs(pos.y - center.y) > radius then
-      game.print({"warptorio.train-warp-station-range-error"}, {color={1,0,0}})
+   end
+   --game.print("Range Check - Center: {x=" .. center.x .. ", y=" .. center.y .. "}, Radius: " .. radius .. ", Station Pos: {x=" .. pos.x .. ", y=" .. pos.y .. "}")
+   --game.print("Range Check - Delta: {dx=" .. (pos.x - center.x) .. ", dy=" .. (pos.y - center.y) .. "}")
+   if math.abs(pos.x - center.x) > radius or math.abs(pos.y - center.y) > radius then
+      game.print({ "warptorio.train-warp-station-range-error" }, { color = { 1, 0, 0 } })
       return true
-    end
-    return false
+   end
+   return false
 end
 
 -- destination is the surface name the train should warp to. The caller decides it based on
@@ -166,16 +167,16 @@ function train_code.warp_trains(train, station_name, destination)
    if not train then return end
    if not train.valid then return end
    if not train.id then return end
-   
+
    -- We could remove the WarpStation filter to warp all trains, but for now we keep it like this.
    -- Because we don't keep the train schedule after warping you need the other stop on the line to be named the same.
-   local stations = game.train_manager.get_train_stops({station_name=station_name})
-   for i,v in ipairs(stations) do
+   local stations = game.train_manager.get_train_stops({ station_name = station_name })
+   for i, v in ipairs(stations) do
       -- We lost train maybe its already teleported?
       if not train then return end
       if not train.valid then return end
       if not train.id then return end
-      
+
       local tmp_train = v.get_stopped_train()
       if not tmp_train then goto next_train_in_loop end
       if not tmp_train.valid then goto next_train_in_loop end
@@ -183,13 +184,13 @@ function train_code.warp_trains(train, station_name, destination)
 
       local at_station = train.state == defines.train_state.wait_station
       if not at_station then goto next_train_in_loop end
-      
+
       local target_station = train_code.get_free_warp_station(destination, v.backer_name, v.direction)
       if not target_station then
-         game.print({"warptorio.train-warp-no-destination", station_name}, {color={1,0,0}})
+         game.print({ "warptorio.train-warp-no-destination", station_name }, { color = { 1, 0, 0 } })
          goto next_train_in_loop
       end
-      
+
       -- Warp is possible, now check for conditions that would abort it and show an error.
       if train_code.is_station_out_of_bounds(v) then goto next_train_in_loop end
       if train_code.is_station_out_of_bounds(target_station) then goto next_train_in_loop end
@@ -198,45 +199,46 @@ function train_code.warp_trains(train, station_name, destination)
       -- Check that target area is free.
       local dest_surface = game.surfaces[destination]
       if not train_code.is_train_footprint_clear(train, dest_surface, v, target_station) then
-         game.print({"warptorio.train-warp-track-blocked"}, {color={1,0,0}})
+         game.print({ "warptorio.train-warp-track-blocked" }, { color = { 1, 0, 0 } })
          goto next_train_in_loop
       end
 
       -- All checks passed, do the warp
-      train_code.warp_single_train(train,destination,target_station,v)
+      train_code.warp_single_train(train, destination, target_station, v)
 
       ::next_train_in_loop::
    end
 end
 
 function train_code.warp_single_train(train, destination, target_station, source_station)
-   game.print({"warptorio.train-warp",destination})
-   
+   game.print({ "warptorio.train-warp", destination })
+
    --[[
    The call to copy_settings() in warp_array() makes a perfect copy of the train including its group and schedule, except for the following caveats we need to handle:
      1. The new train is in manual mode, and thus...
      2. The new train doesn't remember what station it was going to.
      3. If the train was in a group, any temporary stops that were in its schedule will not be included for the new train (presumably because it gets assigned to its old group, which updates its schedule)
-   
+
    To be able to restore the train's state perfectly, we retrieve the missing pieces of the old train's schedule before the warp, and then add them back afterwards in a way that doesn't have any unwanted side effects on other parts of the state.
    ]]
 
    -- Retrieve and hold onto specific parts of train schedule that we lose after warp_array()
-   local schedule = train.get_schedule()                 -- use get_schedule() for a LuaSchedule, because setting train.schedule (a TrainSchedule) later appears to removes interrupts.
-   local schedule_records = schedule.get_records()       -- these records include temporary stops in the train's schedule, which we'll need to restore working state of a grouped train.
-   local schedule_index = train.schedule.current         -- record index in the schedule that the train is currently travelling to
+   local schedule = train.get_schedule()           -- use get_schedule() for a LuaSchedule, because setting train.schedule (a TrainSchedule) later appears to removes interrupts.
+   local schedule_records = schedule.get_records() -- these records include temporary stops in the train's schedule, which we'll need to restore working state of a grouped train.
+   local schedule_index = train.schedule
+   .current                                        -- record index in the schedule that the train is currently travelling to
 
    -- Create copied train on destination surface and destroy the original. Retains train group, interrupts, and non-temporary train stops. (Temp train stops included for ungrouped trains)
-   local new_train = train_code.warp_array(train.carriages,destination,target_station,source_station)
-   
+   local new_train = train_code.warp_array(train.carriages, destination, target_station, source_station)
+
    -- debug: ensure new_train was properly set by warp_array()
    -- game.print({"", new_train}, {color={1, 0.2, 0.2}})
-   
+
 
    -- Add missing pieces of train schedule back to the new train and return it to automatic mode.
-   local new_train_schedule = new_train.get_schedule()   -- get the LuaSchedule owned by the new train.
-   new_train_schedule.set_records(schedule_records)      -- Replace the schedule with the previous one. This safely adds back temporary stops for trains in a group, without adding those temporary stops to the schedules of other trains in the group.
-   new_train_schedule.go_to_station(schedule_index)      -- Sets current index of the new train's schedule to match the old one's, and puts the train in automatic mode.
+   local new_train_schedule = new_train.get_schedule() -- get the LuaSchedule owned by the new train.
+   new_train_schedule.set_records(schedule_records)    -- Replace the schedule with the previous one. This safely adds back temporary stops for trains in a group, without adding those temporary stops to the schedules of other trains in the group.
+   new_train_schedule.go_to_station(schedule_index)    -- Sets current index of the new train's schedule to match the old one's, and puts the train in automatic mode.
 end
 
 return train_code
