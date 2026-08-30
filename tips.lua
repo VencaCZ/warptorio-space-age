@@ -20,7 +20,7 @@ data:extend({
     category = "warptorio",
     trigger = {
       type = "research",
-      technology = "warp-train"
+      technology = "warp-train",
     },
     is_title = false,
     indent = 1,
@@ -33,16 +33,17 @@ data:extend({
     order = "z[warptorio]-c[evolution-scaling]",
     category = "warptorio",
     trigger = {
-  	  type = "or",
-  	  triggers = {
-  	  {
-    		type = "research",
-    		technology = "warp-ground-platform-3"
-  	  },
-  	  {
-    		type = "research",
-    		technology = "warp-factory-platform-2"
-  	  }}
+      type = "or",
+      triggers = {
+        {
+          type = "research",
+          technology = "warp-ground-platform-3",
+        },
+        {
+          type = "research",
+          technology = "warp-factory-platform-2",
+        },
+      },
     },
     is_title = false,
     indent = 1,
@@ -56,7 +57,7 @@ data:extend({
     category = "warptorio",
     trigger = {
       type = "research",
-      technology = "warp-factory-platform-2"
+      technology = "warp-factory-platform-2",
     },
     is_title = false,
     indent = 1,
@@ -70,11 +71,10 @@ data:extend({
     category = "warptorio",
     trigger = {
       type = "research",
-      technology = "chemical-science-pack"
+      technology = "chemical-science-pack",
     },
     is_title = false,
     indent = 1,
     simulation = nil,
-  }
-
+  },
 })

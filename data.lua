@@ -6,8 +6,12 @@ require("prototypes/collector_container")
 require("prototypes/warp_constant_combinator")
 
 local function is_shadow(sprite)
-  if sprite.draw_as_shadow then return true end
-  if sprite.filename and string.find(sprite.filename, "shadow", 1, true) then return true end
+  if sprite.draw_as_shadow then
+    return true
+  end
+  if sprite.filename and string.find(sprite.filename, "shadow", 1, true) then
+    return true
+  end
   if sprite.filenames then
     for _, fn in ipairs(sprite.filenames) do
       if type(fn) == "string" and string.find(fn, "shadow", 1, true) then
@@ -19,19 +23,21 @@ local function is_shadow(sprite)
 end
 
 local function looks_like_sprite(t)
-  if type(t) ~= "table" then return false end
+  if type(t) ~= "table" then
+    return false
+  end
   -- Common “sprite definition” indicators in Factorio prototypes:
-  return t.filename ~= nil
-      or t.filenames ~= nil
-      or t.stripes ~= nil
-      or t.layers ~= nil
-      or t.hr_version ~= nil
+  return t.filename ~= nil or t.filenames ~= nil or t.stripes ~= nil or t.layers ~= nil or t.hr_version ~= nil
 end
 
 local function tint_any_graphics(root, tint, visited)
-  if type(root) ~= "table" then return end
+  if type(root) ~= "table" then
+    return
+  end
   visited = visited or {}
-  if visited[root] then return end
+  if visited[root] then
+    return
+  end
   visited[root] = true
 
   -- If this table is (or contains) a sprite definition, tint it and its known sub-shapes.
@@ -62,13 +68,13 @@ end
 
 --shortcut
 local shortcut = {
-  type="shortcut",
-  name="warptorio-teleport",
-  action="lua",
-  icon="__warptorio-space-age__/graphics/home.png",
-  small_icon="__warptorio-space-age__/graphics/home.png"
+  type = "shortcut",
+  name = "warptorio-teleport",
+  action = "lua",
+  icon = "__warptorio-space-age__/graphics/home.png",
+  small_icon = "__warptorio-space-age__/graphics/home.png",
 }
-data:extend{shortcut}
+data:extend({ shortcut })
 
 -- asteroid collectors
 
@@ -88,13 +94,10 @@ crusher.tile_buildability_rules = nil
 
 -- Asteroids
 for _, i in pairs(data.raw["asteroid"]) do
-    table.insert(
-        i.dying_trigger_effect,
-        {
-            type = "script",
-            effect_id = "asteroid"
-        }
-    )
+  table.insert(i.dying_trigger_effect, {
+    type = "script",
+    effect_id = "asteroid",
+  })
 end
 --[[
 for _,i_original in pairs(data.raw["asteroid-chunk"]) do
@@ -118,7 +121,8 @@ for _,i_original in pairs(data.raw["asteroid-chunk"]) do
       data:extend{i}
    end
 end
-]]--
+]]
+--
 
 -- promethium
 local promethium = data.raw["recipe"]["promethium-science-pack"]
@@ -128,66 +132,65 @@ chunk.ingredients = {
   {
     amount = 1000,
     name = "lava",
-    type = "fluid"
+    type = "fluid",
   },
   {
     amount = 250,
     name = "ammonia",
-    type = "fluid"
+    type = "fluid",
   },
   {
     amount = 10,
     name = "uranium-235",
-    type = "item"
+    type = "item",
   },
   {
     amount = 200,
     name = "holmium-solution",
-    type = "fluid"
-  }
+    type = "fluid",
+  },
 }
 chunk.results = {
   {
     amount = 5,
     name = "promethium-asteroid-chunk",
-    type = "item"
-  }
+    type = "item",
+  },
 }
 chunk.name = "warp-promethium"
-data:extend{chunk}
-
+data:extend({ chunk })
 
 local tile_platform = table.deepcopy(data.raw["tile"][settings.startup["warptorio_factory-tile"].value])
 tile_platform.minable_properties = {
-  minable = false
+  minable = false,
 }
 tile_platform.name = "warp_tile_platform"
 
-local function set_destructable(tile,name)
-   if tile.max_health then
-      return
-   end
-   tile.max_health = 50
-   tile.weight = 200
-   tile.dying_explosion = "space-platform-foundation-explosion"
-   tile.default_cover_tile = "empty-space"
-   tile.is_foundation = true
-   if tile.frozen_variant then
-      set_destructable(data.raw["tile"][tile.frozen_variant])
-   end
-   if tile.thawed_variant then
-      set_destructable(data.raw["tile"][tile.thawed_variant])
-   end
-   tile.minable_properties = {
-      minable = false,
-   }
-   tile.name = name or tile.name
+local function set_destructable(tile, name)
+  if tile.max_health then
+    return
+  end
+  tile.max_health = 50
+  tile.weight = 200
+  tile.dying_explosion = "space-platform-foundation-explosion"
+  tile.default_cover_tile = "empty-space"
+  tile.is_foundation = true
+  if tile.frozen_variant then
+    set_destructable(data.raw["tile"][tile.frozen_variant])
+  end
+  if tile.thawed_variant then
+    set_destructable(data.raw["tile"][tile.thawed_variant])
+  end
+  tile.minable_properties = {
+    minable = false,
+  }
+  tile.name = name or tile.name
 end
 
 local foundation = data.raw["tile"]["space-platform-foundation"]
 local tile_world = table.deepcopy(data.raw["tile"][settings.startup["warptorio_ground-tile"].value])
-set_destructable(tile_world,"warp_tile_world")
-data:extend{tile_platform,tile_world}
+set_destructable(tile_world, "warp_tile_world")
+data:extend({ tile_platform, tile_world })
 
 --[[for name,element in pairs(data.raw["tile"]) do
    if string.find(name,"concrete") then
@@ -197,67 +200,67 @@ data:extend{tile_platform,tile_world}
 
 local belt_speeds = { 15, 30, 45, 60 }
 local belt_color = {
-  {1,1,0.5},
-  {1,0.5,0.5},
-  {0.5,0.5,1},
-  {0.5,1,0.5}
+  { 1, 1, 0.5 },
+  { 1, 0.5, 0.5 },
+  { 0.5, 0.5, 1 },
+  { 0.5, 1, 0.5 },
 }
-for i,v in ipairs(belt_speeds) do
+for i, v in ipairs(belt_speeds) do
   local belt = table.deepcopy(data.raw["linked-belt"]["linked-belt"])
-  belt.speed = v/480
+  belt.speed = v / 480
   belt.minable_properties = {
-    minable = false
+    minable = false,
   }
-  belt.name = "warp-platform-belt-"..v
+  belt.name = "warp-platform-belt-" .. v
   tint_any_graphics(belt, belt_color[i])
   --belt.pictures.layers[1].tint = belt_color[i]
-  data:extend{belt}
+  data:extend({ belt })
 end
 
 local acc = table.deepcopy(data.raw["accumulator"]["accumulator"])
 acc.name = "warp-power"
 acc.minable_properties = {
-  minable = false
+  minable = false,
 }
 acc.energy_source = -- energy source of accumulator
-{
-  type = "electric",
-  buffer_capacity = "1GJ",
-  usage_priority = "tertiary",
-  input_flow_limit = "1TW",
-  output_flow_limit = "1TW"
-}
-data:extend{acc}
+  {
+    type = "electric",
+    buffer_capacity = "1GJ",
+    usage_priority = "tertiary",
+    input_flow_limit = "1TW",
+    output_flow_limit = "1TW",
+  }
+data:extend({ acc })
 
 local acc = table.deepcopy(data.raw["accumulator"]["accumulator"])
 acc.name = "warp-power-2"
 acc.minable_properties = {
-  minable = false
+  minable = false,
 }
 acc.energy_source = -- energy source of accumulator
-{
-  type = "electric",
-  buffer_capacity = "5GJ",
-  usage_priority = "tertiary",
-  input_flow_limit = "1TW",
-  output_flow_limit = "1TW"
-}
-data:extend{acc}
+  {
+    type = "electric",
+    buffer_capacity = "5GJ",
+    usage_priority = "tertiary",
+    input_flow_limit = "1TW",
+    output_flow_limit = "1TW",
+  }
+data:extend({ acc })
 
 local acc = table.deepcopy(data.raw["accumulator"]["accumulator"])
 acc.name = "warp-power-3"
 acc.minable_properties = {
-  minable = false
+  minable = false,
 }
 acc.energy_source = -- energy source of accumulator
-{
-  type = "electric",
-  buffer_capacity = "25GJ",
-  usage_priority = "tertiary",
-  input_flow_limit = "1TW",
-  output_flow_limit = "1TW"
-}
-data:extend{acc}
+  {
+    type = "electric",
+    buffer_capacity = "25GJ",
+    usage_priority = "tertiary",
+    input_flow_limit = "1TW",
+    output_flow_limit = "1TW",
+  }
+data:extend({ acc })
 
 -- change space science so it can be made anywhere
 
@@ -292,44 +295,52 @@ support.support_range = support.support_range * 3
 
 -- sounds
 
-data:extend{{
-      type = "sound",
-      name = "warp-start",
-      filename = "__warptorio-space-age__/sounds/warp_start.wav",
-      category = "environment",
-}}
+data:extend({
+  {
+    type = "sound",
+    name = "warp-start",
+    filename = "__warptorio-space-age__/sounds/warp_start.wav",
+    category = "environment",
+  },
+})
 
-data:extend{{
-      type = "sound",
-      name = "warp-end",
-      filename = "__warptorio-space-age__/sounds/warp_end.wav",
-      category = "environment",
-}}
-data:extend{{
-      type = "sound",
-      name = "planet-change",
-      filename = "__warptorio-space-age__/sounds/planet_change.wav",
-      category = "alert",
-} }
-data:extend{{
-      type = "sound",
-      name = "boss-spawn",
-      filename = "__warptorio-space-age__/sounds/boss_spawn.wav",
-      category = "alert",
-}}
+data:extend({
+  {
+    type = "sound",
+    name = "warp-end",
+    filename = "__warptorio-space-age__/sounds/warp_end.wav",
+    category = "environment",
+  },
+})
+data:extend({
+  {
+    type = "sound",
+    name = "planet-change",
+    filename = "__warptorio-space-age__/sounds/planet_change.wav",
+    category = "alert",
+  },
+})
+data:extend({
+  {
+    type = "sound",
+    name = "boss-spawn",
+    filename = "__warptorio-space-age__/sounds/boss_spawn.wav",
+    category = "alert",
+  },
+})
 
 -- Change bio-labs
 
 local labs = data.raw["lab"]["biolab"]
 labs.surface_conditions = {
-   {
-      min = 1100,
-      property = "pressure"
-   },
-   {
-      min = 11,
-      property = "gravity"
-   }
+  {
+    min = 1100,
+    property = "pressure",
+  },
+  {
+    min = 11,
+    property = "gravity",
+  },
 }
 
 -- add gui style
@@ -346,15 +357,14 @@ flamethrower_ammo.ingredients = {
   {
     amount = 5,
     name = "steel-plate",
-    type = "item"
+    type = "item",
   },
   {
     amount = 200,
     name = "light-oil",
-    type = "fluid"
+    type = "fluid",
   },
 }
-
 
 -- make flametrower freeze on aquilo
 
@@ -371,10 +381,10 @@ local beacon = data.raw["beacon"]["beacon"]
 beacon.distribution_effectivity_bonus_per_quality_level = 0.25
 beacon.quality_affects_module_slots = true
 beacon.allowed_effects = {
-   "consumption",
-   "speed",
-   "pollution",
-   "quality"
+  "consumption",
+  "speed",
+  "pollution",
+  "quality",
 }
 
 -- rebalance tesla turrets
@@ -389,19 +399,25 @@ cat["chain-tesla-turret-chain"].fork_chance_increase_per_quality_level = 0
 -- atomic-bomb-wave: 400 -> 800
 local wave = data.raw["projectile"]["atomic-bomb-wave"]
 for _, eff in ipairs(wave.action[1].action_delivery.target_effects) do
-  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+  if eff.type == "damage" then
+    eff.damage.amount = eff.damage.amount * 2
+  end
 end
 
 -- atomic-bomb-ground-zero-projectile: 100 -> 200
 local gz = data.raw["projectile"]["atomic-bomb-ground-zero-projectile"]
 for _, eff in ipairs(gz.action[1].action_delivery.target_effects) do
-  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+  if eff.type == "damage" then
+    eff.damage.amount = eff.damage.amount * 2
+  end
 end
 
 -- atomic-rocket direct effect: 400 -> 800
 local rocket = data.raw["projectile"]["atomic-rocket"]
 for _, eff in ipairs(rocket.action.action_delivery.target_effects) do
-  if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
+  if eff.type == "damage" then
+    eff.damage.amount = eff.damage.amount * 2
+  end
 end
 
 -- artillery-projectile: physical + explosion damage +50%
@@ -409,19 +425,21 @@ local art = data.raw["artillery-projectile"]["artillery-projectile"]
 for _, eff in ipairs(art.action.action_delivery.target_effects) do
   if eff.type == "nested-result" then
     for _, sub in ipairs(eff.action.action_delivery.target_effects) do
-      if sub.type == "damage" then sub.damage.amount = sub.damage.amount * 1.5 end
+      if sub.type == "damage" then
+        sub.damage.amount = sub.damage.amount * 1.5
+      end
     end
   end
 end
 
 if mods["quality"] then
--- add new quality
-data.extend({
-   {
+  -- add new quality
+  data.extend({
+    {
       type = "quality",
       name = "warp",
       level = 11,
-      color = {194, 54, 22},
+      color = { 194, 54, 22 },
       order = "f",
       subgroup = "qualities",
       icon = "__warptorio-space-age__/graphics/quality.png",
@@ -429,12 +447,12 @@ data.extend({
       mining_drill_resource_drain_multiplier = 1,
       hidden_in_factoriopedia = true,
       hidden = true,
-	}
-})
+    },
+  })
 
-local legendary = data.raw.quality["legendary"]
-legendary.next = "warp"
-legendary.next_probability = 0.01
+  local legendary = data.raw.quality["legendary"]
+  legendary.next = "warp"
+  legendary.next_probability = 0.01
 end
 --tt.energy_source.input_flow_limit = tt.energy_source.input_flow_limit * 3
 

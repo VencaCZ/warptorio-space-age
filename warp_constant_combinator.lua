@@ -18,17 +18,14 @@ local function get_warp_amount()
 end
 
 local function set_parameters(section, parameters)
-   for _,param in ipairs(parameters) do
-      param.signal.quality="normal"
-      section.set_slot(
-         param.index,
-         {
-            value = param.signal,
-            min=param.count,
-            max=param.count
-         }
-      )
-   end
+  for _, param in ipairs(parameters) do
+    param.signal.quality = "normal"
+    section.set_slot(param.index, {
+      value = param.signal,
+      min = param.count,
+      max = param.count,
+    })
+  end
 end
 
 local function get_planet_signal(planet_name)
@@ -38,7 +35,7 @@ local function get_planet_signal(planet_name)
   if not game.planets[planet_name] then
     return nil
   end
-  return {type = "space-location", name = planet_name}
+  return { type = "space-location", name = planet_name }
 end
 
 local function update_entity(entity, remaining_time, wave_index, wave_time, warp_amount)
@@ -58,41 +55,41 @@ local function update_entity(entity, remaining_time, wave_index, wave_time, warp
   planet-signal - Value 1 current planet
   planet-signal - Value 2 next planet
   ]]
-  
+
   if not section then
-     control_behavior.add_section()
-     section = control_behavior.get_section(1)
+    control_behavior.add_section()
+    section = control_behavior.get_section(1)
   end
 
   if not section.is_manual then
-     for _,sec in ipairs(control_behavior.sections) do
-        if sec.is_manual then
-           section = sec
-           break
-        end
-     end
+    for _, sec in ipairs(control_behavior.sections) do
+      if sec.is_manual then
+        section = sec
+        break
+      end
+    end
   end
-  
+
   local parameters = {
-    {index = 1, signal = {type = "virtual", name = "signal-T"}, count = math.floor(remaining_time)},
-    {index = 2, signal = {type = "virtual", name = "signal-W"}, count = wave_index},
-    {index = 3, signal = {type = "virtual", name = "signal-V"}, count = math.floor(wave_time)},
-    {index = 4, signal = {type = "virtual", name = "signal-A"}, count = warp_amount},
+    { index = 1, signal = { type = "virtual", name = "signal-T" }, count = math.floor(remaining_time) },
+    { index = 2, signal = { type = "virtual", name = "signal-W" }, count = wave_index },
+    { index = 3, signal = { type = "virtual", name = "signal-V" }, count = math.floor(wave_time) },
+    { index = 4, signal = { type = "virtual", name = "signal-A" }, count = warp_amount },
   }
 
   local current_planet_signal = get_planet_signal(storage.warptorio.surface_name)
   local next_planet_signal = get_planet_signal(storage.warptorio.planet_next)
   if current_planet_signal then
-     local count = 1
-     -- Basically just handling nauvis
-     if current_planet_signal == next_planet_signal then
-        count = 3
-     end
-     table.insert(parameters, {index = #parameters + 1, signal = current_planet_signal, count = count})
+    local count = 1
+    -- Basically just handling nauvis
+    if current_planet_signal == next_planet_signal then
+      count = 3
+    end
+    table.insert(parameters, { index = #parameters + 1, signal = current_planet_signal, count = count })
   end
 
   if next_planet_signal then
-    table.insert(parameters, {index = #parameters + 1, signal = next_planet_signal, count = 2})
+    table.insert(parameters, { index = #parameters + 1, signal = next_planet_signal, count = 2 })
   end
 
   set_parameters(section, parameters)
@@ -129,7 +126,7 @@ function warp_constant_combinator.rescan()
   end
 
   for _, surface in pairs(game.surfaces) do
-    local found = surface.find_entities_filtered({name = COMBINATOR_NAME})
+    local found = surface.find_entities_filtered({ name = COMBINATOR_NAME })
     for _, entity in ipairs(found) do
       warp_constant_combinator.register(entity)
     end

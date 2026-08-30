@@ -6,16 +6,16 @@ combinator_item.order = "[circuit-network]-[warp-constant-combinator]"
 local combinator_recipe = table.deepcopy(data.raw["recipe"]["constant-combinator"])
 combinator_recipe.name = "warp-constant-combinator"
 combinator_recipe.enabled = false
-combinator_recipe.results = {{type = "item", name = "warp-constant-combinator", amount = 1}}
+combinator_recipe.results = { { type = "item", name = "warp-constant-combinator", amount = 1 } }
 
 local combinator_entity = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
 combinator_entity.name = "warp-constant-combinator"
-combinator_entity.minable = {mining_time = 0.1, result = "warp-constant-combinator"}
+combinator_entity.minable = { mining_time = 0.1, result = "warp-constant-combinator" }
 
-local warp_tint = {r = 0.55, g = 0.8, b = 1, a = 1}
+local warp_tint = { r = 0.55, g = 0.8, b = 1, a = 1 }
 
 if combinator_item.icon then
-  combinator_item.icons = {{icon = combinator_item.icon, icon_size = combinator_item.icon_size, tint = warp_tint}}
+  combinator_item.icons = { { icon = combinator_item.icon, icon_size = combinator_item.icon_size, tint = warp_tint } }
   combinator_item.icon = nil
 elseif combinator_item.icons then
   for _, icon_data in pairs(combinator_item.icons) do
@@ -24,7 +24,9 @@ elseif combinator_item.icons then
 end
 
 local function tint_sprite(sprite)
-  if not sprite then return end
+  if not sprite then
+    return
+  end
 
   if sprite.layers then
     for _, layer in pairs(sprite.layers) do

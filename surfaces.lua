@@ -1,10 +1,8 @@
 local planet_map_gen = require("__base__/prototypes/planet/planet-map-gen")
 
 planet_map_gen.vulcanus = function()
-  return
-  {
-    property_expression_names =
-    {
+  return {
+    property_expression_names = {
       elevation = "vulcanus_elevation",
       temperature = "vulcanus_temperature",
       moisture = "vulcanus_moisture",
@@ -20,21 +18,18 @@ planet_map_gen.vulcanus = function()
       ["entity:sulfuric-acid-geyser:probability"] = "vulcanus_sulfuric_acid_geyser_probability",
       ["entity:sulfuric-acid-geyser:richness"] = "vulcanus_sulfuric_acid_geyser_richness",
     },
-    cliff_settings =
-    {
+    cliff_settings = {
       name = "cliff-vulcanus",
       cliff_elevation_interval = 120,
-      cliff_elevation_0 = 70
+      cliff_elevation_0 = 70,
     },
-    territory_settings =
-    {
-      units = {"small-demolisher", "medium-demolisher", "big-demolisher"},
+    territory_settings = {
+      units = { "small-demolisher", "medium-demolisher", "big-demolisher" },
       territory_index_expression = "demolisher_territory_expression",
       territory_variation_expression = "demolisher_variation_expression",
-      minimum_territory_size = 10
+      minimum_territory_size = 10,
     },
-    autoplace_controls =
-    {
+    autoplace_controls = {
       ["vulcanus_coal"] = {},
       ["sulfuric_acid_geyser"] = {},
       ["tungsten_ore"] = {},
@@ -42,12 +37,9 @@ planet_map_gen.vulcanus = function()
       ["vulcanus_volcanism"] = {},
       --["rocks"] = {}, -- can't add the rocks control otherwise nauvis rocks spawn
     },
-    autoplace_settings =
-    {
-      ["tile"] =
-      {
-        settings =
-        {
+    autoplace_settings = {
+      ["tile"] = {
+        settings = {
           --nauvis tiles
           ["volcanic-soil-dark"] = {},
           ["volcanic-soil-light"] = {},
@@ -69,12 +61,10 @@ planet_map_gen.vulcanus = function()
           ["volcanic-smooth-stone"] = {},
           ["volcanic-smooth-stone-warm"] = {},
           ["volcanic-ash-cracks"] = {},
-        }
+        },
       },
-      ["decorative"] =
-      {
-        settings =
-        {
+      ["decorative"] = {
+        settings = {
           -- nauvis decoratives
           ["v-brown-carpet-grass"] = {},
           ["v-green-hairy-grass"] = {},
@@ -104,12 +94,10 @@ planet_map_gen.vulcanus = function()
           ["tiny-sulfur-rock"] = {},
           ["sulfur-rock-cluster"] = {},
           ["waves-decal"] = {},
-        }
+        },
       },
-      ["entity"] =
-      {
-        settings =
-        {
+      ["entity"] = {
+        settings = {
           ["coal"] = {},
           ["calcite"] = {},
           ["sulfuric-acid-geyser"] = {},
@@ -124,26 +112,23 @@ planet_map_gen.vulcanus = function()
           ["vulcanus-chimney-truncated"] = {},
           ["ashland-lichen-tree"] = {},
           ["ashland-lichen-tree-flaming"] = {},
-        }
-      }
-    }
+        },
+      },
+    },
   }
 end
 
 planet_map_gen.gleba = function()
-  return
-  {
-    cliff_settings =
-    {
+  return {
+    cliff_settings = {
       name = "cliff-gleba",
       control = "gleba_cliff",
       cliff_elevation_0 = 40,
       cliff_elevation_interval = 60,
       richness = 0.80,
-      cliff_smoothing = 0 -- Not critical but looks better
+      cliff_smoothing = 0, -- Not critical but looks better
     },
-    property_expression_names =
-    {
+    property_expression_names = {
       elevation = "gleba_elevation",
       aux = "gleba_aux",
       moisture = "gleba_moisture",
@@ -168,22 +153,18 @@ planet_map_gen.gleba = function()
       ["decorative:light-mud-decal:probability"] = "gleba_light_mud_probability",
       ["decorative:dark-mud-decal:probability"] = "gleba_dark_mud_probability",
       ["decorative:green-carpet-grass:probability"] = "gleba_green_carpet_grass_probability",
-      ["decorative:green-hairy-grass:probability"] = "gleba_green_hairy_grass_probability"
+      ["decorative:green-hairy-grass:probability"] = "gleba_green_hairy_grass_probability",
     },
-    autoplace_controls =
-    {
+    autoplace_controls = {
       ["gleba_stone"] = {},
       ["gleba_plants"] = {},
       ["gleba_enemy_base"] = {},
       ["gleba_water"] = {},
       ["gleba_cliff"] = {},
     },
-    autoplace_settings =
-    {
-      ["tile"] =
-      {
-        settings =
-        {
+    autoplace_settings = {
+      ["tile"] = {
+        settings = {
           ["natural-yumako-soil"] = {},
           ["natural-jellynut-soil"] = {},
           ["wetland-yumako"] = {},
@@ -224,14 +205,11 @@ planet_map_gen.gleba = function()
           ["highland-dark-rock"] = {},
           ["highland-dark-rock-2"] = {},
           ["highland-yellow-rock"] = {},
-          ["pit-rock"] = {}
-        }
-
+          ["pit-rock"] = {},
+        },
       },
-      ["decorative"] =
-      {
-        settings =
-        {
+      ["decorative"] = {
+        settings = {
           ["yellow-lettuce-lichen-1x1"] = {},
           ["yellow-lettuce-lichen-3x3"] = {},
           ["yellow-lettuce-lichen-6x6"] = {},
@@ -308,19 +286,17 @@ planet_map_gen.gleba = function()
           ["green-pita"] = {},
           ["green-pita-mini"] = {},
           ["lichen-decal"] = {},
-          ["shroom-decal"] = {}
-        }
+          ["shroom-decal"] = {},
+        },
       },
-      ["entity"] =
-      {
-        settings =
-        {
+      ["entity"] = {
+        settings = {
           ["stone"] = {},
           ["iron-stromatolite"] = {},
-          ["copper-stromatolite"] = {}
-        }
-      }
-    }
+          ["copper-stromatolite"] = {},
+        },
+      },
+    },
   }
 end
 
@@ -330,18 +306,17 @@ planet_map_gen.test = function()
   p.autoplace_controls = {}
   p.autoplace_settings.entity = {
     settings = {
-      ["iron-ore"] = {frequency="high", size="high", richness="high"},
-    }
+      ["iron-ore"] = { frequency = "high", size = "high", richness = "high" },
+    },
   }
   p.autoplace_settings.tile = {
-    settings =
-    {
+    settings = {
       --nauvis tiles
       ["volcanic-soil-dark"] = {},
       ["volcanic-soil-light"] = {},
       ["volcanic-ash-soil"] = {},
       --end of nauvis tiles
-    }
+    },
   }
   return p
 end
