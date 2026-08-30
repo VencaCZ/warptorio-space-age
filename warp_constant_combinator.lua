@@ -11,8 +11,8 @@ local function ensure_storage()
 end
 
 local function get_warp_amount()
-  if storage.warporio and storage.warporio.index then
-    return storage.warporio.index
+  if storage.warptorio and storage.warptorio.index then
+    return storage.warptorio.index
   end
   return 0
 end
