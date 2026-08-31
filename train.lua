@@ -10,7 +10,6 @@ local RETRY_WARN_AFTER = 60 * 30
 
 train_code.warp_effects = train_code.warp_effects or {}
 local WARP_FLASH_DURATION = 20          -- ticks
-local WARP_FLASH_MAX_RADIUS = 4         -- tiles
 local TRAIL_TICKS = 25                  -- how long the trail burns
 local TRAIL_STEP = 0.6                  -- spacing between flame points, tiles
 
@@ -53,7 +52,10 @@ function train_code.create_warp_flash(surface, position, direction)
 end
 
 -- Queues a flaming skid-mark trail behind a station, opposite its facing.
-function train_code.create_warp_trail(surface, position, direction, length)
+-- length is the trail extent behind the station (towards the train's tail),
+-- front is the extra extent ahead of the station (towards the locomotive nose).
+-- reverse makes the flames brightest at the tail end instead of the nose.
+function train_code.create_warp_trail(surface, position, direction, length, front, reverse)
    if not (surface and surface.valid and position) then return end
 
    train_code.warp_effects[#train_code.warp_effects + 1] = {
@@ -62,6 +64,8 @@ function train_code.create_warp_trail(surface, position, direction, length)
       position = warp_effect_position(position, direction),
       direction = direction,
       length = length,
+      front = front or 0,
+      reverse = reverse,
       tick_start = game.tick,
    }
 end
@@ -82,7 +86,6 @@ function train_code.on_tick(tick)
             table.remove(train_code.warp_effects, i)
          else
             local t = age / WARP_FLASH_DURATION  -- 0..1
-            local radius = t * WARP_FLASH_MAX_RADIUS
             local fade = 1 - t
 
             -- Colour shifts from white-hot to amber fire as the wave expands
@@ -103,58 +106,7 @@ function train_code.on_tick(tick)
                }
             end
 
-            -- Thick layered shockwave band (three concentric rings so it reads
-            -- as a solid wall of energy instead of a thin line)
-            for layer = 1, 3 do
-               local r = radius - (layer - 1) * 0.55
-               if r > 0.3 then
-                  rendering.draw_circle{
-                     color = { r = cr, g = cg, b = cb, a = fade * 0.55 / layer },
-                     radius = r,
-                     width = 0.55 - (layer - 1) * 0.18,
-                     filled = false,
-                     target = f.position,
-                     surface = f.surface,
-                     time_to_live = 2,
-                     draw_on_ground = false,
-                  }
-               end
-            end
-
-            -- Second, faster pulse that chases and overtakes the first wave
-            if age >= WARP_FLASH_DURATION * 0.4 then
-               local t2 = (age - WARP_FLASH_DURATION * 0.4) / (WARP_FLASH_DURATION * 0.6)
-               rendering.draw_circle{
-                  color = { r = 1, g = 1, b = 1, a = (1 - t2) * 0.7 },
-                  radius = t2 * WARP_FLASH_MAX_RADIUS * 1.05,
-                  width = 0.25,
-                  filled = false,
-                  target = f.position,
-                  surface = f.surface,
-                  time_to_live = 2,
-                  draw_on_ground = false,
-               }
-            end
-
-            -- Rotating energy spokes at the wavefront
-            local spoke_len = 1.6
-            local inner = math.max(0, radius - spoke_len)
-            for s = 1, 8 do
-               local angle = s * math.pi / 4 + age * 0.12
-               local dx = math.sin(angle)
-               local dy = math.cos(angle)
-               rendering.draw_line{
-                  color = { r = cr, g = cg, b = cb, a = fade * 0.5 },
-                  width = 0.15,
-                  from = { x = f.position.x + dx * inner, y = f.position.y + dy * inner },
-                  to = { x = f.position.x + dx * radius, y = f.position.y + dy * radius },
-                  surface = f.surface,
-                  time_to_live = 2,
-                  draw_on_ground = false,
-               }
-            end
-
-            -- Light pulse that grows and fades with the ring
+            -- Light pulse that grows and fades with the flash
             rendering.draw_light{
                sprite = "utility/light_medium",
                target = f.position,
@@ -173,12 +125,15 @@ function train_code.on_tick(tick)
          else
             local fade = 1 - age / TRAIL_TICKS
             local dir = direction_vector(f.direction)
+            local total = f.length + f.front
 
-            local d = 0
+            local d = -f.front
             while d <= f.length do
-               -- flames are brightest and biggest where the train just stood,
-               -- shrinking towards the far end of the trail
-               local spread = 1 - d / f.length
+               -- flames are brightest and biggest at the train's nose (front),
+               -- shrinking towards the far end of the trail; reverse flips it
+               -- so the tail end burns brightest instead
+               local tpos = (d + f.front) / total
+               local spread = f.reverse and tpos or (1 - tpos)
                local flicker = 0.75 + 0.25 * math.sin(age * 1.3 + d * 1.7)
                local pos = {
                   x = f.position.x - dir.x * d,
@@ -211,8 +166,8 @@ function train_code.on_tick(tick)
             rendering.draw_light{
                sprite = "utility/light_medium",
                target = {
-                  x = f.position.x - dir.x * f.length / 2,
-                  y = f.position.y - dir.y * f.length / 2,
+                  x = f.position.x - dir.x * (f.length - f.front) / 2,
+                  y = f.position.y - dir.y * (f.length - f.front) / 2,
                },
                surface = f.surface,
                color = { r = 1, g = 0.55, b = 0.15, a = fade * 0.8 },
@@ -279,16 +234,43 @@ function train_code.queue_retry(train, station_name, reason_msg)
    end
 end
 
+local function carriage_warp_position(carriage, source_station, target_station)
+   return {
+      x = carriage.position.x - source_station.position.x + target_station.position.x,
+      y = carriage.position.y - source_station.position.y + target_station.position.y
+   }
+end
+
+local function is_rail_at(surface, position)
+   local rails = surface.find_entities_filtered {
+      position = position,
+      radius = 1.5,
+      type = { "straight-rail", "curved-rail" },
+      limit = 1,
+   }
+   return #rails > 0
+end
+
+-- Returns true if there is rail under every carriage position on the destination
+-- surface, i.e. the track behind the target station is long enough for the train.
+-- destination_surface MUST be a LuaSurface
+function train_code.is_train_track_long_enough(train, destination_surface, source_station, target_station)
+   for _, carriage in ipairs(train.carriages) do
+      local new_pos = carriage_warp_position(carriage, source_station, target_station)
+      if not is_rail_at(destination_surface, new_pos) then
+         return false
+      end
+   end
+   return true
+end
+
 -- Returns true if the full train footprint is clear on the destination surface
 -- destination_surface MUST be a LuaSurface
 function train_code.is_train_footprint_clear(train, destination_surface, source_station, target_station)
    local surface = destination_surface
 
    for _, carriage in ipairs(train.carriages) do
-      local new_pos = {
-         x = carriage.position.x - source_station.position.x + target_station.position.x,
-         y = carriage.position.y - source_station.position.y + target_station.position.y
-      }
+      local new_pos = carriage_warp_position(carriage, source_station, target_station)
 
       local box = carriage.prototype.collision_box
       if target_station.direction == defines.direction.east or target_station.direction == defines.direction.west then
@@ -330,7 +312,9 @@ function train_code.is_train_footprint_clear(train, destination_surface, source_
 end
 
 function train_code.warp_array(array, destination, target_station, source_station)
-   local new_train = nil
+   -- Clone all carriages first; if any clone fails, roll back the clones so the
+   -- source train stays intact and the warp can be retried later.
+   local clones = {}
    for _, v in ipairs(array) do
       -- Subtract current station position from the train position
       -- Add target station position to get new position
@@ -341,15 +325,22 @@ function train_code.warp_array(array, destination, target_station, source_statio
       }
 
       local new_entity = v.clone({ position = new_pos, surface = destination })
-      if new_entity then
-         new_entity.train.manual_mode = false
-         new_entity.copy_settings(v)
-         new_entity.train.manual_mode = false
-         v.destroy()
-         new_train = new_entity.train
-      else
-         game.print({ "warptorio.train-warp-error" }, { color = { 1, 0, 0 } })
+      if not new_entity then
+         for _, c in ipairs(clones) do
+            if c.valid then c.destroy() end
+         end
+         return nil
       end
+      clones[#clones + 1] = new_entity
+   end
+
+   local new_train = nil
+   for i, new_entity in ipairs(clones) do
+      new_entity.train.manual_mode = false
+      new_entity.copy_settings(array[i])
+      new_entity.train.manual_mode = false
+      new_train = new_entity.train
+      array[i].destroy()
    end
    return new_train
 end
@@ -428,11 +419,14 @@ function train_code.warp_trains(train, station_name, destination)
 
       if valid then
          local target_station = train_code.get_free_warp_station(destination, v.backer_name, v.direction)
+         local destination_surface = game.surfaces[destination]
+         local track_ok = target_station and train_code.is_train_track_long_enough(train, destination_surface, v, target_station)
          if target_station
             and not train_code.is_station_out_of_bounds(v)
             and not train_code.is_station_out_of_bounds(target_station)
             and not train_code.train_has_passengers(train)
-            and train_code.is_train_footprint_clear(train, game.surfaces[destination], v, target_station)
+            and track_ok
+            and train_code.is_train_footprint_clear(train, destination_surface, v, target_station)
          then
             train_code.pending_warps[train.id] = nil
             train_code.warp_single_train(train, destination, target_station, v)
@@ -440,6 +434,8 @@ function train_code.warp_trains(train, station_name, destination)
          else
             if not target_station then
                train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-no-destination", station_name})
+            elseif not track_ok then
+               train_code.queue_retry(train, station_name, {"warptorio.train-warp-track-too-short"})
             else
                train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-blocked"})
             end
@@ -516,17 +512,25 @@ function train_code.warp_single_train(train, destination, target_station, source
    local schedule_index = train.schedule.current
 
    local train_length = #train.carriages * 7
-   train_code.create_warp_trail(source_station.surface, source_station.position, source_station.direction, train_length)
+   -- Departure: trail covers where the train stood, plus the locomotive nose
+   -- sticking out ahead of the station.
+   local WARP_TRAIL_FRONT_PAD = 4
+   train_code.create_warp_trail(source_station.surface, source_station.position, source_station.direction, train_length, WARP_TRAIL_FRONT_PAD)
    train_code.create_warp_flash(source_station.surface, source_station.position, source_station.direction)
 
    local new_train = train_code.warp_array(train.carriages, destination, target_station, source_station)
    if not new_train then
-      game.print({"warptorio.train-warp-error", train.id, destination})
+      game.print({"warptorio.train-warp-error"}, { color = { 1, 0, 0 } })
+      -- Source train is still parked and intact (clones were rolled back), so
+      -- queue a retry instead of giving up.
+      train_code.queue_retry(train, source_station.backer_name, {"warptorio.train-warp-error"})
       return
    end
 
    local destination_surface = game.surfaces[destination]
-   train_code.create_warp_trail(destination_surface, target_station.position, target_station.direction, train_length)
+   -- Arrival: trail extends a bit past the back of the landed train.
+   local WARP_TRAIL_BACK_PAD = 6
+   train_code.create_warp_trail(destination_surface, target_station.position, target_station.direction, train_length + WARP_TRAIL_BACK_PAD, 0, true)
    train_code.create_warp_flash(destination_surface, target_station.position, target_station.direction)
 
    -- Restore schedule and switch back to automatic.
