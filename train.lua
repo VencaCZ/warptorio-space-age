@@ -466,9 +466,9 @@ function train_code.retry_pending_warps()
 end
 
 local WARP_STATION_NAMES = {
-   [warp_settings.train.ground_station] = true,
-   [warp_settings.train.factory_station] = true,
-   [warp_settings.train.garden_station] = true,
+   warp_settings.train.ground_station,
+   warp_settings.train.factory_station,
+   warp_settings.train.garden_station,
 }
 
 -- Warps trains parked at warp stations that never fired on_train_changed_state
@@ -481,14 +481,15 @@ function train_code.scan_for_parked_warps()
 
    for _, surface_name in ipairs(surfaces) do
       if game.surfaces[surface_name] and game.surfaces[surface_name].valid then
-         for _, stop in ipairs(game.train_manager.get_train_stops({ surface = surface_name })) do
-            if WARP_STATION_NAMES[stop.backer_name] then
-               local t = stop.get_stopped_train()
-               if t and t.valid and t.id and t.state == defines.train_state.wait_station and not train_code.pending_warps[t.id] then
-                  local destination = train_code.resolve_train_destination(surface_name, stop.backer_name)
-                  if destination then
-                     train_code.warp_trains(t, stop.backer_name, destination)
-                  end
+         -- Filter by warp station names so we only ever touch warp stops, not
+         -- every train stop the player has built on the surface.
+         local warp_stops = game.train_manager.get_train_stops({ station_name = WARP_STATION_NAMES, surface = surface_name })
+         for _, stop in ipairs(warp_stops) do
+            local t = stop.get_stopped_train()
+            if t and t.valid and t.id and t.state == defines.train_state.wait_station and not train_code.pending_warps[t.id] then
+               local destination = train_code.resolve_train_destination(surface_name, stop.backer_name)
+               if destination then
+                  train_code.warp_trains(t, stop.backer_name, destination)
                end
             end
          end
