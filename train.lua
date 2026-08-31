@@ -11,7 +11,6 @@ local RETRY_WARN_AFTER = 60 * 30
 train_code.warp_effects = train_code.warp_effects or {}
 local WARP_FLASH_DURATION = 20          -- ticks
 local WARP_FLASH_MAX_RADIUS = 4         -- tiles
-local WARP_EFFECT_OFFSET = { x = 0, y = 2 }
 local TRAIL_TICKS = 25                  -- how long the trail burns
 local TRAIL_STEP = 0.6                  -- spacing between flame points, tiles
 
@@ -19,6 +18,18 @@ local TRAIL_STEP = 0.6                  -- spacing between flame points, tiles
 local function direction_vector(direction)
    local angle = direction * math.pi / 8
    return { x = math.sin(angle), y = -math.cos(angle) }
+end
+
+-- A train stop's position sits beside the track it parks trains on (left of the
+-- travel direction), so effects are shifted there to land on the rails instead
+-- of on the stop tile.
+local WARP_EFFECT_TILE_OFFSET = 2
+local function warp_effect_position(position, direction)
+   local dir = direction_vector(direction)
+   return {
+      x = position.x + dir.y * WARP_EFFECT_TILE_OFFSET,
+      y = position.y - dir.x * WARP_EFFECT_TILE_OFFSET,
+   }
 end
 
 local function get_surface_offset(surface_name)
@@ -30,13 +41,13 @@ local function get_surface_offset(surface_name)
 end
 
 -- Queues a bright warp flash (expanding shockwave + light pulse) at a position.
-function train_code.create_warp_flash(surface, position)
+function train_code.create_warp_flash(surface, position, direction)
    if not (surface and surface.valid and position) then return end
 
    train_code.warp_effects[#train_code.warp_effects + 1] = {
       kind = "flash",
       surface = surface,
-      position = { x = position.x + WARP_EFFECT_OFFSET.x, y = position.y + WARP_EFFECT_OFFSET.y },
+      position = warp_effect_position(position, direction),
       tick_start = game.tick,
    }
 end
@@ -48,7 +59,7 @@ function train_code.create_warp_trail(surface, position, direction, length)
    train_code.warp_effects[#train_code.warp_effects + 1] = {
       kind = "trail",
       surface = surface,
-      position = { x = position.x + WARP_EFFECT_OFFSET.x, y = position.y + WARP_EFFECT_OFFSET.y },
+      position = warp_effect_position(position, direction),
       direction = direction,
       length = length,
       tick_start = game.tick,
@@ -506,7 +517,7 @@ function train_code.warp_single_train(train, destination, target_station, source
 
    local train_length = #train.carriages * 7
    train_code.create_warp_trail(source_station.surface, source_station.position, source_station.direction, train_length)
-   train_code.create_warp_flash(source_station.surface, source_station.position)
+   train_code.create_warp_flash(source_station.surface, source_station.position, source_station.direction)
 
    local new_train = train_code.warp_array(train.carriages, destination, target_station, source_station)
    if not new_train then
@@ -516,7 +527,7 @@ function train_code.warp_single_train(train, destination, target_station, source
 
    local destination_surface = game.surfaces[destination]
    train_code.create_warp_trail(destination_surface, target_station.position, target_station.direction, train_length)
-   train_code.create_warp_flash(destination_surface, target_station.position)
+   train_code.create_warp_flash(destination_surface, target_station.position, target_station.direction)
 
    -- Restore schedule and switch back to automatic.
    local new_train_schedule = new_train.get_schedule()
