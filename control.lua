@@ -406,7 +406,23 @@ script.on_event(defines.events.on_chunk_generated, function(e)
     belt.linked_belt_type = "output"
     belt.connect_linked_belts(belt2)
   end]]
+end)
 
+script.on_event(defines.events.on_train_changed_state, function(e)
+  local train = e.train
+  if not (train.state == defines.train_state.wait_station and
+    e.old_state == defines.train_state.arrive_station) then
+    return
+  end
+  if not train.station then return end
+  if not train.id then game.print("ERROR") end
+
+  local current = train.station.surface.name
+  local station_name = train.station.backer_name
+  local destination = train_code.resolve_train_destination(current, station_name)
+  if destination then
+    train_code.warp_trains(train, station_name, destination)
+  end
 end)
 
 local function average(c1c,c2c)
@@ -2012,6 +2028,9 @@ script.on_event(defines.events.on_tick, function(event)
      on_init_or_load()
      return
   end
+  if event.tick % 60 == 0 then
+    train_code.retry_pending_warps()
+  end
   for i,v in ipairs(warp_settings.blocked_planets) do
     if v == storage.warptorio.surface_name and technology_check() then
       game.forces["player"].research_progress = 0
@@ -2442,10 +2461,7 @@ script.on_event(
    defines.events.on_train_changed_state,
    function (e)
       local train = e.train
-      if not (train.state == defines.train_state.wait_station and
-              e.old_state == defines.train_state.arrive_station) then
-         return
-      end
+      if train.state ~= defines.train_state.wait_station then return end
       if not train.station then return end
       if not train.id then game.print("ERROR") end
 
@@ -2461,20 +2477,11 @@ script.on_event(
       }
 
       if game.forces["player"].technologies[warp_settings.train.garden_research].researched then
-         table.insert(
-            train_decision,
-            {surface="garden",       station=warp_settings.train.ground_station,  destination=ground_surface})
-         table.insert(
-            train_decision,
-            {surface="garden",       station=warp_settings.train.factory_station, destination="factory"})
-         table.insert(
-            train_decision,
-            {surface=ground_surface, station=warp_settings.train.garden_station,  destination="garden"})
-         table.insert(
-            train_decision,
-            {surface="factory",      station=warp_settings.train.garden_station,  destination="garden"})
+         table.insert( train_decision, {surface="garden",  station=warp_settings.train.ground_station,  destination=ground_surface})
+         table.insert( train_decision, {surface="garden",  station=warp_settings.train.factory_station, destination="factory"})
+         table.insert( train_decision, {surface=ground_surface, station=warp_settings.train.garden_station,  destination="garden"})
+         table.insert( train_decision, {surface="factory", station=warp_settings.train.garden_station,  destination="garden"})
       end
-
       local current = train.station.surface.name
       local station_name = train.station.backer_name
 
