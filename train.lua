@@ -13,6 +13,18 @@ local WARP_FLASH_DURATION = 20          -- ticks
 local TRAIL_TICKS = 25                  -- how long the trail burns
 local TRAIL_STEP = 0.6                  -- spacing between flame points, tiles
 
+-- Trail colour palettes: flame = outer colour, core = hottest centre, glow.
+local TRAIL_PALETTES = {
+   orange = { flame = { 0.95, 0.4, 0.08 },  core = { 1, 0.85, 0.3 },    glow = { 1, 0.55, 0.15 } },
+   cyan   = { flame = { 0.05, 0.2, 0.8 },    core = { 0.5, 0.75, 1 },   glow = { 0.15, 0.4, 1 } },
+   purple = { flame = { 0.55, 0.15, 0.9 },   core = { 0.85, 0.6, 1 },   glow = { 0.6, 0.3, 1 } },
+   white  = { flame = { 0.7, 0.7, 0.75 },    core = { 1, 1, 1 },        glow = { 0.85, 0.9, 1 } },
+   green  = { flame = { 0.1, 0.7, 0.25 },    core = { 0.7, 1, 0.7 },    glow = { 0.35, 0.9, 0.45 } },
+}
+
+local trail_color_setting = settings.startup["warptorio_warp-trail-color"]
+local TRAIL_PALETTE = TRAIL_PALETTES[trail_color_setting and trail_color_setting.value or "orange"] or TRAIL_PALETTES.orange
+
 -- Factorio 2.x uses 16 directions: north=0, east=4, south=8, west=12. +y is south.
 local function direction_vector(direction)
    local angle = direction * math.pi / 8
@@ -88,23 +100,11 @@ function train_code.on_tick(tick)
             local t = age / WARP_FLASH_DURATION  -- 0..1
             local fade = 1 - t
 
-            -- Colour shifts from white-hot to amber fire as the wave expands
-            local cr = 1
-            local cg = 1 - 0.6 * t
-            local cb = 1 - t
-
-            -- White-hot core right at the start
-            if age < 6 then
-               rendering.draw_circle{
-                  color = { r = 1, g = 1, b = 1, a = 1 - age / 6 },
-                  radius = 1.5,
-                  filled = true,
-                  target = f.position,
-                  surface = f.surface,
-                  time_to_live = 2,
-                  draw_on_ground = false,
-               }
-            end
+            -- Light shifts from white to the selected trail colour as it expands
+            local glow = TRAIL_PALETTE.glow
+            local cr = 1 - (1 - glow[1]) * t
+            local cg = 1 - (1 - glow[2]) * t
+            local cb = 1 - (1 - glow[3]) * t
 
             -- Light pulse that grows and fades with the flash
             rendering.draw_light{
@@ -123,7 +123,8 @@ function train_code.on_tick(tick)
          if age > TRAIL_TICKS then
             table.remove(train_code.warp_effects, i)
          else
-            local fade = 1 - age / TRAIL_TICKS
+            -- quick ignition at the start, then linear burnout
+            local fade = math.min(1, age / 3) * (1 - age / TRAIL_TICKS)
             local dir = direction_vector(f.direction)
             local total = f.length + f.front
 
@@ -140,8 +141,11 @@ function train_code.on_tick(tick)
                   y = f.position.y - dir.y * d,
                }
 
+               local flame = TRAIL_PALETTE.flame
+               local core = TRAIL_PALETTE.core
+
                rendering.draw_circle{
-                  color = { r = 0.95, g = 0.4, b = 0.08, a = fade * 0.75 * flicker },
+                  color = { r = flame[1], g = flame[2], b = flame[3], a = fade * 0.75 * flicker },
                   radius = 0.55 * spread * flicker + 0.05,
                   filled = true,
                   target = pos,
@@ -150,7 +154,7 @@ function train_code.on_tick(tick)
                   draw_on_ground = true,
                }
                rendering.draw_circle{
-                  color = { r = 1, g = 0.85, b = 0.3, a = fade * flicker },
+                  color = { r = core[1], g = core[2], b = core[3], a = fade * flicker },
                   radius = 0.3 * spread * flicker,
                   filled = true,
                   target = pos,
@@ -162,7 +166,7 @@ function train_code.on_tick(tick)
                d = d + TRAIL_STEP
             end
 
-            -- Warm glow over the whole trail
+            -- Plasma glow over the whole trail
             rendering.draw_light{
                sprite = "utility/light_medium",
                target = {
@@ -170,7 +174,7 @@ function train_code.on_tick(tick)
                   y = f.position.y - dir.y * (f.length - f.front) / 2,
                },
                surface = f.surface,
-               color = { r = 1, g = 0.55, b = 0.15, a = fade * 0.8 },
+               color = { r = TRAIL_PALETTE.glow[1], g = TRAIL_PALETTE.glow[2], b = TRAIL_PALETTE.glow[3], a = fade * 0.8 },
                intensity = fade * 0.8,
                scale = 3 + f.length / 4,
                time_to_live = 2,
@@ -355,32 +359,24 @@ function train_code.get_free_warp_station(destination, station_name, direction)
          is_connected_to_rail = true
       }
    )
-   local valid_dir = true
-   local station_no_train = nil
+    local station_no_train = nil
 
-   for _, station in ipairs(stations) do
-      if not station.get_stopped_train() then
-         station_no_train = station
-         if station.direction == direction then
-            return station
-         end
-      end
-   end
-   if station_no_train then
-      return station_no_train
-   end
-   if not valid_dir then
-      game.print({ "warptorio.train-warp-direction-error" }, { color = { 1, 0, 0 } })
-   end
-   return nil
+    for _, station in ipairs(stations) do
+       if not station.get_stopped_train() then
+          station_no_train = station
+          if station.direction == direction then
+             return station
+          end
+       end
+    end
+    if station_no_train then
+       return station_no_train
+    end
+    return nil
 end
 
 function train_code.train_has_passengers(train)
-   if #train.passengers > 0 then
-      game.print({ "warptorio.train-warp-passenger-error" }, { color = { 1, 0, 0 } })
-      return true
-   end
-   return false
+   return #train.passengers > 0
 end
 
 function train_code.is_station_out_of_bounds(station)
@@ -399,11 +395,10 @@ function train_code.is_station_out_of_bounds(station)
       game.print("Warning: ground_size missing, using fallback", { color = { 1, 0.6, 0 } })
       radius = 100
    end
-   if math.abs(pos.x - center.x) > radius or math.abs(pos.y - center.y) > radius then
-      game.print({ "warptorio.train-warp-station-range-error" }, { color = { 1, 0, 0 } })
-      return true
-   end
-   return false
+    if math.abs(pos.x - center.x) > radius or math.abs(pos.y - center.y) > radius then
+       return true
+    end
+    return false
 end
 
 -- destination is the surface name the train should warp to. The caller decides it based on
@@ -419,25 +414,30 @@ function train_code.warp_trains(train, station_name, destination)
 
       if valid then
          local target_station = train_code.get_free_warp_station(destination, v.backer_name, v.direction)
-         local destination_surface = game.surfaces[destination]
-         local track_ok = target_station and train_code.is_train_track_long_enough(train, destination_surface, v, target_station)
-         if target_station
-            and not train_code.is_station_out_of_bounds(v)
-            and not train_code.is_station_out_of_bounds(target_station)
-            and not train_code.train_has_passengers(train)
-            and track_ok
-            and train_code.is_train_footprint_clear(train, destination_surface, v, target_station)
-         then
-            train_code.pending_warps[train.id] = nil
-            train_code.warp_single_train(train, destination, target_station, v)
-            return
+         if not target_station then
+            train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-no-destination", station_name})
          else
-            if not target_station then
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-no-destination", station_name})
+            local destination_surface = game.surfaces[destination]
+            local track_ok = train_code.is_train_track_long_enough(train, destination_surface, v, target_station)
+            local out_of_bounds = train_code.is_station_out_of_bounds(v) or train_code.is_station_out_of_bounds(target_station)
+            local has_passengers = train_code.train_has_passengers(train)
+
+            if not out_of_bounds
+               and not has_passengers
+               and track_ok
+               and train_code.is_train_footprint_clear(train, destination_surface, v, target_station)
+            then
+               train_code.pending_warps[train.id] = nil
+               train_code.warp_single_train(train, destination, target_station, v)
+               return
+            elseif out_of_bounds then
+               train_code.queue_retry(train, station_name, {"warptorio.train-warp-station-range-error", station_name})
+            elseif has_passengers then
+               train_code.queue_retry(train, station_name, {"warptorio.train-warp-passenger-error", station_name})
             elseif not track_ok then
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-track-too-short"})
+               train_code.queue_retry(train, station_name, {"warptorio.train-warp-track-too-short", station_name})
             else
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-blocked"})
+               train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-blocked", station_name})
             end
          end
       end
@@ -506,7 +506,6 @@ end
 
 function train_code.warp_single_train(train, destination, target_station, source_station)
    local old_speed = train.speed
-   local old_state = train.state
    local schedule = train.get_schedule()
    local schedule_records = schedule.get_records()
    local schedule_index = train.schedule.current

@@ -90,6 +90,10 @@ data:extend(
   {type="bool-setting",name="warptorio_block-roboport-garden",order="11b",
    setting_type="startup",default_value=true},
 
+  {type = "string-setting", name = "warptorio_warp-trail-color", order = "11b",
+   setting_type = "startup", default_value = "cyan",
+   allowed_values = {"orange", "cyan", "purple", "white", "green"}},
+
   {
      type = "string-setting",
      name = "warptorio_size-difficulty",
