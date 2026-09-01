@@ -1,4 +1,3 @@
-
 data:extend(
 {
 	{type = "string-setting",name="warptorio_factory-tile",order="11b",
@@ -122,6 +121,9 @@ data:extend(
      default_value = "square",
      allowed_values = {"square","circle","hexagon"},
      order = "a1"
-  }
+  },
+
+  {type = "bool-setting",name="warptorio-ground-minimap",order="a1",
+   setting_type="runtime-per-user",default_value=true}
 }
 )
