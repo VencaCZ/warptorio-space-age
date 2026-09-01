@@ -406,8 +406,9 @@ script.on_event(defines.events.on_chunk_generated, function(e)
     belt.linked_belt_type = "output"
     belt.connect_linked_belts(belt2)
   end]]
-
 end)
+
+script.on_event(defines.events.on_train_changed_state, train_code.on_train_changed_state)
 
 local function average(c1c,c2c)
 	local average_content = (c1c+c2c)/2
@@ -1496,6 +1497,9 @@ local function teleport_ground(source, target)
     source_positions[i] = shape_tiles[i].position
   end
 
+  -- Snapshot trains before the clone: clone_brush resets them to manual mode.
+  local captured_modes = train_code.capture_clone_states(game.surfaces[source], source_offset)
+
   -- Teleport base part
   game.surfaces[source].clone_brush({
     source_offset={source_offset.x, source_offset.y},
@@ -1510,6 +1514,7 @@ local function teleport_ground(source, target)
     clone_decoratives=false,
   })
 
+  train_code.restore_clone_states(game.surfaces[target], dest_offset, captured_modes)
   clean_ground_tiles(target, destination_area)
 
   -- Delete teleported(generated) characters
@@ -2033,6 +2038,10 @@ script.on_event(defines.events.on_tick, function(event)
      on_init_or_load()
      return
   end
+  if event.tick % 60 == 0 then
+    train_code.retry_pending_warps()
+  end
+  train_code.on_tick(event.tick)
   for i,v in ipairs(warp_settings.blocked_planets) do
     if v == storage.warptorio.surface_name and technology_check() then
       game.forces["player"].research_progress = 0
@@ -2458,55 +2467,6 @@ script.on_event(defines.events.on_player_joined_game, function(e)
      end
   end
 end)
-
-script.on_event(
-   defines.events.on_train_changed_state,
-   function (e)
-      local train = e.train
-      if not (train.state == defines.train_state.wait_station and
-              e.old_state == defines.train_state.arrive_station) then
-         return
-      end
-      if not train.station then return end
-      if not train.id then game.print("ERROR") end
-
-      -- The ground floor lives on the current planet surface, or on the transition surface
-      -- while a warp is in progress.
-      local ground_surface = storage.warptorio.teleporting and "warp-space-transition" or storage.warptorio.warp_zone
-
-      -- All 6 directed warps between the factory, ground and garden floors. The decision is
-      -- made from the floor the train is on and the name of the station it stopped at.
-      local train_decision = {
-         {surface="factory",      station=warp_settings.train.ground_station,  destination=ground_surface},
-         {surface=ground_surface, station=warp_settings.train.factory_station, destination="factory"},
-      }
-
-      if game.forces["player"].technologies[warp_settings.train.garden_research].researched then
-         table.insert(
-            train_decision,
-            {surface="garden",       station=warp_settings.train.ground_station,  destination=ground_surface})
-         table.insert(
-            train_decision,
-            {surface="garden",       station=warp_settings.train.factory_station, destination="factory"})
-         table.insert(
-            train_decision,
-            {surface=ground_surface, station=warp_settings.train.garden_station,  destination="garden"})
-         table.insert(
-            train_decision,
-            {surface="factory",      station=warp_settings.train.garden_station,  destination="garden"})
-      end
-
-      local current = train.station.surface.name
-      local station_name = train.station.backer_name
-
-      for _, d in ipairs(train_decision) do
-         if d.surface == current and d.station == station_name then
-            train_code.warp_trains(train, station_name, d.destination)
-            break
-         end
-      end
-   end
-)
 
 script.on_configuration_changed(function()
   on_init_or_load()
