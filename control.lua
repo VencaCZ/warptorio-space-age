@@ -1,5 +1,3 @@
---script.generate_event_name("on_warp")
-
 local warp_settings = require("internal_settings")
 local map_gens = require("map_gens")
 local train_code = require("train")
@@ -1170,16 +1168,136 @@ local function teleport_body(player, position, surface)
   end
 end
 
-local function check_teleport(player,location,destination)
+local teleport_fx_active = {}
+local teleport_sound_queue = {}
+
+local function play_teleport_sound(surface, position)
+  if surface and surface.valid then
+    surface.play_sound{path="warptorio-teleport", position=position}
+  end
+end
+
+local function teleport_effect(surface, position)
+  if not surface or not surface.valid then return end
+  if prototypes.entity["railgun-beam"] then
+    surface.create_entity{name="railgun-beam", position=position, target=position}
+  end
+  table.insert(teleport_fx_active, {surface=surface, position=position, tick=game.tick})
+end
+
+script.on_nth_tick(2, function()
+  local now = game.tick
+  for i = #teleport_sound_queue, 1, -1 do
+    local s = teleport_sound_queue[i]
+    if s.tick <= now then
+      table.remove(teleport_sound_queue, i)
+      play_teleport_sound(s.surface, s.position)
+      local p = game.get_player(s.player_index)
+      if p and p.connected and p.controller_type == defines.controllers.character then
+        p.play_sound{path="warptorio-teleport", position=s.position}
+      end
+    end
+  end
+  for i = #teleport_fx_active, 1, -1 do
+    local fx = teleport_fx_active[i]
+    if not fx.surface.valid then
+      table.remove(teleport_fx_active, i)
+    else
+      local p = (now - fx.tick) / 15
+      if p >= 1 then
+        table.remove(teleport_fx_active, i)
+      else
+        rendering.draw_circle{
+          surface = fx.surface,
+          target = fx.position,
+          radius = 0.5 + p * 3,
+          width = 3,
+          filled = false,
+          color = {0.3, 0.8, 1, (1 - p) * 0.9},
+          time_to_live = 3,
+        }
+        if p < 0.4 then
+          local k = p / 0.4
+          rendering.draw_circle{
+            surface = fx.surface,
+            target = fx.position,
+            radius = 0.5 + (1 - k) * 1.5,
+            filled = true,
+            color = {0.5, 0.9, 1, (1 - k) * 0.7},
+            time_to_live = 3,
+          }
+        end
+      end
+    end
+  end
+
+  local charges = storage.warptorio.teleport_charge
+  local delay = settings.startup["warptorio_teleport-delay"] and settings.startup["warptorio_teleport-delay"].value or 60
+  if charges and delay > 0 then
+    for i, player in pairs(game.players) do
+      if player.connected and player.controller_type == defines.controllers.character then
+        local prefix = i .. "|"
+        local start_tick = nil
+        for k, t in pairs(charges) do
+          if string.sub(k, 1, #prefix) == prefix then
+            start_tick = t
+            break
+          end
+        end
+        if start_tick and now - start_tick < delay then
+          local p = (now - start_tick) / delay
+          local filled = math.floor(p * 10 + 0.5)
+          local bar = string.rep("█", filled) .. string.rep("░", 10 - filled)
+          rendering.draw_text{
+            surface = player.surface,
+            target = {player.position.x, player.position.y - 1.2},
+            text = bar,
+            color = {0.3, 0.8, 1},
+            scale = 0.7,
+            scale_with_zoom = false,
+            alignment = "center",
+            time_to_live = 3,
+          }
+        end
+      end
+    end
+  end
+end)
+
+local function check_teleport(player,location,destination,box)
   if storage.warptorio.factory_level == 0 then return end
   local character = player.character
   if not character then return end
   if character.surface.name ~= location.surface then return end
+  local charges = storage.warptorio.teleport_charge
+  if not charges then
+    charges = {}
+    storage.warptorio.teleport_charge = charges
+  end
+  local charge_key = player.index .. "|" .. location.surface .. "|" .. location.x .. "|" .. location.y .. "|" .. destination
+  local player_key = player.index .. "|"
+  local delay = settings.startup["warptorio_teleport-delay"] and settings.startup["warptorio_teleport-delay"].value or 60
   local location_pos = translate_surface_position(location.surface, {x=location.x, y=location.y})
-  if character.position.x > location_pos.x-0.1 and
-     character.position.x < location_pos.x+2.0 and
-     character.position.y > location_pos.y-0.1 and
-     character.position.y < location_pos.y+2.1 then
+  local minx = box and box.minx or -0.4
+  local maxx = box and box.maxx or 2.4
+  local miny = box and box.miny or -0.4
+  local maxy = box and box.maxy or 2.5
+  if character.position.x > location_pos.x+minx and
+     character.position.x < location_pos.x+maxx and
+     character.position.y > location_pos.y+miny and
+     character.position.y < location_pos.y+maxy then
+    local now = game.tick
+    local charge = charges[charge_key]
+    if not charge and delay > 0 then
+      charges[charge_key] = now
+      return
+    end
+    if delay > 0 and now - charge < delay then return end
+    for k in pairs(charges) do
+      if string.sub(k, 1, #player_key) == player_key then
+        charges[k] = nil
+      end
+    end
     local dest_pos = translate_surface_position(destination, {x=location.x, y=location.y})
     local player_pos = nil
     if dest_pos then
@@ -1188,7 +1306,14 @@ local function check_teleport(player,location,destination)
     if not player_pos then
        error("No free space for destination. Looks like teleporter is blocked")
     end
+    local from_surface = player.character and player.character.surface or player.surface
+    local from_position = player.character and player.character.position or player.position
     teleport_body(player, player_pos, destination)
+    table.insert(teleport_sound_queue, {surface=game.surfaces[destination], position=player_pos, player_index=player.index, tick=game.tick+8})
+    teleport_effect(from_surface, from_position)
+    teleport_effect(game.surfaces[destination], player_pos)
+  else
+    charges[charge_key] = nil
   end
 end
 
@@ -1545,7 +1670,13 @@ local function teleport_players(source,destination,factory)
   
   local function teleport_to_factory_home(player)
     local home_position = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false) or {0,-2}
+    local from_surface = player.character and player.character.surface or game.surfaces["factory"]
+    local from_position = player.character and player.character.position or home_position
     teleport_body(player, home_position, destination)
+    play_teleport_sound(from_surface, from_position)
+    play_teleport_sound(game.surfaces["factory"], home_position)
+    teleport_effect(from_surface, from_position)
+    teleport_effect(game.surfaces["factory"], home_position)
   end
 
   local function player_on_factory_warp_belt(player)
@@ -1585,11 +1716,23 @@ local function teleport_players(source,destination,factory)
        elseif character_pos.x >= minx and character_pos.x <=maxx and character_pos.y >= miny and character_pos.y <= maxy then
           local relative = {x = character_pos.x - source_offset.x, y = character_pos.y - source_offset.y}
           local target = {x = dest_offset.x + relative.x, y = dest_offset.y + relative.y}
-          v.teleport(target,destination)
+          local from_surface = v.character.surface
+          local from_position = v.character.position
+          play_teleport_sound(from_surface, from_position)
+          play_teleport_sound(game.surfaces[destination], target)
+          teleport_body(v, target, destination)
+          teleport_effect(from_surface, from_position)
+          teleport_effect(game.surfaces[destination], target)
        else
           local fallback_center = {x = dest_offset.x, y = dest_offset.y}
           local target = game.surfaces[destination].find_non_colliding_position(v.character, fallback_center, 0, platform, false) or fallback_center
+          local from_surface = v.character.surface
+          local from_position = v.character.position
+          play_teleport_sound(from_surface, from_position)
+          play_teleport_sound(game.surfaces[destination], target)
           teleport_body(v, target, destination)
+          teleport_effect(from_surface, from_position)
+          teleport_effect(game.surfaces[destination], target)
        end
        ::continue::
     end
@@ -2131,13 +2274,12 @@ script.on_event(defines.events.on_tick, function(event)
   for i,v in pairs(players) do
     -- If player steps into teleport zone, teleport them
     if v.is_player() and v.connected and v.character and v.physical_controller_type == defines.controllers.character then
-      check_teleport(v,{x=-1,y=-2,surface=dest},"factory")
-      check_teleport(v,{x=-1,y=2,surface="factory"},dest)
+      check_teleport(v,{x=-1,y=-3,surface=dest},"factory")
+      check_teleport(v,{x=-1,y=1,surface="factory"},dest)
       if storage.warptorio.biochamber_level then
         check_teleport(v,{y=-1,x=2,surface="garden"},"factory")
-        check_teleport(v,{y=-1,x=-2,surface="factory"},"garden")
+        check_teleport(v,{y=-1,x=-3,surface="factory"},"garden",{minx=-0.4,maxx=1.6,miny=-0.4,maxy=1.6})
         check_teleport(v,{y=-1,x=3,surface="garden"},"factory")
-        check_teleport(v,{y=-1,x=-3,surface="factory"},"garden")
       end
     end
   end
@@ -2349,8 +2491,15 @@ script.on_event(defines.events.on_lua_shortcut, function(e)
     if e.prototype_name == "warptorio-teleport" then
       --check_teleport(game.players[e.player_index],{x=-1,y=-2,surface=storage.warptorio.warp_zone},"factory")
       if storage.warptorio.factory_level > 0 then
+         local player = game.players[e.player_index]
          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
-         teleport_body(game.players[e.player_index], player_pos, "factory")
+         local from_surface = player.character and player.character.surface or nil
+         local from_position = player.character and player.character.position or nil
+         teleport_body(player, player_pos, "factory")
+         play_teleport_sound(from_surface, from_position)
+         play_teleport_sound(game.surfaces["factory"], player_pos)
+         teleport_effect(from_surface, from_position)
+         teleport_effect(game.surfaces["factory"], player_pos)
       else
         game.print({"warptorio.warp-not-available"})
       end
@@ -2363,6 +2512,8 @@ script.on_event(defines.events.on_player_respawned, function(event)
   local surface = game.surfaces[storage.warptorio.warp_zone]
   local player_pos = surface and surface.find_non_colliding_position("character", spawn_center, 0, 0.5, false) or spawn_center
   teleport_body(game.players[event.player_index], player_pos, storage.warptorio.warp_zone)
+  play_teleport_sound(surface, player_pos)
+  teleport_effect(surface, player_pos)
         --end
 end)
 
@@ -2539,3 +2690,4 @@ remote.add_interface("warptorio",
      spawn_random_ground_platform_design = platform_code.spawn_random,
   }
 )
+
