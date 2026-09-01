@@ -1159,14 +1159,27 @@ local function update_belt(e)
     storage.warptorio.belt_level = level
 end
 
+local function teleport_body(player, position, surface)
+  if player.character then
+    player.character.teleport(position, surface)
+    if player.controller_type == defines.controllers.remote then
+      player.exit_remote_view()
+    end
+  else
+    player.teleport(position, surface)
+  end
+end
+
 local function check_teleport(player,location,destination)
   if storage.warptorio.factory_level == 0 then return end
-  if player.surface.name ~= location.surface then return end
+  local character = player.character
+  if not character then return end
+  if character.surface.name ~= location.surface then return end
   local location_pos = translate_surface_position(location.surface, {x=location.x, y=location.y})
-  if player.position.x > location_pos.x-0.1 and
-     player.position.x < location_pos.x+2.0 and
-     player.position.y > location_pos.y-0.1 and
-     player.position.y < location_pos.y+2.1 then
+  if character.position.x > location_pos.x-0.1 and
+     character.position.x < location_pos.x+2.0 and
+     character.position.y > location_pos.y-0.1 and
+     character.position.y < location_pos.y+2.1 then
     local dest_pos = translate_surface_position(destination, {x=location.x, y=location.y})
     local player_pos = nil
     if dest_pos then
@@ -1175,7 +1188,7 @@ local function check_teleport(player,location,destination)
     if not player_pos then
        error("No free space for destination. Looks like teleporter is blocked")
     end
-    player.teleport(player_pos, destination)
+    teleport_body(player, player_pos, destination)
   end
 end
 
@@ -1445,6 +1458,23 @@ local function check_wave()
   end
 end
 
+local function clean_ground_tiles(surface_name, area)
+  local surface = game.surfaces[surface_name]
+  local tiles = surface.find_tiles_filtered{area = area}
+  local replacement = {}
+  for _, t in ipairs(tiles) do
+    local base_name = t.name:match("^frozen%-(.+)$")
+    if base_name then
+      table.insert(replacement, {name = base_name, position = t.position})
+    elseif t.name:find("^lava") then
+      table.insert(replacement, {name = "warp_tile_world", position = t.position})
+    end
+  end
+  if #replacement > 0 then
+    surface.set_tiles(replacement)
+  end
+end
+
 local function teleport_ground(source, target)
   local level = storage.warptorio.ground_level or 0
 
@@ -1485,6 +1515,7 @@ local function teleport_ground(source, target)
   })
 
   train_code.restore_clone_states(game.surfaces[target], dest_offset, captured_modes)
+  clean_ground_tiles(target, destination_area)
 
   -- Delete teleported(generated) characters
   local surface_player_list = game.surfaces[target].find_entities_filtered{type="character", area = destination_area}
@@ -1500,7 +1531,6 @@ end
 
 
 local function teleport_players(source,destination,factory)
-
   local level = storage.warptorio.ground_level or 0
   local platform = warp_settings.floor.levels[level] or 0
   local source_offset = get_surface_offset(source)
@@ -1512,7 +1542,7 @@ local function teleport_players(source,destination,factory)
   
   local function teleport_to_factory_home(player)
     local home_position = game.surfaces["factory"].find_non_colliding_position("character", {0,-2}, 0, 0.5, false) or {0,-2}
-    player.teleport(home_position, destination)
+    teleport_body(player, home_position, destination)
   end
 
   local function player_on_factory_warp_belt(player)
@@ -1532,17 +1562,7 @@ local function teleport_players(source,destination,factory)
 
   for i,v in pairs(game.players) do
     -- Add players to the list
-    if v.is_player() and v.connected then
-       -- Players can be in map view while the warp is resolving; explicitly exit map view
-       -- before relocating them so they are back in normal character control and can be
-       -- teleported to the correct warp destination.
-       if v.controller_type ~= defines.controllers.character and v.exit_remote_view then
-          v.exit_remote_view()
-       end
-       if not v.character then
-          goto continue
-       end
-
+    if v.is_player() and v.connected and v.character then
        if factory and player_on_factory_warp_belt(v) then
           teleport_to_factory_home(v)
        end
@@ -1566,7 +1586,7 @@ local function teleport_players(source,destination,factory)
        else
           local fallback_center = {x = dest_offset.x, y = dest_offset.y}
           local target = game.surfaces[destination].find_non_colliding_position(v.character, fallback_center, 0, platform, false) or fallback_center
-          v.teleport(target,destination)
+          teleport_body(v, target, destination)
        end
        ::continue::
     end
@@ -2100,7 +2120,7 @@ script.on_event(defines.events.on_tick, function(event)
   end
   for i,v in pairs(players) do
     -- If player steps into teleport zone, teleport them
-    if v.is_player() and v.connected and v.controller_type == defines.controllers.character then
+    if v.is_player() and v.connected and v.character and v.physical_controller_type == defines.controllers.character then
       check_teleport(v,{x=-1,y=-2,surface=dest},"factory")
       check_teleport(v,{x=-1,y=2,surface="factory"},dest)
       if storage.warptorio.biochamber_level then
@@ -2320,7 +2340,7 @@ script.on_event(defines.events.on_lua_shortcut, function(e)
       --check_teleport(game.players[e.player_index],{x=-1,y=-2,surface=storage.warptorio.warp_zone},"factory")
       if storage.warptorio.factory_level > 0 then
          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
-         game.players[e.player_index].teleport(player_pos, "factory")
+         teleport_body(game.players[e.player_index], player_pos, "factory")
       else
         game.print({"warptorio.warp-not-available"})
       end
@@ -2332,7 +2352,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
   local spawn_center = translate_surface_position(storage.warptorio.warp_zone, {x=0, y=0})
   local surface = game.surfaces[storage.warptorio.warp_zone]
   local player_pos = surface and surface.find_non_colliding_position("character", spawn_center, 0, 0.5, false) or spawn_center
-  game.players[event.player_index].teleport(player_pos, storage.warptorio.warp_zone)
+  teleport_body(game.players[event.player_index], player_pos, storage.warptorio.warp_zone)
         --end
 end)
 
@@ -2438,12 +2458,12 @@ script.on_event(defines.events.on_player_joined_game, function(e)
   if e.player_index ~= 1 then
      if game.forces["player"].technologies["warp-factory-platform-1"].researched then
         local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
-        game.players[e.player_index].teleport(player_pos, "factory")
+        teleport_body(game.players[e.player_index],  player_pos, "factory")
      elseif game.surfaces[storage.warptorio.warp_zone] then
         local spawn_center = translate_surface_position(storage.warptorio.warp_zone, {x=0, y=0})
         local surface = game.surfaces[storage.warptorio.warp_zone]
         local player_pos = surface.find_non_colliding_position("character", spawn_center, 0, 0.5, false) or spawn_center
-        game.players[e.player_index].teleport(player_pos, storage.warptorio.warp_zone)
+        teleport_body(game.players[e.player_index],  player_pos, storage.warptorio.warp_zone)
      end
   end
 end)
