@@ -1,5 +1,4 @@
 local env
-local DEBUG = true
 local module = {}
 
 local function find_child(parent, name)
@@ -11,8 +10,6 @@ local function find_child(parent, name)
   end
   return nil
 end
-
-log("warpcheat module loaded: " .. debug.getinfo(1, "S").source)
 
 local function subheader(parent, caption)
   local flow = parent.add{type="flow", direction="horizontal"}
@@ -177,8 +174,6 @@ function module.handle_click(event)
   if not event.player_index then return end
   local player = game.players[event.player_index]
   if not player.admin then return end
-  if DEBUG then player.print("[warpcheat] click: " .. tostring(name)) end
-  log("[warpcheat] handle_click: " .. tostring(name))
 
   if name == "warpcheat-close" then
     if player.gui.screen["warpcheat"] then player.gui.screen["warpcheat"].destroy() end
@@ -310,9 +305,7 @@ commands.add_command("warpcheat", "Open the warptorio cheat control popup (admin
     return
   end
   warpcheat_gui(player)
-end)
-
-function module.init(deps)
+en
   env = deps
 end
 
