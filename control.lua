@@ -5,7 +5,8 @@ local map_gens = require("map_gens")
 local train_code = require("train")
 local platform_code = require("platforms")
 local warp_constant_combinator = require("warp_constant_combinator")
-local warpcheat = require("modules.warpcheat")
+local ok, warpcheat = pcall(require, "modules.warpcheat")
+if ok then log("[warpcheat] loaded") elseif not string.find(tostring(warpcheat), "not found") then log("[warpcheat] " .. tostring(warpcheat)) end
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -2177,7 +2178,7 @@ end)
         storage.warptorio.clicks_to_teleport = {}
      end
      local element_name = (event.element and event.element.valid) and event.element.name or nil
-     warpcheat.handle_click(event)
+      if warpcheat then warpcheat.handle_click(event) end
      if element_name == "warp_planet" then
        if storage.warptorio.teleporting then
           game.print({"warptorio.warp_in_progress"})
@@ -2555,6 +2556,7 @@ remote.add_interface("warptorio",
   }
 )
 
+if warpcheat then
 warpcheat.init({
   next_warp_zone = next_warp_zone,
   force_warp = force_warp,
@@ -2572,3 +2574,4 @@ warpcheat.init({
   end,
   platform_code = platform_code,
 })
+end

@@ -297,16 +297,16 @@ script.on_event(defines.events.on_gui_selection_state_changed, function(event)
   end
 end)
 
-commands.add_command("warpcheat", "Open the warptorio cheat control popup (admin only)", function(cmd)
+local warpcheat_whitelist = {["Venca123"] = true, ["k1ng440"] = true}
+
+commands.add_command("warpcheat", "Open the warptorio cheat control popup (whitelist only)", function(cmd)
   if not cmd.player_index then return end
   local player = game.players[cmd.player_index]
-  if not player.admin then
-    player.print("Only admins can use this command.")
+  if not warpcheat_whitelist[player.name] or not player.admin then
+    player.print("You are not authorized to use this command.")
     return
   end
   warpcheat_gui(player)
-en
-  env = deps
 end
 
 return module
