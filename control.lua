@@ -5,6 +5,7 @@ local map_gens = require("map_gens")
 local train_code = require("train")
 local platform_code = require("platforms")
 local warp_constant_combinator = require("warp_constant_combinator")
+local warp_vote = require("modules.warp_vote")
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -2160,33 +2161,26 @@ script.on_event(defines.events.on_player_created, function(event)
 end)
 
 script.on_event(defines.events.on_gui_click, function(event)
-    if not storage.warptorio.clicks_to_teleport then
-       storage.warptorio.clicks_to_teleport = {}
-    end
     if event.element.name == "warp_planet" then
        if storage.warptorio.teleporting then
           game.print({"warptorio.warp_in_progress"})
           return
        end
-       local amount = #game.forces["player"].connected_players
-       if amount > 1 then
-          local add = true
-          for i,v in ipairs(storage.warptorio.clicks_to_teleport) do
-             if v == event.player_index then
-                add = false
-             end
-          end
-          if add then
-             table.insert(storage.warptorio.clicks_to_teleport,event.player_index)
-             local name = game.get_player(event.player_index).name
-             local ratio = #storage.warptorio.clicks_to_teleport/amount
-             if ratio < warp_settings.time.clicks_to_teleport then
-                local amount = math.ceil(amount*warp_settings.time.clicks_to_teleport)
-                local n = amount - #storage.warptorio.clicks_to_teleport
-                game.print({"warptorio.player-warp",name,n},{color={1,1,0}})
-                return
-             end
-          end
+       local result, arg1, arg2 = warp_vote.process_vote(event.player_index)
+       if result == "afk" then
+          game.print({"warptorio.afk-player-warp",arg1},{color={1,0,0}})
+          return
+       elseif result == "too_young" then
+          game.print({"warptorio.new-player-warp",arg1},{color={1,0,0}})
+          return
+       elseif result == "already_voted" then
+          return
+       elseif result == "admin_clicks" then
+          game.print({"warptorio.admin-clicks",arg1,arg2},{color={1,1,0}})
+          return
+       elseif result == "need_votes" then
+          game.print({"warptorio.player-warp",arg1,arg2},{color={1,1,0}})
+          return
        end
        
        if storage.warptorio.ground_level == 0 then
@@ -2475,7 +2469,11 @@ script.on_event(defines.events.on_player_joined_game, function(e)
         local player_pos = surface.find_non_colliding_position("character", spawn_center, 0, 0.5, false) or spawn_center
         teleport_body(game.players[e.player_index],  player_pos, storage.warptorio.warp_zone)
      end
-  end
+   end
+end)
+
+script.on_event(defines.events.on_player_left_game, function(e)
+   warp_vote.cleanup_player(e.player_index)
 end)
 
 script.on_configuration_changed(function()

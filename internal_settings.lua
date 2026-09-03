@@ -242,7 +242,10 @@ local local_settings = {
     limit = 20*60,
     extra_transition_time = 1,
     add_per_jump=settings.startup["warptorio_time-per-jump"].value,
-    clicks_to_teleport = settings.startup["warptorio_players"].value
+    clicks_to_teleport = settings.startup["warptorio_players"].value,
+    new_player_threshold = 60*60*60,
+    afk_threshold = 60*60*5,
+    admin_clicks_required = 5
   },
   biter = {
     entity_type = {
