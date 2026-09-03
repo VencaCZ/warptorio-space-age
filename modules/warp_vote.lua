@@ -54,15 +54,22 @@ function M.process_vote(player_index)
         return "too_young", "Unknown"
     end
 
+    local eligible_amount = M.get_eligible_count()
+    local no_eligible = eligible_amount == 0
+    if no_eligible then
+        eligible_amount = #game.forces["player"].connected_players
+    end
+
     if not M.is_eligible(player_index) then
-        if player.afk_time >= warp_settings.time.afk_threshold then
-            return "afk", player.name
-        else
-            return "too_young", player.name
+        if not no_eligible then
+            if player.afk_time >= warp_settings.time.afk_threshold then
+                return "afk", player.name
+            else
+                return "too_young", player.name
+            end
         end
     end
 
-    local eligible_amount = M.get_eligible_count()
     if eligible_amount <= 1 then
         return "proceed"
     end
