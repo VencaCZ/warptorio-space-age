@@ -50,9 +50,9 @@ data:extend(
 	setting_type="startup",default_value=120,
 	minimum_value=30,maximum_value=300},
 
-	{type="double-setting",name="warptorio_quality-evolution",order="11b",
-	setting_type="startup",default_value=0.95,
-	minimum_value=0.0,maximum_value=1.0},
+	{type="int-setting",name="warptorio_quality-step",order="11b",
+	setting_type="startup",default_value=10,
+	minimum_value=1,maximum_value=100},
 
 	{type="double-setting",name="warptorio_research-multiplier",order="11b",
 	setting_type="startup",default_value=1,
@@ -74,9 +74,6 @@ data:extend(
 	{type="bool-setting",name="warptorio_next-planet-text",order="11b",
 	setting_type="startup",default_value=true},
 
-	{type="bool-setting",name="warptorio_block-train-info-text",order="11b",
-	setting_type="startup",default_value=false},
-
   {type="bool-setting",name="warptorio_allow-random-position",order="11b",
 	setting_type="startup",default_value=true},
   
@@ -90,6 +87,9 @@ data:extend(
   {type="bool-setting",name="warptorio_block-roboport-factory",order="11b",
    setting_type="startup",default_value=false},
 
+  {type="bool-setting",name="warptorio_block-train-messages",order="11b",
+   setting_type="startup",default_value=false},
+  
   {type="bool-setting",name="warptorio_block-roboport-garden",order="11b",
    setting_type="startup",default_value=true},
 

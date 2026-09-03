@@ -207,6 +207,9 @@ function module.spawn(name,x,y)
    local chests = {}
    game.surfaces[storage.warptorio.warp_zone].set_tiles(tiles)
    for i, v in ipairs(platform.entities) do
+      if v == nil or v.name == nil or prototypes.entity[v.name] == nil then
+         goto continue
+      end
       if v.type == "container" or v.type == "logistic-container" then
          local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
             { name = v.name,
@@ -217,34 +220,33 @@ function module.spawn(name,x,y)
             }
          )
          table.insert(chests,entity)
-        else
-            if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
-               local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
-                  { name = "electric-energy-interface",
-                    position = {x=v.position.x+x,y=v.position.y+y},
-                    direction = v.direction,
-                    force = game.forces.enemy
-               })
-               center = entity
-            elseif v.name ~= "entity-ghost" and prototypes.item[v.name] then
-               local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
-                  { name = v.name,
-                    position = {x=v.position.x+x,y=v.position.y+y},
-                    direction = v.direction,
-                    force = game.forces.enemy,
-                    quality = v.quality
-                  })
-               for _,weapon in ipairs(warp_settings.platforms.weapons) do
-                  if v.name == weapon.name then
-                     if weapon.fluid then
-                        entity.insert_fluid(weapon.ammo)
-                     else
-                        entity.insert(weapon.ammo)
-                     end
+      else
+         if v.name == "warp-power" or v.name == "warp-power-2" or v.name == "warp-power-3" then
+            local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
+               { name = "electric-energy-interface",
+                 position = {x=v.position.x+x,y=v.position.y+y},
+                 direction = v.direction,
+                 force = game.forces.enemy})
+            center = entity
+         elseif v.name ~= "entity-ghost" and prototypes.item[v.name] then
+            local entity = game.surfaces[storage.warptorio.warp_zone].create_entity(
+               { name = v.name,
+                 position = {x=v.position.x+x,y=v.position.y+y},
+                 direction = v.direction,
+                 force = game.forces.enemy,
+                 quality = v.quality})
+            for _,weapon in ipairs(warp_settings.platforms.weapons) do
+               if v.name == weapon.name then
+                  if weapon.fluid then
+                     entity.insert_fluid(weapon.ammo)
+                  else
+                     entity.insert(weapon.ammo)
                   end
                end
             end
-        end
+         end
+      end
+      ::continue::
    end
    if center then
       -- TODO do this better. For now this is fine

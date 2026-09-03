@@ -5,25 +5,13 @@ local train_code = {}
 -- track occupied, no free destination stop). Keyed by train.id.
 train_code.pending_warps = train_code.pending_warps or {}
 
--- Only nag the player if a train has been stuck for a while 
-local RETRY_WARN_AFTER = 60 * 30
-
 train_code.warp_effects = train_code.warp_effects or {}
-local WARP_FLASH_DURATION = 20          -- ticks
-local TRAIL_TICKS = 25                  -- how long the trail burns
-local TRAIL_STEP = 0.6                  -- spacing between flame points, tiles
 
--- Trail colour palettes: flame = outer colour, core = hottest centre, glow.
-local TRAIL_PALETTES = {
-   orange = { flame = { 0.95, 0.4, 0.08 },  core = { 1, 0.85, 0.3 },    glow = { 1, 0.55, 0.15 } },
-   cyan   = { flame = { 0.05, 0.2, 0.8 },    core = { 0.5, 0.75, 1 },   glow = { 0.15, 0.4, 1 } },
-   purple = { flame = { 0.55, 0.15, 0.9 },   core = { 0.85, 0.6, 1 },   glow = { 0.6, 0.3, 1 } },
-   white  = { flame = { 0.7, 0.7, 0.75 },    core = { 1, 1, 1 },        glow = { 0.85, 0.9, 1 } },
-   green  = { flame = { 0.1, 0.7, 0.25 },    core = { 0.7, 1, 0.7 },    glow = { 0.35, 0.9, 0.45 } },
-}
-
-local trail_color_setting = settings.startup["warptorio_warp-trail-color"]
-local TRAIL_PALETTE = TRAIL_PALETTES[trail_color_setting and trail_color_setting.value or "orange"] or TRAIL_PALETTES.orange
+-- no need to move this to settings for now, but I will fix it later
+-- PS: this should be never null as its in game setting
+local trail_pallette = warp_settings.train.trail_color_setting and
+   warp_settings.train.trail_palletes[warp_settings.train.trail_color_setting] or
+   warp_settings.train.trail_palletes.cyan
 
 -- Factorio 2.x uses 16 directions: north=0, east=4, south=8, west=12. +y is south.
 local function direction_vector(direction)
@@ -34,21 +22,20 @@ end
 -- A train stop's position sits beside the track it parks trains on (left of the
 -- travel direction), so effects are shifted there to land on the rails instead
 -- of on the stop tile.
-local WARP_EFFECT_TILE_OFFSET = 2
 local function warp_effect_position(position, direction)
    local dir = direction_vector(direction)
    return {
-      x = position.x + dir.y * WARP_EFFECT_TILE_OFFSET,
-      y = position.y - dir.x * WARP_EFFECT_TILE_OFFSET,
+      x = position.x + dir.y * warp_settings.train.warp_effect_tile_offset,
+      y = position.y - dir.x * warp_settings.train.warp_effect_tile_offset,
    }
 end
 
 local function get_surface_offset(surface_name)
-   local ZERO_OFFSET = { x = 0, y = 0 }
+   local zero_offset = { x = 0, y = 0 }
    if storage.warptorio and storage.warptorio.surface_positions then
-      return storage.warptorio.surface_positions[surface_name] or ZERO_OFFSET
+      return storage.warptorio.surface_positions[surface_name] or zero_offset
    end
-   return ZERO_OFFSET
+   return zero_offset
 end
 
 -- Queues a bright warp flash (expanding shockwave + light pulse) at a position.
@@ -94,14 +81,14 @@ function train_code.on_tick(tick)
       if not (f.surface and f.surface.valid) then
          table.remove(train_code.warp_effects, i)
       elseif f.kind == "flash" then
-         if age > WARP_FLASH_DURATION then
+         if age > warp_settings.train.warp_flash_duration then
             table.remove(train_code.warp_effects, i)
          else
-            local t = age / WARP_FLASH_DURATION  -- 0..1
+            local t = age / warp_settings.train.warp_flash_duration  -- 0..1
             local fade = 1 - t
 
             -- Light shifts from white to the selected trail colour as it expands
-            local glow = TRAIL_PALETTE.glow
+            local glow = trail_pallette.glow
             local cr = 1 - (1 - glow[1]) * t
             local cg = 1 - (1 - glow[2]) * t
             local cb = 1 - (1 - glow[3]) * t
@@ -120,11 +107,11 @@ function train_code.on_tick(tick)
             i = i + 1
          end
       else -- trail
-         if age > TRAIL_TICKS then
+         if age > warp_settings.train.trail_ticks then
             table.remove(train_code.warp_effects, i)
          else
             -- quick ignition at the start, then linear burnout
-            local fade = math.min(1, age / 3) * (1 - age / TRAIL_TICKS)
+            local fade = math.min(1, age / 3) * (1 - age / warp_settings.train.trail_ticks)
             local dir = direction_vector(f.direction)
             local total = f.length + f.front
 
@@ -141,8 +128,8 @@ function train_code.on_tick(tick)
                   y = f.position.y - dir.y * d,
                }
 
-               local flame = TRAIL_PALETTE.flame
-               local core = TRAIL_PALETTE.core
+               local flame = trail_pallette.flame
+               local core = trail_pallette.core
 
                rendering.draw_circle{
                   color = { r = flame[1], g = flame[2], b = flame[3], a = fade * 0.75 * flicker },
@@ -163,7 +150,7 @@ function train_code.on_tick(tick)
                   draw_on_ground = true,
                }
 
-               d = d + TRAIL_STEP
+               d = d + warp_settings.train.trail_step
             end
 
             -- Plasma glow over the whole trail
@@ -174,7 +161,7 @@ function train_code.on_tick(tick)
                   y = f.position.y - dir.y * (f.length - f.front) / 2,
                },
                surface = f.surface,
-               color = { r = TRAIL_PALETTE.glow[1], g = TRAIL_PALETTE.glow[2], b = TRAIL_PALETTE.glow[3], a = fade * 0.8 },
+               color = { r = trail_pallette.glow[1], g = trail_pallette.glow[2], b = trail_pallette.glow[3], a = fade * 0.8 },
                intensity = fade * 0.8,
                scale = 3 + f.length / 4,
                time_to_live = 2,
@@ -232,8 +219,10 @@ function train_code.queue_retry(train, station_name, reason_msg)
       train_code.pending_warps[train.id] = { station_name = station_name, queued_at = game.tick, warned = false }
       return
    end
-   if not pending.warned and game.tick - pending.queued_at >= RETRY_WARN_AFTER then
-      game.print(reason_msg, {color={1,0.6,0}})
+   if not pending.warned and game.tick - pending.queued_at >= warp_settings.train.retry_warn_after then
+      if not warp_settings.train.block_info_messages then
+         game.print(reason_msg, {color={1,0.6,0}})
+      end
       pending.warned = true
    end
 end

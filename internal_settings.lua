@@ -62,7 +62,23 @@ local local_settings = {
      ground_station = "WarpGround",
      factory_station = "WarpFactory",
      garden_station = "WarpGarden",
-     garden_research = "warp-train-biochamber"
+     garden_research = "warp-train-biochamber",
+     retry_warn_after = 60 * 30,
+     -- When true, the informational "train warp waiting/blocked" chat pings are
+     -- suppressed. Hard warp failures are still reported.
+     block_info_messages = settings.startup["warptorio_block-train-info-text"].value,
+     warp_flash_duration = 20,
+     trail_ticks = 25,
+     trail_step = 0.6,
+     trail_color_setting = settings.startup["warptorio_warp-trail-color"],
+     trail_palletes = {
+        orange = { flame = { 0.95, 0.4, 0.08 },  core = { 1, 0.85, 0.3 },    glow = { 1, 0.55, 0.15 } },
+        cyan   = { flame = { 0.05, 0.2, 0.8 },    core = { 0.5, 0.75, 1 },   glow = { 0.15, 0.4, 1 } },
+        purple = { flame = { 0.55, 0.15, 0.9 },   core = { 0.85, 0.6, 1 },   glow = { 0.6, 0.3, 1 } },
+        white  = { flame = { 0.7, 0.7, 0.75 },    core = { 1, 1, 1 },        glow = { 0.85, 0.9, 1 } },
+        green  = { flame = { 0.1, 0.7, 0.25 },    core = { 0.7, 1, 0.7 },    glow = { 0.35, 0.9, 0.45 } },
+     },
+     warp_effect_tile_offset = 2
   },
   starter_items = {
      ["coal"]=1000,["iron-plate"]=500,["copper-plate"]=200,
@@ -252,7 +268,10 @@ local local_settings = {
     extra_time_planet = {},
     extra_time_amount = 2*60,
     final_offset = 40,
-    quality_step = settings.startup["warptorio_quality-step"].value,
+    -- Evolution factor at which enemies start spawning above normal quality.
+    quality_evolution = settings.startup["warptorio_quality-evolution"].value,
+    -- Warps per quality tier once they have started spawning.
+    quality_step = 10,
     quality = {
       "normal",
       "uncommon",

@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.3
+Date: 2026-09-04
+  Changes:
+    - Added option to disable train messages into settings
+    - Added option to modify combat difficulty
+    - Replaced the quality step setting with the evolution factor at which quality enemies start spawning
+    - Fixed tips and tricks to reflect 0.4 changes
+    - Added detection of warp transition to the warp combinator
+    - Fixed planet signals on the warp combinator not updating properly
+    - Added check that makes sure that platforms from past will not try to spawn unknown entities
+    - Added option to remove platforms from the past
+    - fixed that lava and other liquids could have been added to the platform
+    - Warp train improvements (thanks to k1ng440)
+    - Character warp fixes (thanks to k1ng440)
+---------------------------------------------------------------------------------------------------
 Version: 0.4.2
 Date: 2026-08-01
   Changes:

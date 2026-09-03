@@ -64,6 +64,34 @@ data:extend({
   },
   {
     type = "tips-and-tricks-item",
+    name = "warptorio-warp-combinator",
+    tag = "[item=warp-constant-combinator]",
+    order = "z[warptorio]-f[warp-combinator]",
+    category = "warptorio",
+    trigger = {
+      type = "research",
+      technology = "warp-circuit-network"
+    },
+    is_title = false,
+    indent = 1,
+    simulation = nil,
+  },
+  {
+    type = "tips-and-tricks-item",
+    name = "warptorio-floor-limits",
+    tag = "[entity=roboport]",
+    order = "z[warptorio]-g[floor-limits]",
+    category = "warptorio",
+    trigger = {
+      type = "research",
+      technology = "warp-biochamber-platform-1"
+    },
+    is_title = false,
+    indent = 1,
+    simulation = nil,
+  },
+  {
+    type = "tips-and-tricks-item",
     name = "warptorio-planet-hopping",
     tag = "[planet=nauvis]",
     order = "z[warptorio]-e[planet-hopping]",

@@ -1330,7 +1330,7 @@ local function choose_quality(index)
       return "warp"
    end
    local evolution = get_evolution_factor()
-   if evolution < 0.95 then
+   if evolution < warp_settings.biter.quality_evolution then
       storage.warptorio.last_normal = index
       return "normal"
    end
@@ -1347,7 +1347,9 @@ end
 local function replace_common(entity)
    if not entity.force.name == "enemy" then return end
    local evolution = get_evolution_factor()
-   if evolution < 0.94 then
+   -- Same gate as choose_quality: below it every enemy is normal quality anyway,
+   -- so there is nothing to replace.
+   if evolution < warp_settings.biter.quality_evolution then
       return
    end
    local types = {
@@ -1808,6 +1810,10 @@ local function next_warp_zone_space()
    end
    storage.warptorio.container = nil
    teleport_ground(source,dest)
+   -- Cloning the ground floor invalidates the combinators standing on it, so pick up
+   -- the clones straight away. Without this they stop updating for the whole
+   -- transition, which is exactly when signal-J / signal-D are worth reading.
+   warp_constant_combinator.rescan()
    teleport_players(source,"factory",true)
    --set_hidden_tiles(dest,"empty-space")
    create_void_platform(source,true)
