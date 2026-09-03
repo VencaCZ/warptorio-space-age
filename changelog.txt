@@ -12,7 +12,7 @@ Date: 2026-09-04
     - Added option to remove platforms from the past
     - fixed that lava and other liquids could have been added to the platform
     - Warp train improvements (thanks to k1ng440)
-    - Character warp fixes (thanks to k1ng440)
+    - Character warp fixes (thanks to elitetech and k1ng440)
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.2
 Date: 2026-08-01

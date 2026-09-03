@@ -1,15 +1,17 @@
+local warp_settings = require("internal_settings")
+
 local combinator_item = table.deepcopy(data.raw["item"]["constant-combinator"])
-combinator_item.name = "warp-constant-combinator"
-combinator_item.place_result = "warp-constant-combinator"
-combinator_item.order = "[circuit-network]-[warp-constant-combinator]"
+combinator_item.name = warp_settings.combinator.name
+combinator_item.place_result = warp_settings.combinator.name
+combinator_item.order = "[circuit-network]-["..warp_settings.combinator.name.."]"
 
 local combinator_recipe = table.deepcopy(data.raw["recipe"]["constant-combinator"])
-combinator_recipe.name = "warp-constant-combinator"
+combinator_recipe.name = warp_settings.combinator.name
 combinator_recipe.enabled = false
-combinator_recipe.results = {{type = "item", name = "warp-constant-combinator", amount = 1}}
+combinator_recipe.results = {{type = "item", name = warp_settings.combinator.name, amount = 1}}
 
 local combinator_entity = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
-combinator_entity.name = "warp-constant-combinator"
+combinator_entity.name = warp_settings.combinator.name
 combinator_entity.minable = {mining_time = 0.1, result = "warp-constant-combinator"}
 
 local warp_tint = {r = 0.55, g = 0.8, b = 1, a = 1}

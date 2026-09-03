@@ -78,7 +78,16 @@ local local_settings = {
         white  = { flame = { 0.7, 0.7, 0.75 },    core = { 1, 1, 1 },        glow = { 0.85, 0.9, 1 } },
         green  = { flame = { 0.1, 0.7, 0.25 },    core = { 0.7, 1, 0.7 },    glow = { 0.35, 0.9, 0.45 } },
      },
-     warp_effect_tile_offset = 2
+     warp_effect_tile_offset = 2,
+     trail_front_pad = 4,
+     trail_back_pad = 6,
+     train_element_lenght = 7,
+     stock = { "locomotive", "cargo-wagon", "fluid-wagon", "artillery-wagon" }
+  },
+  combinator = {
+     name = "warp-constant-combinator",
+     slot_current_planet = 7,
+     slot_next_planet = 8,
   },
   starter_items = {
      ["coal"]=1000,["iron-plate"]=500,["copper-plate"]=200,

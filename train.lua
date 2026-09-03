@@ -420,13 +420,17 @@ function train_code.warp_trains(train, station_name, destination)
                train_code.warp_single_train(train, destination, target_station, v)
                return
             elseif out_of_bounds then
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-station-range-error", station_name})
+               train_code.queue_retry(
+                  train, station_name, {"warptorio.train-warp-station-range-error", station_name})
             elseif has_passengers then
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-passenger-error", station_name})
+               train_code.queue_retry(
+                  train, station_name, {"warptorio.train-warp-passenger-error", station_name})
             elseif not track_ok then
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-track-too-short", station_name})
+               train_code.queue_retry(
+                  train, station_name, {"warptorio.train-warp-track-too-short", station_name})
             else
-               train_code.queue_retry(train, station_name, {"warptorio.train-warp-waiting-blocked", station_name})
+               train_code.queue_retry(
+                  train, station_name, {"warptorio.train-warp-waiting-blocked", station_name})
             end
          end
       end
@@ -461,12 +465,6 @@ function train_code.retry_pending_warps()
    train_code.scan_for_parked_warps()
 end
 
-local WARP_STATION_NAMES = {
-   warp_settings.train.ground_station,
-   warp_settings.train.factory_station,
-   warp_settings.train.garden_station,
-}
-
 -- Warps trains parked at warp stations that never fired on_train_changed_state
 -- (cloned mid-transition trains are created already parked, so no event fires).
 function train_code.scan_for_parked_warps()
@@ -479,11 +477,20 @@ function train_code.scan_for_parked_warps()
       if game.surfaces[surface_name] and game.surfaces[surface_name].valid then
          -- Filter by warp station names so we only ever touch warp stops, not
          -- every train stop the player has built on the surface.
-         local warp_stops = game.train_manager.get_train_stops({ station_name = WARP_STATION_NAMES, surface = surface_name })
+         local warp_stops = game.train_manager.get_train_stops(
+            {
+               station_name = {
+                  warp_settings.train.ground_station,
+                  warp_settings.train.factory_station,
+                  warp_settings.train.garden_station,
+               },
+               surface = surface_name })
          for _, stop in ipairs(warp_stops) do
             local t = stop.get_stopped_train()
-            if t and t.valid and t.id and t.state == defines.train_state.wait_station and not train_code.pending_warps[t.id] then
-               local destination = train_code.resolve_train_destination(surface_name, stop.backer_name)
+            if t and t.valid and t.id and t.state == defines.train_state.wait_station
+               and not train_code.pending_warps[t.id] then
+               local destination = train_code.resolve_train_destination(
+                  surface_name, stop.backer_name)
                if destination then
                   train_code.warp_trains(t, stop.backer_name, destination)
                end
@@ -499,14 +506,17 @@ function train_code.warp_single_train(train, destination, target_station, source
    local schedule_records = schedule.get_records()
    local schedule_index = train.schedule.current
 
-   local train_length = #train.carriages * 7
+   local train_length = #train.carriages * warp_settings.train.train_element_lenght
    -- Departure: trail covers where the train stood, plus the locomotive nose
    -- sticking out ahead of the station.
-   local WARP_TRAIL_FRONT_PAD = 4
-   train_code.create_warp_trail(source_station.surface, source_station.position, source_station.direction, train_length, WARP_TRAIL_FRONT_PAD)
-   train_code.create_warp_flash(source_station.surface, source_station.position, source_station.direction)
+   train_code.create_warp_trail(
+      source_station.surface, source_station.position,
+      source_station.direction, train_length, warp_settings.train.trail_front_pad)
+   train_code.create_warp_flash(
+      source_station.surface, source_station.position, source_station.direction)
 
-   local new_train = train_code.warp_array(train.carriages, destination, target_station, source_station)
+   local new_train = train_code.warp_array(
+      train.carriages, destination, target_station, source_station)
    if not new_train then
       game.print({"warptorio.train-warp-error"}, { color = { 1, 0, 0 } })
       -- Source train is still parked and intact (clones were rolled back), so
@@ -517,9 +527,12 @@ function train_code.warp_single_train(train, destination, target_station, source
 
    local destination_surface = game.surfaces[destination]
    -- Arrival: trail extends a bit past the back of the landed train.
-   local WARP_TRAIL_BACK_PAD = 6
-   train_code.create_warp_trail(destination_surface, target_station.position, target_station.direction, train_length + WARP_TRAIL_BACK_PAD, 0, true)
-   train_code.create_warp_flash(destination_surface, target_station.position, target_station.direction)
+   train_code.create_warp_trail(
+      destination_surface, target_station.position,
+      target_station.direction,
+      train_length + warp_settings.train.trail_back_pad, 0, true)
+   train_code.create_warp_flash(
+      destination_surface, target_station.position, target_station.direction)
 
    -- Restore schedule and switch back to automatic.
    local new_train_schedule = new_train.get_schedule()
@@ -533,15 +546,13 @@ function train_code.warp_single_train(train, destination, target_station, source
    end
 end
 
-local ROLLING_STOCK_TYPES = { "locomotive", "cargo-wagon", "fluid-wagon", "artillery-wagon" }
-
 -- clone_brush (used to move the ground floor during warps) resets cloned trains
 -- to manual mode and stops them. Snapshot each train's mode/speed/state/schedule
 -- before the clone so the clones can be restored afterwards. Positions are stored
 -- relative to the given surface offset so source and destination can differ.
 function train_code.capture_clone_states(surface, offset)
    local captured = {}
-   for _, carriage in ipairs(surface.find_entities_filtered{ type = ROLLING_STOCK_TYPES }) do
+   for _, carriage in ipairs(surface.find_entities_filtered{ type = warp_settings.train.stock }) do
       local train = carriage.train
       if train and train.valid then
          captured[#captured + 1] = {
@@ -563,7 +574,7 @@ end
 function train_code.restore_clone_states(surface, offset, captured)
    local used = {}
    local seen = {}
-   for _, carriage in ipairs(surface.find_entities_filtered{ type = ROLLING_STOCK_TYPES }) do
+   for _, carriage in ipairs(surface.find_entities_filtered{ type = warp_settings.train.stock }) do
       local train = carriage.train
       if train and train.valid and not seen[train.id] then
          seen[train.id] = true
@@ -587,7 +598,8 @@ function train_code.restore_clone_states(surface, offset, captured)
             end
             -- A train that was driving when cloned stops dead on the clone; send it
             -- back on its way to the same schedule record at its previous speed.
-            if not match.mode and match.schedule_index > 0 and (match.speed ~= 0 or match.state == defines.train_state.on_the_path) then
+            if not match.mode and match.schedule_index > 0
+               and (match.speed ~= 0 or match.state == defines.train_state.on_the_path) then
                train.go_to_station(match.schedule_index)
                if match.speed and match.speed ~= 0 then
                   train.speed = match.speed

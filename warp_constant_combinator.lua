@@ -2,12 +2,8 @@ local warp_settings = require("internal_settings")
 
 local warp_constant_combinator = {}
 
-local COMBINATOR_NAME = "warp-constant-combinator"
-
 -- Slots 1-6 are the fixed virtual signals (T, W, V, A, J, D); the two planet signals
 -- follow them at slots that never move, so each always means the same thing.
-local SLOT_CURRENT_PLANET = 7
-local SLOT_NEXT_PLANET = 8
 
 local function ensure_storage()
   storage.warptorio = storage.warptorio or {}
@@ -119,11 +115,11 @@ local function update_entity(entity, state)
      -- Staying put (nauvis): one signal carries both roles, so 1 + 2. Comparing the
      -- signal tables here never matched — get_planet_signal builds a fresh table per
      -- call, so it was reference equality against a different table every time.
-     table.insert(parameters, {index = SLOT_CURRENT_PLANET, signal = current_planet_signal, count = 3})
-     table.insert(parameters, {index = SLOT_NEXT_PLANET})
+     table.insert(parameters, {index = warp_settings.combinator.slot_current_planet, signal = current_planet_signal, count = 3})
+     table.insert(parameters, {index = warp_settings.combinator.slot_next_planet})
   else
-     table.insert(parameters, {index = SLOT_CURRENT_PLANET, signal = current_planet_signal, count = 1})
-     table.insert(parameters, {index = SLOT_NEXT_PLANET, signal = next_planet_signal, count = 2})
+     table.insert(parameters, {index = warp_settings.combinator.slot_current_planet, signal = current_planet_signal, count = 1})
+     table.insert(parameters, {index = warp_settings.combinator.slot_next_planet, signal = next_planet_signal, count = 2})
   end
 
   set_parameters(section, parameters)
@@ -131,7 +127,7 @@ local function update_entity(entity, state)
 end
 
 function warp_constant_combinator.register(entity)
-  if not entity or not entity.valid or entity.name ~= COMBINATOR_NAME then
+  if not entity or not entity.valid or entity.name ~= warp_settings.combinator.name then
     return
   end
 
@@ -160,7 +156,7 @@ function warp_constant_combinator.rescan()
   end
 
   for _, surface in pairs(game.surfaces) do
-    local found = surface.find_entities_filtered({name = COMBINATOR_NAME})
+    local found = surface.find_entities_filtered({name = warp_settings.combinator.name})
     for _, entity in ipairs(found) do
       warp_constant_combinator.register(entity)
     end
