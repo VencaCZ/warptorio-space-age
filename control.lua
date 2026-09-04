@@ -6,7 +6,10 @@ local train_code = require("train")
 local platform_code = require("platforms")
 local warp_constant_combinator = require("warp_constant_combinator")
 local ok, warpcheat = pcall(require, "modules.warpcheat")
-if ok then log("[warpcheat] loaded") elseif not string.find(tostring(warpcheat), "not found") then log("[warpcheat] " .. tostring(warpcheat)) end
+if type(warpcheat) ~= "table" then
+  log("[warpcheat] unavailable: " .. tostring(warpcheat))
+  warpcheat = nil
+end
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -235,8 +238,13 @@ local space_gen_settings = {
 local starter_items=warp_settings.starter_items
 
 local function get_or_create(name,pos)
+  local surface_obj = game.surfaces[pos.surface]
+  if not surface_obj then
+     log("Warning: get_or_create skipped, surface \"" .. tostring(pos.surface) .. "\" is missing " .. name)
+     return nil
+  end
   local x, y = translate_surface_coordinates(pos.surface, pos.x, pos.y)
-  local exist = game.surfaces[pos.surface].find_entity(
+  local exist = surface_obj.find_entity(
     name,
     {
       x + (x > 0 and -0.5 or 0.5),
@@ -281,7 +289,9 @@ local function remove_resources(surface)
   local platform = warp_settings.floor.levels[level]
 
   local area = translate_surface_area(surface, nil, platform)
-  local resources = game.surfaces[surface].find_entities_filtered{area = area, type = "resource"}
+  local surface_obj = game.surfaces[surface]
+  if not surface_obj or not surface_obj.valid then return end
+  local resources = surface_obj.find_entities_filtered{area = area, type = "resource"}
   for i,v in ipairs(resources) do
     v.destroy()
   end
@@ -293,7 +303,9 @@ local function remove_recipes(surface)
   local platform = warp_settings.floor.levels[level]
 
   local area = translate_surface_area(surface, nil, platform)
-  local entities = game.surfaces[surface].find_entities_filtered{area = area, type = "assembling-machine"}
+  local surface_obj = game.surfaces[surface]
+  if not surface_obj or not surface_obj.valid then return end
+  local entities = surface_obj.find_entities_filtered{area = area, type = "assembling-machine"}
   for i,v in ipairs(entities) do
      local recipe,quality = v.get_recipe()
      if recipe and recipe.prototype.surface_conditions then
@@ -460,6 +472,11 @@ end
 local function refresh_power_and_teleport(dest)
    local dest = dest or storage.warptorio.warp_zone
     storage.warptorio.power_name = storage.warptorio.power_name or "warp-power"
+    local dest_obj = game.surfaces[dest]
+    if not dest_obj or not dest_obj.valid then
+       log("Warning: refresh_power_and_teleport skipped, surface \"" .. tostring(dest) .. "\" is missing")
+       return
+    end
     local power_1 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface=dest})
     local power_2 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface="factory"})
     power_1.minable_flag = false
@@ -1483,6 +1500,10 @@ local function teleport_ground(source, target)
   local level = storage.warptorio.ground_level or 0
 
   if level == 0 then return end
+
+  local source_obj = game.surfaces[source]
+  local target_obj = game.surfaces[target]
+  if not source_obj or not source_obj.valid or not target_obj or not target_obj.valid then return end
 
   local platform = warp_settings.floor.levels[level]
   local source_offset = get_surface_offset(source)

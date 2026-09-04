@@ -1,6 +1,11 @@
 local env
 local module = {}
 
+function module.init(env_table)
+  env = env_table
+  return module
+end
+
 local function find_child(parent, name)
   if not parent then return nil end
   if parent[name] and parent[name].name == name then return parent[name] end
@@ -307,6 +312,6 @@ commands.add_command("warpcheat", "Open the warptorio cheat control popup (white
     return
   end
   warpcheat_gui(player)
-end
+end)
 
 return module
