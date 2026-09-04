@@ -1499,8 +1499,9 @@ local function teleport_ground(source, target)
     source_positions[i] = shape_tiles[i].position
   end
 
-  -- Snapshot trains before the clone: clone_brush resets them to manual mode.
   local captured_modes = train_code.capture_clone_states(game.surfaces[source], source_offset)
+
+  train_code.freeze_ground_bound_trains(source)
 
   -- Teleport base part
   game.surfaces[source].clone_brush({
@@ -1703,8 +1704,10 @@ local function next_warp_zone_finish()
        teleport_players(source,name)
     end
     if storage.warptorio.factory_level > 0 then
-      refresh_power_and_teleport()
+      refresh_power_and_teleport(name)
     end
+    -- New floor is live; release trains frozen for the clone.
+    train_code.resume_ground_bound_trains()
     
     storage.warptorio.wave_index = 0
     storage.warptorio.wave_time = warp_settings.biter.time
@@ -1821,6 +1824,7 @@ local function next_warp_zone_space()
    local save = storage.warptorio.warp_zone
    storage.warptorio.warp_zone = dest
    refresh_power_and_teleport(dest)
+   train_code.resume_ground_bound_trains()
    update_belt()
    storage.warptorio.warp_zone = save
 

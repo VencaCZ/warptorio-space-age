@@ -22,6 +22,13 @@ local function warp_effects()
    return storage.warptorio.warp_effects
 end
 
+-- Pre-freeze speeds of trains frozen for the warp, keyed by train.id.
+local function frozen_train_speeds()
+   storage.warptorio = storage.warptorio or {}
+   storage.warptorio.frozen_train_speeds = storage.warptorio.frozen_train_speeds or {}
+   return storage.warptorio.frozen_train_speeds
+end
+
 -- no need to move this to settings for now, but I will fix it later
 -- PS: this should be never null as its in game setting
 local trail_pallette = warp_settings.train.trail_color_setting and
@@ -387,6 +394,24 @@ function train_code.train_has_passengers(train)
    return #train.passengers > 0
 end
 
+-- Kick any player who is remote-controlling this train (i.e. "Drive remotely"
+-- from the train GUI / remote view). A remote driver appears in train.passengers
+-- but has controller_type == remote; forcing exit_remote_view() yanks them out so
+-- the warp is not blocked. Physically-riding players (controller_type == character)
+-- are deliberately left alone so they keep blocking the warp.
+function train_code.kick_remote_drivers(train)
+   local kicked = false
+   for _, p in ipairs(train.passengers) do
+      if p.connected and p.controller_type == defines.controllers.remote then
+         if p.exit_remote_view() then
+            p.print({"warptorio.train-warp-kicked-remote"})
+            kicked = true
+         end
+      end
+   end
+   return kicked
+end
+
 function train_code.is_station_out_of_bounds(station)
    local surface_name = station.surface.name
    local pos = station.position
@@ -428,6 +453,9 @@ function train_code.warp_trains(train, station_name, destination)
             local destination_surface = game.surfaces[destination]
             local track_ok = train_code.is_train_track_long_enough(train, destination_surface, v, target_station)
             local out_of_bounds = train_code.is_station_out_of_bounds(v) or train_code.is_station_out_of_bounds(target_station)
+            -- Kick anyone remote-driving this train so it is not stuck on the
+            -- passenger check; re-read passengers afterwards.
+            train_code.kick_remote_drivers(train)
             local has_passengers = train_code.train_has_passengers(train)
 
             if not out_of_bounds
@@ -554,11 +582,14 @@ function train_code.warp_single_train(train, destination, target_station, source
    train_code.create_warp_flash(
       destination_surface, target_station.position, target_station.direction)
 
-   -- Restore schedule and switch back to automatic.
+   -- Automatic with an empty schedule would bounce back to manual and
+   -- go_to_station would index past the stale index; leave manual in that case.
    local new_train_schedule = new_train.get_schedule()
    new_train_schedule.set_records(schedule_records)
-   new_train.manual_mode = false
-   new_train.go_to_station(schedule_index)
+   if #schedule_records > 0 then
+      new_train.manual_mode = false
+      new_train.go_to_station(schedule_index)
+   end
 
    if new_train.valid and old_speed and old_speed ~= 0 then
       local same_facing = source_station.direction == target_station.direction
@@ -566,15 +597,77 @@ function train_code.warp_single_train(train, destination, target_station, source
    end
 end
 
--- clone_brush (used to move the ground floor during warps) resets cloned trains
--- to manual mode and stops them. Snapshot each train's mode/speed/state/schedule
--- before the clone so the clones can be restored afterwards. Positions are stored
--- relative to the given surface offset so source and destination can differ.
+-- Zeroes every train on floors feeding WarpGround (plus the ground floor being
+-- cloned when extra_surface is given) so the clone is stationary. Pre-freeze
+-- speeds are stashed for resume_ground_bound_trains.
+function train_code.freeze_ground_bound_trains(extra_surface)
+   local speeds = frozen_train_speeds()
+   for k in pairs(speeds) do speeds[k] = nil end
+   local floors = {}
+   for _, stop in ipairs(game.train_manager.get_train_stops({ station_name = warp_settings.train.ground_station })) do
+      floors[stop.surface.name] = true
+   end
+   if extra_surface then
+      floors[extra_surface] = true
+   end
+
+   for surface_name in pairs(floors) do
+      local surface = game.surfaces[surface_name]
+      if surface and surface.valid then
+         for _, carriage in ipairs(surface.find_entities_filtered{ type = warp_settings.train.stock }) do
+            local train = carriage.train
+            if train and train.valid then
+               speeds[train.id] = train.speed
+               train.speed = 0
+            end
+         end
+      end
+   end
+end
+
+-- After the warp: push any train left in manual back to automatic, restore
+-- frozen speeds, clear stale entries.
+function train_code.resume_ground_bound_trains()
+   local speeds = frozen_train_speeds()
+   local floors = {}
+   for _, stop in ipairs(game.train_manager.get_train_stops({ station_name = warp_settings.train.ground_station })) do
+      floors[stop.surface.name] = true
+   end
+
+   for surface_name in pairs(floors) do
+      local surface = game.surfaces[surface_name]
+      if surface and surface.valid then
+         for _, carriage in ipairs(surface.find_entities_filtered{ type = warp_settings.train.stock }) do
+            local train = carriage.train
+            if train and train.valid then
+               -- Hands off trains a player is actually driving: manual + occupied
+               -- is deliberate, everything else gets forced back to automatic.
+               if not (train.manual_mode and #train.passengers > 0) then
+                  train.manual_mode = false
+               end
+               local frozen = speeds[train.id]
+               if frozen and frozen ~= 0 and train.speed == 0
+                  and train.state ~= defines.train_state.wait_station
+                  and #train.passengers == 0 then
+                  train.speed = frozen
+               end
+               speeds[train.id] = nil
+            end
+         end
+      end
+   end
+   for k in pairs(speeds) do speeds[k] = nil end
+   return true
+end
+
+-- Snapshot each train's mode/speed/state/schedule before the clone.
+-- Positions are relative to the given surface offset so source/dest can differ.
 function train_code.capture_clone_states(surface, offset)
    local captured = {}
    for _, carriage in ipairs(surface.find_entities_filtered{ type = warp_settings.train.stock }) do
       local train = carriage.train
       if train and train.valid then
+         local schedule = train.get_schedule()
          captured[#captured + 1] = {
             x = carriage.position.x - offset.x,
             y = carriage.position.y - offset.y,
@@ -582,15 +675,16 @@ function train_code.capture_clone_states(surface, offset)
             speed = train.speed,
             state = train.state,
             schedule_index = train.schedule and train.schedule.current or 0,
+            records = schedule and schedule.get_records() or nil,
          }
       end
    end
    return captured
 end
 
--- Restores manual mode and journey state on trains cloned onto the given surface.
--- Matched with a 0.6 tile tolerance (clones of a moving train can be snapped
--- slightly off its source position), trying every carriage of a train.
+-- Restores mode, schedule and journey state on cloned trains: clones don't
+-- inherit the schedule, and an automatic train with an empty schedule is forced
+-- back to manual by the engine. 1.0 tile tolerance, trying every carriage.
 function train_code.restore_clone_states(surface, offset, captured)
    local used = {}
    local seen = {}
@@ -603,7 +697,7 @@ function train_code.restore_clone_states(surface, offset, captured)
             local rx = c.position.x - offset.x
             local ry = c.position.y - offset.y
             for j, cap in ipairs(captured) do
-               if not used[j] and math.abs(cap.x - rx) < 0.6 and math.abs(cap.y - ry) < 0.6 then
+               if not used[j] and math.abs(cap.x - rx) < 1.0 and math.abs(cap.y - ry) < 1.0 then
                   match = cap
                   used[j] = true
                   break
@@ -613,6 +707,9 @@ function train_code.restore_clone_states(surface, offset, captured)
          end
 
          if match then
+            if match.records and #match.records > 0 then
+               train.get_schedule().set_records(match.records)
+            end
             if match.mode ~= train.manual_mode then
                train.manual_mode = match.mode
             end
@@ -620,7 +717,11 @@ function train_code.restore_clone_states(surface, offset, captured)
             -- back on its way to the same schedule record at its previous speed.
             if not match.mode and match.schedule_index > 0
                and (match.speed ~= 0 or match.state == defines.train_state.on_the_path) then
-               train.go_to_station(match.schedule_index)
+               local target_index = match.records and #match.records > 0
+                  and math.min(match.schedule_index, #match.records) or 0
+               if target_index > 0 then
+                  train.go_to_station(target_index)
+               end
                if match.speed and match.speed ~= 0 then
                   train.speed = match.speed
                end
