@@ -5,6 +5,7 @@ local map_gens = require("map_gens")
 local train_code = require("train")
 local platform_code = require("platforms")
 local warp_constant_combinator = require("warp_constant_combinator")
+local speech_bubbles = require("modules.speech_bubbles")
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -1229,7 +1230,10 @@ local function warp_gui(player)
    end
    
    local frame = warpFrame.add{type = "frame",style="entity_frame", name="buttons",direction="vertical"}
-   frame.add{type = "button", name="warp_planet", style="red_button", caption={"warptorio.button-warp"}}
+   local warp_button = frame.add{type = "button", name="warp_planet", style="red_button", caption={"warptorio.button-warp"}}
+   if storage.warptorio.ground_level == 0 then
+      warp_button.tooltip = {"warptorio.warp-not-available"}
+   end
    --frame.add{type = "button", name="go_home", style="green_button", caption="Home"}
 end
 
@@ -1612,7 +1616,12 @@ local function next_warp_zone_prepare()
     if not storage.warporio.index then storage.warporio.index = 0 end
     
     if storage.warptorio.container and storage.warptorio.container.destroy() then
-       game.print({"warptorio.container-removed"})
+       local player = game.players[1]
+       if player and player.connected and player.character and player.character.valid then
+          speech_bubbles.speak(player.character, {"warptorio.container-removed"}, 3)
+       else
+          game.print({"warptorio.container-removed"})
+       end
        storage.warptorio.container = nil
     end
 
@@ -2044,6 +2053,20 @@ script.on_event(defines.events.on_tick, function(event)
      on_init_or_load()
      return
   end
+  if storage.warptorio.welcome_dialog_tick then
+     local player = game.players[1]
+     if player and player.connected then
+        local playing = player.controller_type == defines.controllers.character
+        if playing and event.tick >= storage.warptorio.welcome_dialog_tick then
+           storage.warptorio.welcome_dialog_tick = nil
+           if game.is_multiplayer() then
+              player.print({"warptorio.start-welcome", warp_settings.trigger_wave})
+           else
+              game.show_message_dialog{text = {"warptorio.start-welcome", warp_settings.trigger_wave}}
+           end
+        end
+     end
+  end
   if event.tick % 60 == 0 then
     train_code.retry_pending_warps()
   end
@@ -2142,6 +2165,11 @@ end)
 script.on_event(defines.events.on_player_created, function(event)
     local player = game.get_player(event.player_index)
 
+    if event.player_index == 1 and not storage.warptorio.start_message_shown then
+       storage.warptorio.start_message_shown = true
+       storage.warptorio.welcome_dialog_tick = game.tick + 60
+    end
+
     warp_gui(player)
     --local warp_gui = screen_element.add{type="label", name="greeting", caption="Hi"}
 	  --[[screen_element.add{type = "label", name = "time_passed_label", caption = {"time-passed-label", "-"}}
@@ -2161,7 +2189,12 @@ script.on_event(defines.events.on_gui_click, function(event)
     end
     if event.element.name == "warp_planet" then
        if storage.warptorio.teleporting then
-          game.print({"warptorio.warp_in_progress"})
+          local player = game.players[event.player_index]
+          if player.character and player.character.valid then
+             speech_bubbles.speak(player.character, {"warptorio.warp_in_progress"}, 3)
+          else
+             game.print({"warptorio.warp_in_progress"})
+          end
           return
        end
        local amount = #game.forces["player"].connected_players
@@ -2186,13 +2219,28 @@ script.on_event(defines.events.on_gui_click, function(event)
        end
        
        if storage.warptorio.ground_level == 0 then
-          game.print({"warptorio.warp-not-available"})
+          local capacitor = storage.warptorio.power and storage.warptorio.power[1]
+          local target = (capacitor and capacitor.valid) and capacitor or nil
+          local player = game.players[event.player_index]
+          if not target and player and player.character and player.character.valid then
+             target = player.character
+          end
+          if target then
+             speech_bubbles.speak(target, {"warptorio.warp-not-available"}, 5)
+          else
+             game.print({"warptorio.warp-not-available"})
+          end
           return
        end
-       if storage.warptorio.warp_out > 0 then
-          game.print({"warptorio.cooling-down"})
+if storage.warptorio.warp_out > 0 then
+          local player = game.players[event.player_index]
+          if player.character and player.character.valid then
+             speech_bubbles.speak(player.character, {"warptorio.cooling-down"}, 3)
+          else
+             game.print({"warptorio.cooling-down"})
+          end
           return
-        end
+       end
        if technology_check() then
           game.print({"warptorio.technology-check"})
           return
@@ -2229,7 +2277,12 @@ local function build_entity(e)
          end
          e.entity.destroy()
          if e.player_index then
-            game.players[e.player_index].print({"warptorio.roboport-blocked"},{color={1,0,0}})
+            local player = game.players[e.player_index]
+            if player.character and player.character.valid then
+               speech_bubbles.speak(player.character, {"warptorio.roboport-blocked"}, 4)
+            else
+               player.print({"warptorio.roboport-blocked"},{color={1,0,0}})
+            end
          end
          return
       end
@@ -2348,7 +2401,7 @@ script.on_event(defines.events.on_lua_shortcut, function(e)
          local player_pos = game.surfaces["factory"].find_non_colliding_position("character", {0,0}, 0, 0.5, false)
          teleport_body(game.players[e.player_index], player_pos, "factory")
       else
-        game.print({"warptorio.warp-not-available"})
+         game.print({"warptorio.teleport-not-available"})
       end
     end
 end)
@@ -2372,7 +2425,12 @@ end)
 
 script.on_event(defines.events.on_player_mined_entity, function(e)
     if e.entity.name == "warp_2x2-container" then
-       game.print({"warptorio.container-removed"})
+       local player = game.players[e.player_index]
+       if player.character and player.character.valid then
+          speech_bubbles.speak(player.character, {"warptorio.container-removed"}, 3)
+       else
+          game.print({"warptorio.container-removed"})
+       end
        storage.warptorio.container = nil
     end
     warp_constant_combinator.unregister(e.entity)
@@ -2380,7 +2438,12 @@ end)
 
 script.on_event(defines.events.on_robot_mined_entity, function(e)
     if e.entity.name == "warp_2x2-container" then
-       game.print({"warptorio.container-removed"})
+       local player = game.players[1]
+       if player and player.connected and player.character and player.character.valid then
+          speech_bubbles.speak(player.character, {"warptorio.container-removed"}, 3)
+       else
+          game.print({"warptorio.container-removed"})
+       end
        storage.warptorio.container = nil
     end
     warp_constant_combinator.unregister(e.entity)
@@ -2452,13 +2515,15 @@ end)
 
 script.on_event(defines.events.on_player_joined_game, function(e)
   if e.player_index == 1 and game.forces["player"].technologies["automation"].researched == false then
-     game.print({"warptorio.help-text-1",warp_settings.trigger_wave})
      rendering.draw_text{
         surface="nauvis",
-        text={"warptorio.help-text-1",warp_settings.trigger_wave},scale=2,
-        target={x=0,y=0},
-        color={0,1,0},
-        time_to_live=60*10
+        text={"warptorio.help-text-1",warp_settings.trigger_wave},
+        target={x=0, y=-3},
+        color={0.6,1,0.6},
+        scale=1.6,
+        alignment="center",
+        use_rich_text=true,
+        time_to_live=60*5*60
      }
   end
   if e.player_index ~= 1 then
@@ -2469,7 +2534,7 @@ script.on_event(defines.events.on_player_joined_game, function(e)
         local spawn_center = translate_surface_position(storage.warptorio.warp_zone, {x=0, y=0})
         local surface = game.surfaces[storage.warptorio.warp_zone]
         local player_pos = surface.find_non_colliding_position("character", spawn_center, 0, 0.5, false) or spawn_center
-        teleport_body(game.players[e.player_index],  player_pos, storage.warptorio.warp_zone)
+         teleport_body(game.players[e.player_index],  player_pos, storage.warptorio.warp_zone)
      end
   end
 end)

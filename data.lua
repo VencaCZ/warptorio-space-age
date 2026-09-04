@@ -4,6 +4,7 @@ require("prototypes/entities")
 require("prototypes/containers")
 require("prototypes/collector_container")
 require("prototypes/warp_constant_combinator")
+require("prototypes/speech_bubble")
 
 local function is_shadow(sprite)
   if sprite.draw_as_shadow then return true end

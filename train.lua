@@ -1,4 +1,5 @@
 local warp_settings = require("internal_settings")
+local speech_bubbles = require("modules.speech_bubbles")
 
 local train_code = {}
 
@@ -240,7 +241,12 @@ function train_code.queue_retry(train, station_name, reason_msg)
    end
    if not pending.warned and game.tick - pending.queued_at >= warp_settings.train.retry_warn_after then
       if not warp_settings.train.block_info_messages then
-         game.print(reason_msg, {color={1,0.6,0}})
+         local capacitor = storage.warptorio and storage.warptorio.power and storage.warptorio.power[1]
+         if capacitor and capacitor.valid then
+            speech_bubbles.speak(capacitor, reason_msg, 5)
+         else
+            game.print(reason_msg, {color={1,0.6,0}})
+         end
       end
       pending.warned = true
    end
@@ -538,7 +544,12 @@ function train_code.warp_single_train(train, destination, target_station, source
    local new_train = train_code.warp_array(
       train.carriages, destination, target_station, source_station)
    if not new_train then
-      game.print({"warptorio.train-warp-error"}, { color = { 1, 0, 0 } })
+      local capacitor = storage.warptorio and storage.warptorio.power and storage.warptorio.power[1]
+      if capacitor and capacitor.valid then
+         speech_bubbles.speak(capacitor, {"warptorio.train-warp-error"}, 5)
+      else
+         game.print({"warptorio.train-warp-error"}, { color = { 1, 0, 0 } })
+      end
       -- Source train is still parked and intact (clones were rolled back), so
       -- queue a retry instead of giving up.
       train_code.queue_retry(train, source_station.backer_name, {"warptorio.train-warp-error"})
