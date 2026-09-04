@@ -404,6 +404,12 @@ for _, eff in ipairs(rocket.action.action_delivery.target_effects) do
   if eff.type == "damage" then eff.damage.amount = eff.damage.amount * 2 end
 end
 
+-- remove tile conversion from nuke explosions
+for _, name in ipairs({"nuke-effects-nauvis", "nuke-effects-vulcanus"}) do
+  local e = data.raw["explosion"][name]
+  if e then e.created_effect = nil end
+end
+
 -- artillery-projectile: physical + explosion damage +50%
 local art = data.raw["artillery-projectile"]["artillery-projectile"]
 for _, eff in ipairs(art.action.action_delivery.target_effects) do
