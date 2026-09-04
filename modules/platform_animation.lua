@@ -57,17 +57,15 @@ end
 
 local warp_settings = require("internal_settings")
 local repair_speed_config = warp_settings.repair.batch_configs[warp_settings.repair.speed] or warp_settings.repair.batch_configs.normal
-local REPAIR_BATCH_SIZE = repair_speed_config.batch
-local REPAIR_INTERVAL = repair_speed_config.interval
-local EXPAND_LOCK_TICKS = 120
-local ANIM_OFFSET_X = 0
-local ANIM_OFFSET_Y = 0
-
-local PLATFORM_TILE_BASE = "warp_tile_world"
+local repair_batch_size = repair_speed_config.batch
+local repair_interval = repair_speed_config.interval
+local expand_lock_ticks = warp_settings.animation.expand_lock_ticks
+local anim_offset_x = warp_settings.animation.build_anim_offset.x
+local anim_offset_y = warp_settings.animation.build_anim_offset.y
 
 local function platform_tile_names()
-  local names = {[PLATFORM_TILE_BASE] = true}
-  local proto = prototypes and prototypes.tile and prototypes.tile[PLATFORM_TILE_BASE]
+  local names = {[warp_settings.tiles.ground] = true}
+  local proto = prototypes and prototypes.tile and prototypes.tile[warp_settings.tiles.ground]
   if proto then
     if proto.frozen_variant then
       names[proto.frozen_variant.name] = true
@@ -79,7 +77,7 @@ local function platform_tile_names()
   return names
 end
 
-local NEIGHBOURS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+local neighbours = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
 
 local function tile_x(tile)
   if tile.position.x ~= nil then
@@ -109,7 +107,7 @@ local function is_missing(surface, x, y, names)
 end
 
 local function has_platform_neighbour(surface, x, y, names)
-  for _, d in ipairs(NEIGHBOURS) do
+  for _, d in ipairs(neighbours) do
     if names[surface.get_tile(x + d[1], y + d[2]).name] then
       return true
     end
@@ -218,9 +216,9 @@ function platform_animation.on_tick()
   end
 
   -- start new build animations on this tick
-  if game.tick % REPAIR_INTERVAL == 0 then
+  if game.tick % repair_interval == 0 then
     local spawned = 0
-    while spawned < REPAIR_BATCH_SIZE and #queue.edge_list > 0 do
+    while spawned < repair_batch_size and #queue.edge_list > 0 do
       local idx = math.random(#queue.edge_list)
       local key = queue.edge_list[idx]
       queue.edge_list[idx] = queue.edge_list[#queue.edge_list]
@@ -232,7 +230,7 @@ function platform_animation.on_tick()
         local tile = queue.tile_by_key[key]
         local anim = surface.create_entity{
           name = "warptorio-platform-build-anim",
-          position = {x = tile_x(tile) + 0.5 + ANIM_OFFSET_X, y = tile_y(tile) + 0.5 + ANIM_OFFSET_Y}
+          position = {x = tile_x(tile) + 0.5 + anim_offset_x, y = tile_y(tile) + 0.5 + anim_offset_y}
         }
         table.insert(queue.pending, {entity = anim, tile = tile, key = key})
         spawned = spawned + 1
@@ -243,7 +241,7 @@ function platform_animation.on_tick()
   for _, key in ipairs(placed_keys) do
     queue.target_set[key] = nil
     local x, y = parse_key(key)
-    for _, d in ipairs(NEIGHBOURS) do
+    for _, d in ipairs(neighbours) do
       local nx, ny = x + d[1], y + d[2]
       local nkey = position_key(nx, ny)
       if queue.target_set[nkey] and not queue.edge_set[nkey] and
@@ -270,7 +268,7 @@ function platform_animation.animate_ground_platform(surface, old_tiles, new_tile
     return
   end
 
-  storage.warptorio.platform_animation_active_until = game.tick + EXPAND_LOCK_TICKS
+  storage.warptorio.platform_animation_active_until = game.tick + expand_lock_ticks
 
   local effect = (mode == "repair") and "explosion" or "space-platform-foundation-explosion"
   local max_effects = 120

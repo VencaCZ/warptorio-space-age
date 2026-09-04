@@ -486,4 +486,9 @@ local_settings.repair = {
   }
 }
 
+local_settings.animation = {
+  expand_lock_ticks = 120,
+  build_anim_offset = {x = 0, y = 0},
+}
+
 return local_settings

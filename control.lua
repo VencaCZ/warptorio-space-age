@@ -2276,7 +2276,7 @@ if not storage.warporio then
   platform_code.on_tick()
   on_tick_power()
   platform_animation.on_tick()
-  local platform_animation_active = platform_animation.is_active()
+  storage.warptorio.platform_animation_active = platform_animation.is_active()
 
   if storage.warptorio.transition_timer > 0 then
      storage.warptorio.transition_timer = storage.warptorio.transition_timer - 1
@@ -2291,11 +2291,11 @@ if not storage.warporio then
   end
   if storage.warptorio.ground_level > 0 or
       storage.warporio.index > 0 then
-    if not technology_check() and not platform_animation_active then
+    if not technology_check() and not storage.warptorio.platform_animation_active then
       storage.warptorio.time_passed = storage.warptorio.time_passed + 1/60
     end
     if storage.warptorio.warp_out > 0 then
-      if not platform_animation_active then
+      if not storage.warptorio.platform_animation_active then
         storage.warptorio.warp_out = storage.warptorio.warp_out - 1/60
       end
     else
@@ -2304,7 +2304,7 @@ if not storage.warporio then
   end
   local in_transition_period = storage.warptorio.transition_timer > -warp_settings.time.extra_transition_time*60
   if not storage.warptorio.planet_timer then storage.warptorio.planet_timer = 0
-  elseif storage.warptorio.warp_out <= 0 and not in_transition_period and not platform_animation_active then
+  elseif storage.warptorio.warp_out <= 0 and not in_transition_period and not storage.warptorio.platform_animation_active then
     storage.warptorio.planet_timer = storage.warptorio.planet_timer + 1/60
 
     if storage.warptorio.planet_timer > warp_settings.planet_timer or storage.warptorio.planet_next == nil
