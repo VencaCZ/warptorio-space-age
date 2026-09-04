@@ -477,4 +477,18 @@ for name, version in pairs(script.active_mods) do
   end
 end
 
+local_settings.repair = {
+  speed = (settings.startup["warptorio_repair-speed"] and settings.startup["warptorio_repair-speed"].value) or "normal",
+  batch_configs = {
+    slow = {batch = 1, interval = 5},
+    normal = {batch = 5, interval = 5},
+    fast = {batch = 10, interval = 2},
+  }
+}
+
+local_settings.animation = {
+  expand_lock_ticks = 120,
+  build_anim_offset = {x = 0, y = 0},
+}
+
 return local_settings

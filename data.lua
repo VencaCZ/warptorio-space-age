@@ -187,7 +187,50 @@ end
 local foundation = data.raw["tile"]["space-platform-foundation"]
 local tile_world = table.deepcopy(data.raw["tile"][settings.startup["warptorio_ground-tile"].value])
 set_destructable(tile_world,"warp_tile_world")
+
+local function copy_build_animations(target, source)
+  if not source then return end
+  target.build_animations = target.build_animations or source.build_animations
+  target.build_animations_background = target.build_animations_background or source.build_animations_background
+  target.built_animation_frame = target.built_animation_frame or source.built_animation_frame
+end
+
+if foundation then
+  copy_build_animations(tile_world, foundation)
+
+  if tile_world.frozen_variant then
+    local frozen = data.raw["tile"][tile_world.frozen_variant]
+    if frozen then
+      copy_build_animations(frozen, foundation)
+    end
+  end
+  if tile_world.thawed_variant then
+    local thawed = data.raw["tile"][tile_world.thawed_variant]
+    if thawed then
+      copy_build_animations(thawed, foundation)
+    end
+  end
+
+  if foundation.build_animations then
+    local layers = {}
+    for _, dir in ipairs({"north", "south", "east", "west"}) do
+      if foundation.build_animations[dir] then
+        table.insert(layers, util.table.deepcopy(foundation.build_animations[dir]))
+      end
+    end
+    if #layers > 0 then
+      data:extend{{
+        type = "explosion",
+        name = "warptorio-platform-build-anim",
+        flags = {"not-on-map"},
+        animations = {{layers = layers}},
+        sound = nil,
+      }}
+    end
+  end
+end
 data:extend{tile_platform,tile_world}
+
 
 --[[for name,element in pairs(data.raw["tile"]) do
    if string.find(name,"concrete") then
