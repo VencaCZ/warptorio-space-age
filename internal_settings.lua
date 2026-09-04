@@ -70,7 +70,7 @@ local local_settings = {
      warp_flash_duration = 20,
      trail_ticks = 25,
      trail_step = 0.6,
-     trail_color_setting = settings.startup["warptorio_warp-trail-color"],
+     trail_color_setting = settings.startup["warptorio_warp-trail-color"].value,
      trail_palletes = {
         orange = { flame = { 0.95, 0.4, 0.08 },  core = { 1, 0.85, 0.3 },    glow = { 1, 0.55, 0.15 } },
         cyan   = { flame = { 0.05, 0.2, 0.8 },    core = { 0.5, 0.75, 1 },   glow = { 0.15, 0.4, 1 } },

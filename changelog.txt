@@ -8,7 +8,7 @@ Date: 2026-09-04
     - Fixed tips and tricks to reflect 0.4 changes
     - Added detection of warp transition to the warp combinator
     - Fixed planet signals on the warp combinator not updating properly
-    - Added check that makes sure that platforms from past will not try to spawn unknown entities
+    - Added check that makes sure that platforms from past will not try to spawn unknown entities or tiles
     - Added option to remove platforms from the past
     - fixed that lava and other liquids could have been added to the platform
     - Warp train improvements (thanks to k1ng440)

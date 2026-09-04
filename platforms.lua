@@ -193,13 +193,20 @@ function module.spawn(name,x,y)
    end
    local tiles = {}
    for _,v in ipairs(platform.tiles) do
-      table.insert(
-         tiles,
-         {
-            name=v.name,
-            position = {x=v.position.x+x,y=v.position.y+y}
-         }
-      )
+      -- Saved platforms record whatever foundation tile was on the ground at the time,
+      -- including tiles from mods that may since have been removed. set_tiles errors on
+      -- an unknown name, so skip those the same way unknown entities are skipped below.
+      -- Only this placement pass skips them: the entry stays in the stored design, so if
+      -- the player adds the mod back the tile is placed again on the next spawn.
+      if v.name and prototypes.tile[v.name] then
+         table.insert(
+            tiles,
+            {
+               name=v.name,
+               position = {x=v.position.x+x,y=v.position.y+y}
+            }
+         )
+      end
    end
    local items = lootTable()
    local center = nil

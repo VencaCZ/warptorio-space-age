@@ -1,11 +1,26 @@
 local warp_settings = require("internal_settings")
 
 local train_code = {}
+
+-- Both of the tables below are cross-tick state that drives real game state: pending
+-- warps decide when a train is teleported, and warp effects create rendering objects
+-- that live in the save. Anything like that has to sit in storage — a module-level
+-- table is rebuilt empty when a client loads the save, so a player joining mid-game
+-- would start running different work from the host.
+
 -- Trains parked at a warp station waiting on a transient blocker (busy teleporting,
 -- track occupied, no free destination stop). Keyed by train.id.
-train_code.pending_warps = train_code.pending_warps or {}
+local function pending_warps()
+   storage.warptorio = storage.warptorio or {}
+   storage.warptorio.pending_warps = storage.warptorio.pending_warps or {}
+   return storage.warptorio.pending_warps
+end
 
-train_code.warp_effects = train_code.warp_effects or {}
+local function warp_effects()
+   storage.warptorio = storage.warptorio or {}
+   storage.warptorio.warp_effects = storage.warptorio.warp_effects or {}
+   return storage.warptorio.warp_effects
+end
 
 -- no need to move this to settings for now, but I will fix it later
 -- PS: this should be never null as its in game setting
@@ -42,7 +57,8 @@ end
 function train_code.create_warp_flash(surface, position, direction)
    if not (surface and surface.valid and position) then return end
 
-   train_code.warp_effects[#train_code.warp_effects + 1] = {
+   local effects = warp_effects()
+   effects[#effects + 1] = {
       kind = "flash",
       surface = surface,
       position = warp_effect_position(position, direction),
@@ -57,7 +73,8 @@ end
 function train_code.create_warp_trail(surface, position, direction, length, front, reverse)
    if not (surface and surface.valid and position) then return end
 
-   train_code.warp_effects[#train_code.warp_effects + 1] = {
+   local effects = warp_effects()
+   effects[#effects + 1] = {
       kind = "trail",
       surface = surface,
       position = warp_effect_position(position, direction),
@@ -71,18 +88,19 @@ end
 
 -- Advances and draws all active warp effects. Called every tick from control.lua.
 function train_code.on_tick(tick)
-   if not next(train_code.warp_effects) then return end
+   local effects = warp_effects()
+   if not next(effects) then return end
 
    local i = 1
-   while i <= #train_code.warp_effects do
-      local f = train_code.warp_effects[i]
+   while i <= #effects do
+      local f = effects[i]
       local age = tick - f.tick_start
 
       if not (f.surface and f.surface.valid) then
-         table.remove(train_code.warp_effects, i)
+         table.remove(effects, i)
       elseif f.kind == "flash" then
          if age > warp_settings.train.warp_flash_duration then
-            table.remove(train_code.warp_effects, i)
+            table.remove(effects, i)
          else
             local t = age / warp_settings.train.warp_flash_duration  -- 0..1
             local fade = 1 - t
@@ -108,7 +126,7 @@ function train_code.on_tick(tick)
          end
       else -- trail
          if age > warp_settings.train.trail_ticks then
-            table.remove(train_code.warp_effects, i)
+            table.remove(effects, i)
          else
             -- quick ignition at the start, then linear burnout
             local fade = math.min(1, age / 3) * (1 - age / warp_settings.train.trail_ticks)
@@ -214,9 +232,10 @@ function train_code.resolve_train_destination(surface_name, station_name)
 end
 
 function train_code.queue_retry(train, station_name, reason_msg)
-   local pending = train_code.pending_warps[train.id]
+   local queue = pending_warps()
+   local pending = queue[train.id]
    if not pending then
-      train_code.pending_warps[train.id] = { station_name = station_name, queued_at = game.tick, warned = false }
+      queue[train.id] = { station_name = station_name, queued_at = game.tick, warned = false }
       return
    end
    if not pending.warned and game.tick - pending.queued_at >= warp_settings.train.retry_warn_after then
@@ -416,7 +435,7 @@ function train_code.warp_trains(train, station_name, destination)
                and track_ok
                and train_code.is_train_footprint_clear(train, destination_surface, v, target_station)
             then
-               train_code.pending_warps[train.id] = nil
+               pending_warps()[train.id] = nil
                train_code.warp_single_train(train, destination, target_station, v)
                return
             elseif out_of_bounds then
@@ -440,8 +459,9 @@ end
 -- Called periodically (control.lua on_tick) to re-attempt blocked warps and catch
 -- parked trains that never got a warp event (e.g. clones created mid-transition).
 function train_code.retry_pending_warps()
-   if next(train_code.pending_warps) then
-      for train_id, pending in pairs(train_code.pending_warps) do
+   local queue = pending_warps()
+   if next(queue) then
+      for train_id, pending in pairs(queue) do
          local station_name = pending.station_name
          local stations = game.train_manager.get_train_stops({station_name=station_name})
          local found = false
@@ -458,7 +478,7 @@ function train_code.retry_pending_warps()
          end
          if not found then
             -- Train moved off, was destroyed, or is no longer waiting there — stop tracking it.
-            train_code.pending_warps[train_id] = nil
+            queue[train_id] = nil
          end
       end
    end
@@ -488,7 +508,7 @@ function train_code.scan_for_parked_warps()
          for _, stop in ipairs(warp_stops) do
             local t = stop.get_stopped_train()
             if t and t.valid and t.id and t.state == defines.train_state.wait_station
-               and not train_code.pending_warps[t.id] then
+               and not pending_warps()[t.id] then
                local destination = train_code.resolve_train_destination(
                   surface_name, stop.backer_name)
                if destination then
