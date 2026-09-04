@@ -5,6 +5,11 @@ local map_gens = require("map_gens")
 local train_code = require("train")
 local platform_code = require("platforms")
 local warp_constant_combinator = require("warp_constant_combinator")
+local ok, warpcheat = pcall(require, "modules.warpcheat")
+if type(warpcheat) ~= "table" then
+  log("[warpcheat] unavailable: " .. tostring(warpcheat))
+  warpcheat = nil
+end
 
 -- Helper function to create a tile
 local function create_tile(name, x, y)
@@ -233,8 +238,13 @@ local space_gen_settings = {
 local starter_items=warp_settings.starter_items
 
 local function get_or_create(name,pos)
+  local surface_obj = game.surfaces[pos.surface]
+  if not surface_obj then
+     log("Warning: get_or_create skipped, surface \"" .. tostring(pos.surface) .. "\" is missing " .. name)
+     return nil
+  end
   local x, y = translate_surface_coordinates(pos.surface, pos.x, pos.y)
-  local exist = game.surfaces[pos.surface].find_entity(
+  local exist = surface_obj.find_entity(
     name,
     {
       x + (x > 0 and -0.5 or 0.5),
@@ -279,7 +289,9 @@ local function remove_resources(surface)
   local platform = warp_settings.floor.levels[level]
 
   local area = translate_surface_area(surface, nil, platform)
-  local resources = game.surfaces[surface].find_entities_filtered{area = area, type = "resource"}
+  local surface_obj = game.surfaces[surface]
+  if not surface_obj or not surface_obj.valid then return end
+  local resources = surface_obj.find_entities_filtered{area = area, type = "resource"}
   for i,v in ipairs(resources) do
     v.destroy()
   end
@@ -291,7 +303,9 @@ local function remove_recipes(surface)
   local platform = warp_settings.floor.levels[level]
 
   local area = translate_surface_area(surface, nil, platform)
-  local entities = game.surfaces[surface].find_entities_filtered{area = area, type = "assembling-machine"}
+  local surface_obj = game.surfaces[surface]
+  if not surface_obj or not surface_obj.valid then return end
+  local entities = surface_obj.find_entities_filtered{area = area, type = "assembling-machine"}
   for i,v in ipairs(entities) do
      local recipe,quality = v.get_recipe()
      if recipe and recipe.prototype.surface_conditions then
@@ -458,6 +472,11 @@ end
 local function refresh_power_and_teleport(dest)
    local dest = dest or storage.warptorio.warp_zone
     storage.warptorio.power_name = storage.warptorio.power_name or "warp-power"
+    local dest_obj = game.surfaces[dest]
+    if not dest_obj or not dest_obj.valid then
+       log("Warning: refresh_power_and_teleport skipped, surface \"" .. tostring(dest) .. "\" is missing")
+       return
+    end
     local power_1 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface=dest})
     local power_2 = get_or_create(storage.warptorio.power_name,{x=0,y=0,surface="factory"})
     power_1.minable_flag = false
@@ -1456,7 +1475,9 @@ local function check_wave()
       storage.warptorio.wave_time = warp_settings.biter.min
     end
   elseif not storage.warptorio.void and not storage.warptorio.teleporting then
-    storage.warptorio.wave_time = storage.warptorio.wave_time - 1/60
+    if not storage.warptorio.wave_paused then
+      storage.warptorio.wave_time = storage.warptorio.wave_time - 1/60
+    end
   end
 end
 
@@ -1481,6 +1502,10 @@ local function teleport_ground(source, target)
   local level = storage.warptorio.ground_level or 0
 
   if level == 0 then return end
+
+  local source_obj = game.surfaces[source]
+  local target_obj = game.surfaces[target]
+  if not source_obj or not source_obj.valid or not target_obj or not target_obj.valid then return end
 
   local platform = warp_settings.floor.levels[level]
   local source_offset = get_surface_offset(source)
@@ -1605,7 +1630,7 @@ local function create_space_platform()
   end
 end
 
-local function next_warp_zone_prepare()
+local function next_warp_zone_prepare(forced)
     --if true then return end
     storage.warptorio.teleporting = true
     if not storage.warporio then storage.warporio = {} end
@@ -1634,21 +1659,27 @@ local function next_warp_zone_prepare()
     storage.warporio.index = storage.warporio.index + 1
     storage.warptorio.time_passed = 0
     local name = "warpzone_"..storage.warporio.index
-    local num = math.random()
     local surface = nil
-    if num < warp_settings.stuck_in_space_chance and not game.surfaces["space"] then
-       surface = new_random_surface("space")
-       storage.warptorio.previous_surface_2 = nil
-       storage.warptorio.previous_surface_1 = nil
-    elseif num > 1-warp_settings.going_home_chance and
-       storage.warptorio.surface_name ~= "nauvis" and
-       storage.warptorio.warp_next ~= "nauvis" and
-       storage.warptorio.void ~= true then
+    if forced == "nauvis" then
        surface = new_random_surface("home")
        storage.warptorio.previous_surface_2 = nil
        storage.warptorio.previous_surface_1 = nil
     else
-       surface = new_random_surface(name)
+       local num = math.random()
+       if num < warp_settings.stuck_in_space_chance and not game.surfaces["space"] then
+          surface = new_random_surface("space")
+          storage.warptorio.previous_surface_2 = nil
+          storage.warptorio.previous_surface_1 = nil
+       elseif num > 1-warp_settings.going_home_chance and
+          storage.warptorio.surface_name ~= "nauvis" and
+          storage.warptorio.warp_next ~= "nauvis" and
+          storage.warptorio.void ~= true then
+          surface = new_random_surface("home")
+          storage.warptorio.previous_surface_2 = nil
+          storage.warptorio.previous_surface_1 = nil
+       else
+          surface = new_random_surface(name)
+       end
     end
     prepare_surface_spawn(surface, name, not storage.warptorio.void)
     storage.warptorio.previous_surface_wave = storage.warptorio.wave_index
@@ -1673,7 +1704,9 @@ local function next_warp_zone_finish()
     --game.print("New warpzone created")
     create_void_platform(name)
     local source = nil
-    if storage.warptorio.factory_level >= warp_settings.space.trigger_factory_level and
+    if storage.warptorio.force_direct then
+       source = storage.warptorio.warp_zone
+    elseif storage.warptorio.factory_level >= warp_settings.space.trigger_factory_level and
        warp_settings.space.transition then
        source = "warp-space-transition"
     else
@@ -1862,7 +1895,19 @@ local function next_warp_zone_transition()
       end]]
 end
 
+local function force_warp(destination)
+   storage.warptorio.warp_out = 0
+   storage.warptorio.transition_timer = 0
+   storage.warptorio.force_direct = true
+   storage.warptorio.clicks_to_teleport = {}
+   next_warp_zone_prepare(destination)
+   storage.warptorio.transition_timer = -1
+   next_warp_zone_finish()
+   storage.warptorio.force_direct = nil
+end
+
 local function next_warp_zone()
+   log("[warpcheat] next_warp_zone called")
    storage.warptorio.clicks_to_teleport = {}
    next_warp_zone_prepare()
    if storage.warptorio.factory_level >= warp_settings.space.trigger_factory_level and
@@ -2155,11 +2200,13 @@ script.on_event(defines.events.on_player_created, function(event)
     
 end)
 
-script.on_event(defines.events.on_gui_click, function(event)
-    if not storage.warptorio.clicks_to_teleport then
-       storage.warptorio.clicks_to_teleport = {}
-    end
-    if event.element.name == "warp_planet" then
+  script.on_event(defines.events.on_gui_click, function(event)
+     if not storage.warptorio.clicks_to_teleport then
+        storage.warptorio.clicks_to_teleport = {}
+     end
+     local element_name = (event.element and event.element.valid) and event.element.name or nil
+      if warpcheat then warpcheat.handle_click(event) end
+     if element_name == "warp_planet" then
        if storage.warptorio.teleporting then
           game.print({"warptorio.warp_in_progress"})
           return
@@ -2535,3 +2582,23 @@ remote.add_interface("warptorio",
      spawn_random_ground_platform_design = platform_code.spawn_random,
   }
 )
+
+if warpcheat then
+warpcheat.init({
+  next_warp_zone = next_warp_zone,
+  force_warp = force_warp,
+  update_label = update_label,
+  teleport_body = teleport_body,
+  translate_surface_position = translate_surface_position,
+  update_ground_platform = update_ground_platform,
+  clean_ground_platform = function()
+    local level = storage.warptorio.ground_level or 0
+    local platform = warp_settings.floor.levels[level]
+    if not platform then return false end
+    clean_ground_tiles(storage.warptorio.warp_zone,
+      translate_surface_area(storage.warptorio.warp_zone, nil, platform))
+    return true
+  end,
+  platform_code = platform_code,
+})
+end
