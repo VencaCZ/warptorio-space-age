@@ -197,7 +197,7 @@ local local_settings = {
   garden = {
     platform = {
        width = 31,
-       height = 2 + 31 *2
+       height = 4 + 31 *2
     },
     yumako={
         parts = {
