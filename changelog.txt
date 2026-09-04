@@ -10,7 +10,7 @@ Date: 2026-09-04
     - Fixed planet signals on the warp combinator not updating properly
     - Added check that makes sure that platforms from past will not try to spawn unknown entities or tiles
     - Added option to remove platforms from the past
-    - fixed that lava and other liquids could have been added to the platform
+    - fixed that lava and other liquids could have been added to the platform (thanks to k1ng440)
     - Warp train improvements (thanks to k1ng440)
     - Character warp fixes (thanks to elitetech and k1ng440)
 ---------------------------------------------------------------------------------------------------
