@@ -70,6 +70,17 @@ local shortcut = {
 }
 data:extend{shortcut}
 
+--shortcut to toggle ground minimap
+local minimap_shortcut = {
+  type="shortcut",
+  name="warptorio-ground-minimap-toggle",
+  action="lua",
+  toggleable=true,
+  icon="__warptorio-space-age__/graphics/map.png",
+  small_icon="__warptorio-space-age__/graphics/map.png"
+}
+data:extend{minimap_shortcut}
+
 -- asteroid collectors
 
 local collector = data.raw["asteroid-collector"]["asteroid-collector"]
@@ -339,7 +350,7 @@ style.top_padding = 2
 style.bottom_padding = 2
 data.raw["gui-style"]["default"]["warptorio_frame"] = style
 
---change flamethrower-ammo to light oil
+-- change flamethrower-ammo to light oil
 
 local flamethrower_ammo = data.raw["recipe"]["flamethrower-ammo"]
 flamethrower_ammo.ingredients = {
@@ -483,3 +494,19 @@ local function set_my_data(name, data)
 end
 -- use it like this
 data:extend{set_my_data(name, map_gen_settings)}]]
+
+-- ground minimap zoom controls
+data:extend{{
+   type = "custom-input",
+   name = "warptorio-ground-minimap-zoom-in",
+   key_sequence = "mouse-wheel-up",
+   consuming = "none",
+   action = "lua",
+}}
+data:extend{{
+   type = "custom-input",
+   name = "warptorio-ground-minimap-zoom-out",
+   key_sequence = "mouse-wheel-down",
+   consuming = "none",
+   action = "lua",
+}}
