@@ -16,3 +16,12 @@ if mods["Krastorio2-spaced-out"] then
    local tech_card = data.raw["recipe"]["kr-singularity-tech-card"]
    tech_card.surface_conditions = nil
 end
+
+-- teleport arrival sound
+data:extend{{
+   type = "sound",
+   name = "warptorio-teleport",
+   filename = "__warptorio-space-age__/sounds/teleport.ogg",
+   volume = 1.0,
+   audible_distance_modifier = 2,
+}}

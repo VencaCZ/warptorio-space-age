@@ -122,6 +122,9 @@ data:extend(
      default_value = "square",
      allowed_values = {"square","circle","hexagon"},
      order = "a1"
-  }
+  },
+  {type = "int-setting", name = "warptorio_teleport-delay", order = "a1",
+   setting_type = "startup", default_value = 20,
+   minimum_value = 0, maximum_value = 600}
 }
 )
