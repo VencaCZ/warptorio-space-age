@@ -67,8 +67,8 @@ local shortcut = {
   type="shortcut",
   name=shared.shortcut_teleport,
   action="lua",
-  icon="__warptorio-space-age-edge__/graphics/home.png",
-  small_icon="__warptorio-space-age-edge__/graphics/home.png"
+  icon="__warptorio-space-age__/graphics/home.png",
+  small_icon="__warptorio-space-age__/graphics/home.png"
 }
 data:extend{shortcut}
 
@@ -78,8 +78,8 @@ local minimap_shortcut = {
   name=shared.shortcut_minimap_toggle,
   action="lua",
   toggleable=true,
-  icon="__warptorio-space-age-edge__/graphics/map.png",
-  small_icon="__warptorio-space-age-edge__/graphics/map.png"
+  icon="__warptorio-space-age__/graphics/map.png",
+  small_icon="__warptorio-space-age__/graphics/map.png"
 }
 data:extend{minimap_shortcut}
 
@@ -313,11 +313,11 @@ local function make_ring_particles()
   return {
     make_ring_particle(
       shared.teleport_ring_1,
-      "__warptorio-space-age-edge__/graphics/effects/teleport-ring-1.png",
+      "__warptorio-space-age__/graphics/effects/teleport-ring-1.png",
       132, 136, util.by_pixel(-0.5, 0)),
     make_ring_particle(
       shared.teleport_ring_2,
-      "__warptorio-space-age-edge__/graphics/effects/teleport-ring-2.png",
+      "__warptorio-space-age__/graphics/effects/teleport-ring-2.png",
       110, 128, util.by_pixel(0, 3)),
   }
 end
@@ -401,7 +401,7 @@ data:extend({
     subgroup = "explosions",
     render_layer = "higher-object-above",
     animations = {{
-      filename = "__warptorio-space-age-edge__/graphics/effects/teleport-explosion-1.png",
+      filename = "__warptorio-space-age__/graphics/effects/teleport-explosion-1.png",
       priority = "high",
       width = 124,
       height = 224,
@@ -412,7 +412,7 @@ data:extend({
       animation_speed = 1,
       scale = 0.5,
     }, {
-      filename = "__warptorio-space-age-edge__/graphics/effects/teleport-explosion-2.png",
+      filename = "__warptorio-space-age__/graphics/effects/teleport-explosion-2.png",
       priority = "high",
       width = 154,
       height = 212,
@@ -423,7 +423,7 @@ data:extend({
       animation_speed = 1,
       scale = 0.5,
     }, {
-      filename = "__warptorio-space-age-edge__/graphics/effects/teleport-explosion-3.png",
+      filename = "__warptorio-space-age__/graphics/effects/teleport-explosion-3.png",
       priority = "high",
       width = 126,
       height = 236,
@@ -599,26 +599,26 @@ support.support_range = support.support_range * 3
 data:extend{{
       type = "sound",
       name = shared.sounds.warp_start,
-      filename = "__warptorio-space-age-edge__/sounds/warp_start.wav",
+      filename = "__warptorio-space-age__/sounds/warp_start.wav",
       category = "environment",
 }}
 
 data:extend{{
       type = "sound",
       name = shared.sounds.warp_end,
-      filename = "__warptorio-space-age-edge__/sounds/warp_end.wav",
+      filename = "__warptorio-space-age__/sounds/warp_end.wav",
       category = "environment",
 }}
 data:extend{{
       type = "sound",
       name = shared.sounds.planet_change,
-      filename = "__warptorio-space-age-edge__/sounds/planet_change.wav",
+      filename = "__warptorio-space-age__/sounds/planet_change.wav",
       category = "alert",
 } }
 data:extend{{
       type = "sound",
       name = shared.sounds.boss_spawn,
-      filename = "__warptorio-space-age-edge__/sounds/boss_spawn.wav",
+      filename = "__warptorio-space-age__/sounds/boss_spawn.wav",
       category = "alert",
 }}
 
@@ -734,7 +734,7 @@ data.extend({
       color = {194, 54, 22},
       order = "f",
       subgroup = "qualities",
-      icon = "__warptorio-space-age-edge__/graphics/quality.png",
+      icon = "__warptorio-space-age__/graphics/quality.png",
       beacon_power_usage_multiplier = 1,
       mining_drill_resource_drain_multiplier = 1,
       hidden_in_factoriopedia = true,
@@ -826,7 +826,7 @@ data:extend(custom_events)
 data:extend{{
    type = "virtual-signal",
    name = "warptorio-void-destination",
-   icon = "__warptorio-space-age-edge__/graphics/destinations/deep-space.png",
+   icon = "__warptorio-space-age__/graphics/destinations/deep-space.png",
    icon_size = 256,
    localised_name = {"virtual-signal-name.warptorio-void-destination"},
    subgroup = "virtual-signal",

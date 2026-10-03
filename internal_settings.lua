@@ -272,9 +272,9 @@ local local_settings = {
       --vulcanus = {"warp-demolisher"}
       boss = {
         {"warp-demolisher"},
-        {"medium-strafer-pentapod","medium-stomper-pentapod"},
-        {"big-strafer-pentapod","big-stomper-pentapod"},
-        {"big-strafer-pentapod","big-stomper-pentapod", "small-demolisher"},
+        {"big-biter","big-spitter","small-strafer-pentapod"},
+        {"behemoth-biter","behemoth-spitter","medium-strafer-pentapod","medium-stomper-pentapod"},
+        {"big-strafer-pentapod","big-stomper-pentapod","behemoth-biter","behemoth-spitter"},
       },
       -- Boss name prefix -> planet that boss belongs to. Modded boss variants
       -- only spawn on their home planet; when the matching biter mod is not
@@ -325,11 +325,16 @@ local local_settings = {
       "legendary",
     },
     quality_time = 3*60,
-    wave_change_index = 20,
-    wave_change_chance = 0.3,
-    wave_change_max = 40,
-    wave_ramp = 0.01,
-    wave_change_cap = 0.5,
+    -- Boss wave cadence. Wave numbers count from 1 and reset on every warp.
+    -- Defaults reproduce the original boss pressure.
+    boss_first_wave = 10,         -- no boss waves before this wave
+    boss_guaranteed_every = 10,   -- every Nth wave is always a boss wave
+    wave_change_index = 20,       -- past this wave each wave rolls wave_change_chance
+    wave_change_chance = 0.7,     -- boss chance per wave between index and max
+    wave_change_max = 40,         -- past this wave the chance grows by wave_ramp per wave
+    wave_ramp = 1,
+    wave_change_cap = 1,          -- ceiling of the ramped chance (1 = every wave is a boss wave)
+    boss_once_per_warp = false,   -- true: only the first boss wave of a warp spawns bosses
     wave_amount = settings.startup["warptorio_wave-amount"].value,
     wave_increase = settings.startup["warptorio_wave-increase"].value,
     amount = 5,
@@ -337,16 +342,59 @@ local local_settings = {
     change = settings.startup["warptorio_wave-change"].value,
     min = 15,
     radius = 8,
-    max_bosses = 16,
-    boss_flood_ratio = 0.5,
+    -- Boss count per boss wave: ceil(wave / boss_count_wave_divisor)
+    -- + floor(warps / boss_warp_count_every), capped at max_bosses.
+    max_bosses = 24,
+    boss_count_wave_divisor = 10,
+    boss_warp_count_every = 0,    -- +1 boss per this many warps; 0 disables
+    boss_count_random = true,     -- true: spawn random(1, count) instead of exactly count
+    boss_alive_cap = 32,          -- max bosses alive at once, final research included; false = no cap
+    boss_final_groups = true,     -- final research: spawn count groups of the rolled size (quadratic)
+    boss_final_all_planets = true, -- final research: ignore boss_planet / boss_rare_planets, every variant spawns
+    -- Each boss leads its own group with an escort of regular units taken
+    -- from the planet's wave table (entity_type[planet] or default) at the
+    -- boss's tier + tier_offset. When that tier does not exist (top tier)
+    -- the escort uses the last tier at top_quality instead, or at the warp
+    -- quality during the final research.
+    -- Entries in tiers (by evolution tier) and bosses (by boss name prefix,
+    -- longest match wins, applied after tiers) override count, tier_offset,
+    -- top_quality or set an explicit types = {...} list.
+    boss_escort = {
+       count = {16, 64},              -- min, max units per boss
+       -- Units whose name contains any of these are never used as escort
+       -- (pentapods: strafers, stompers, wrigglers are UPS heavy).
+       exclude = {"pentapod"},
+       tier_offset = 1,
+       top_quality = "legendary",
+       tiers = {
+          -- [1] = {count = {2, 4}},
+       },
+       bosses = {
+          -- ["warp-demolisher"] = {count = {8, 12}},
+          -- ["maf-boss-frost"] = {types = {"behemoth-biter"}},
+       },
+    },
+    -- Share of the regular flood that still spawns on a boss wave
+    -- (0 = the boss wave replaces the flood), at least boss_flood_min groups.
+    boss_flood_ratio = 0,
+    boss_flood_min = 3,
     boss_kill_time = 30,
-    boss_health_mult = 3,
+    -- Boss lives (Biter Battles style): boss copies of boss_lives_types
+    -- types get max_health = boss_life_health (data stage, needs a restart;
+    -- replaces modded 100k bosses too). A boss spawns with
+    -- ceil(boss_lives * evolution) lives; each time its health hits 0 it is
+    -- refilled and loses a life. The bar above it shows the lives left.
+    -- Demolishers (segmented-unit) keep their native health.
+    boss_life_health = 2500,
+    boss_lives = 20,
+    boss_lives_types = {["unit"] = true, ["spider-unit"] = true},
+    boss_health_bar = true,
+    boss_label = true,            -- "BOSS" label above the bar (locale warptorio.boss-label)
     -- Minimum collision half-size for boss prototypes. Chart dots scale with
     -- the collision box, so small-biters-based bosses (maf-boss-*, box ~0.4)
     -- must be blown up to the same footprint as pentapod bosses (~2.5) or they
     -- stay biter-sized red dots on the map.
     boss_min_box = 2.5,
-    boss_warp_count_every = 20,
     -- Exact-name boss units that have no maf-boss-* prefix (planet-agnostic
     -- biter mods like ArmouredBiters). The runtime block below inserts these
     -- into the boss tiers when the mod is installed; data-final-fixes and the

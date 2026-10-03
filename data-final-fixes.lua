@@ -21,7 +21,7 @@ end
 data:extend{{
    type = "sound",
    name = "warptorio-teleport",
-   filename = "__warptorio-space-age-edge__/sounds/teleport.ogg",
+   filename = "__warptorio-space-age__/sounds/teleport.ogg",
    volume = 1.0,
    audible_distance_modifier = 2,
 }}
@@ -36,7 +36,7 @@ end
 -- map (chart dots scale with the entity's collision box, same trick Space Age
 -- uses for pentapods/worms). The set is driven by the boss pools in
 -- internal_settings so vanilla AND 3rd-party bosses (maf-boss-*, ...) get one,
--- and new pools need no data-stage code. Spawning is script-driven, so the
+-- and new pools need no data-stage code. Spawning is script-driven, so they
 -- copy only needs to exist when the base entity does.
 local boss_box_scale = 1.5
 local warp_cfg = require("internal_settings")
@@ -55,10 +55,10 @@ local function boss_box(v)
   end
   return {{v[1][1] * f, v[1][2] * f}, {v[2][1] * f, v[2][2] * f}}
 end
--- Entity types that can get enlarged boss copies. Only "unit" bosses need it:
--- pentapods (stompers/strafers) and demolishers already have big collision
--- boxes and read as big map dots out of the box, so they stay untouched.
-local enemy_types = {"unit"}
+-- Entity types that get boss copies. "unit" copies are also enlarged;
+-- pentapods (spider-unit) already read as big map dots, so their copies only
+-- get the boss health. Demolishers (segmented-unit) stay untouched.
+local enemy_types = {"unit", "spider-unit"}
 
 local want_boss = {}
 do
@@ -92,17 +92,25 @@ for _, type_name in ipairs(enemy_types) do
       if want_boss[name] then
          local boss = table.deepcopy(base)
          boss.name = name .. "-warptorio-boss"
-         if boss.collision_box then
-            boss.collision_box = boss_box(boss.collision_box)
+         -- Reuse the base unit's locale instead of an entry per boss copy.
+         boss.localised_name = base.localised_name or {"entity-name." .. name}
+         boss.localised_description = base.localised_description
+            or {"?", {"entity-description." .. name}, ""}
+         if type_name == "unit" then
+            if boss.collision_box then
+               boss.collision_box = boss_box(boss.collision_box)
+            end
+            if boss.selection_box then
+               boss.selection_box = boss_box(boss.selection_box)
+            end
          end
-         if boss.selection_box then
-            boss.selection_box = boss_box(boss.selection_box)
+         -- One boss life = the copy's full health bar; the lives themselves
+         -- are revives handled at runtime (boss_system.on_damaged).
+         local biter_cfg = warp_cfg.biter
+         if (biter_cfg.boss_lives_types or {})[type_name] and (biter_cfg.boss_lives or 0) > 0 then
+            boss.max_health = biter_cfg.boss_life_health
          end
          boss.map_generator_bounding_box = nil
-         local hp_mult = warp_cfg.biter.boss_health_mult or 1
-         if hp_mult ~= 1 and boss.max_health then
-            boss.max_health = math.floor(boss.max_health * hp_mult)
-         end
          data:extend{boss}
       end
    end

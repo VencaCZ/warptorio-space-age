@@ -25,7 +25,7 @@ cargo_chest_entity.picture =
     layers =
     {
       {
-        filename = "__warptorio-space-age-edge__/graphics/entities/cargo-chest.png",
+        filename = "__warptorio-space-age__/graphics/entities/cargo-chest.png",
         priority = "extra-high",
         width = 512,
         height = 384,
@@ -33,7 +33,7 @@ cargo_chest_entity.picture =
         scale = 0.5
       },
       {
-        filename = "__warptorio-space-age-edge__/graphics/entities/cargo-chest-shadow.png",
+        filename = "__warptorio-space-age__/graphics/entities/cargo-chest-shadow.png",
         priority = "extra-high",
         width = 512,
         height = 384,
@@ -42,7 +42,7 @@ cargo_chest_entity.picture =
         scale = 0.5
       },
       {
-        filename = "__warptorio-space-age-edge__/graphics/entities/cargo-chest-glow.png",
+        filename = "__warptorio-space-age__/graphics/entities/cargo-chest-glow.png",
         priority = "extra-high",
         width = 512,
         height = 384,

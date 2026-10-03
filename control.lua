@@ -1191,6 +1191,7 @@ local function replace_with_high_quality(old_entity, strquality)
 	local old_unit_number = old_entity.unit_number
 	local boss_data = storage.warptorio and storage.warptorio.bosses
 		and storage.warptorio.bosses[old_unit_number]
+	local old_health = old_entity.health
 	old_entity.destroy({raise_destroy=true})
 	local new_entity = surface.create_entity{
 		name = name,
@@ -1202,7 +1203,7 @@ local function replace_with_high_quality(old_entity, strquality)
 	-- boss; carry the registration over so the replacement still drops loot.
 	if boss_data then
 		boss_system.scale_health(new_entity)
-		boss_system.register(new_entity, boss_data.quality)
+		boss_system.register(new_entity, boss_data.quality, {lives = boss_data.lives, lives_total = boss_data.lives_total, health = old_health})
 	end
 
 end
@@ -1261,21 +1262,34 @@ end
 -- boss_spawned event. Shared by the natural wave cadence (check_wave) and the
 -- warpcheat "Spawn boss wave" button.
 local function spawn_boss_wave(biter_index, quality)
-   -- Linear count: one boss per 10 waves plus an extra every 20 warps,
-   -- no more random-on-random quadratic explosion.
+   -- Count dials live in internal_settings (boss_count_wave_divisor,
+   -- boss_warp_count_every, boss_count_random, boss_alive_cap,
+   -- boss_final_groups); the defaults reproduce the original pressure.
+   local cfg = warp_settings.biter
+   local final = technology_check()
    local wave_number = storage.warptorio.wave_index + 1
-   local boss_count = math.min(warp_settings.biter.max_bosses,
-     math.ceil(wave_number / 10)
-     + math.floor((storage.warporio.index or 0) / warp_settings.biter.boss_warp_count_every))
-   -- Cap the ones on the field at once instead of letting them pile up
-   -- beyond max_bosses. Skipped during the final research so the endgame
-   -- boss grind behaves exactly as before.
-   if not technology_check() then
-      boss_count = math.max(0, math.min(boss_count, warp_settings.biter.max_bosses - boss_system.alive_boss_count()))
+   local count = math.ceil(wave_number / (cfg.boss_count_wave_divisor or 10))
+   if (cfg.boss_warp_count_every or 0) > 0 then
+      count = count + math.floor((storage.warporio.index or 0) / cfg.boss_warp_count_every)
+   end
+   count = math.min(cfg.max_bosses, count)
+   local function roll()
+      if cfg.boss_count_random and count > 0 then return math.random(1, count) end
+      return count
+   end
+   local groups = (final and cfg.boss_final_groups) and count or 1
+   local boss_count = 0
+   for _=1,groups do boss_count = boss_count + roll() end
+   -- Hard cap on bosses alive at once (final research included): every
+   -- boss brings lives and an escort, so an uncapped pile-up kills UPS.
+   if cfg.boss_alive_cap then
+      boss_count = math.max(0, math.min(boss_count, cfg.boss_alive_cap - boss_system.alive_boss_count()))
    end
    -- Modded boss variants (maf-boss-*) belong to their home planet. Bosses
    -- from another planet are excluded unless listed in boss_rare_planets,
-   -- in which case they spawn with the given reduced weight.
+   -- in which case they spawn with the given reduced weight. During the
+   -- final researches (boss_final_all_planets) every variant is allowed.
+   local ignore_planet = final and cfg.boss_final_all_planets
    local surface_name = storage.warptorio.surface_name
    local boss_cfg = warp_settings.biter.entity_type or {}
    local boss_planet_map = boss_cfg.boss_planet or {}
@@ -1292,7 +1306,7 @@ local function spawn_boss_wave(biter_index, quality)
             if boss_name:sub(1, #p) == p then prefix, home = p, planet end
          end
          local weight = 1
-         if prefix then
+         if prefix and not ignore_planet then
             if home == surface_name then
                weight = 1
             else
@@ -1327,13 +1341,74 @@ local function spawn_boss_wave(biter_index, quality)
          end
          return boss_pool[#boss_pool].name
       end
+      -- Every boss leads its own group with an escort resolved from
+      -- internal_settings boss_escort (see the comment there).
+      local wave_group = warp_settings.biter.entity_type["default"]
+      if surface_name and warp_settings.biter.entity_type[surface_name] then
+         wave_group = warp_settings.biter.entity_type[surface_name]
+      end
+      local escort_cfg = cfg.boss_escort or {}
+      local function escort_for(boss_name)
+         local entry = {
+            count = escort_cfg.count or {0, 0},
+            tier_offset = escort_cfg.tier_offset or 0,
+            top_quality = escort_cfg.top_quality or "legendary",
+         }
+         local function apply(over)
+            if not over then return end
+            for k, v in pairs(over) do entry[k] = v end
+         end
+         apply((escort_cfg.tiers or {})[biter_index])
+         local best, best_len = nil, 0
+         for prefix, over in pairs(escort_cfg.bosses or {}) do
+            if #prefix > best_len and boss_name:sub(1, #prefix) == prefix then
+               best, best_len = over, #prefix
+            end
+         end
+         apply(best)
+         local escort_quality = quality
+         local types = entry.types
+         if not types then
+            local escort_tier = biter_index + entry.tier_offset
+            if escort_tier > #wave_group then
+               escort_tier = #wave_group
+               if not final then escort_quality = entry.top_quality end
+            end
+            types = wave_group[math.max(1, escort_tier)] or {}
+         end
+         local exclude = entry.exclude or escort_cfg.exclude or {}
+         if #exclude > 0 then
+            local kept = {}
+            for _, name in ipairs(types) do
+               local skip = false
+               for _, pattern in ipairs(exclude) do
+                  if name:find(pattern, 1, true) then skip = true break end
+               end
+               if not skip then kept[#kept + 1] = name end
+            end
+            types = kept
+         end
+         if not prototypes.quality[escort_quality] then escort_quality = "normal" end
+         local min = entry.count[1] or 0
+         return {
+            types = types,
+            count = math.random(min, math.max(min, entry.count[2] or min)),
+            quality = escort_quality,
+         }
+      end
+      local zone = storage.warptorio.warp_zone
       for _=1,boss_count do
           local biter_type = pick_boss()
           if not biter_type then break end
+          local escort = escort_for(biter_type)
           if string.match(biter_type, "demolisher") then
-            boss_system.create_angry_boss(biter_type,1,storage.warptorio.warp_zone,quality)
+            -- Demolishers can't join a unit group; the escort comes in a
+            -- separate group from the same spot.
+            local angle = math.random()*2*math.pi
+            boss_system.create_angry_boss(biter_type,1,zone,quality,nil,angle)
+            boss_system.create_angry_biters(nil,0,zone,escort.quality,nil,false,{angle = angle, range = 125, escort = escort})
           else
-            boss_system.create_angry_biters(biter_type,1,storage.warptorio.warp_zone,quality,nil,true)
+            boss_system.create_angry_biters(biter_type,1,zone,quality,nil,true,{escort = escort})
           end
       end
    end
@@ -1386,11 +1461,16 @@ local function check_wave()
   if limit <= 0 then
      local wave_index = storage.warptorio.wave_index+1
      local amount = warp_settings.biter.wave_amount*math.floor((wave_index)*warp_settings.biter.wave_increase)
-     -- Boss waves keep a reduced regular flood so the normal evolution tiers
-     -- stay in play past the old "boss-only" cliff.
+     -- boss_flood_ratio of the regular flood still spawns on a boss wave
+     -- (0 = the boss wave replaces the flood, the original behaviour).
      local flood_amount = amount
      if spawn_boss then
-        flood_amount = math.max(3, math.floor(amount * warp_settings.biter.boss_flood_ratio))
+        local ratio = warp_settings.biter.boss_flood_ratio or 0
+        flood_amount = ratio > 0 and math.max(warp_settings.biter.boss_flood_min or 3, math.floor(amount * ratio)) or 0
+        -- At the alive-boss cap a boss wave spawns nothing at all: no bosses,
+        -- no escorts (spawned per boss) and no flood share.
+        local cap = warp_settings.biter.boss_alive_cap
+        if cap and boss_system.alive_boss_count() >= cap then flood_amount = 0 end
      end
     for i=1,flood_amount do
       if technology_check() then break end
@@ -1410,9 +1490,13 @@ local function check_wave()
     end
     if spawn_boss or technology_check() then
        local spawned = spawn_boss_wave(biter_index, quality)
-       if spawn_boss and (not technology_check()) and spawned > 0 then
-          game.print({"warptorio.boss-warning"},{volume_modifier=0})
-          game.play_sound({path="boss-spawn"})
+       if spawn_boss and spawned > 0 then
+          -- Warn once per warp; later boss waves on the same planet are silent.
+          if (not technology_check()) and (not storage.warptorio.boss_spawned_warp) then
+             game.print({"warptorio.boss-warning"},{volume_modifier=0})
+             game.play_sound({path="boss-spawn"})
+          end
+          storage.warptorio.boss_spawned_warp = true
        end
     end
     storage.warptorio.wave_index = storage.warptorio.wave_index + 1
@@ -2876,6 +2960,7 @@ local function is_protected_warp_entity(entity)
 end
 
 script.on_event(defines.events.on_entity_damaged, function(e)
+    if boss_system.on_damaged(e) then return end
     if e.force ~= game.forces.player then return end
     if e.entity.force ~= game.forces.player then return end
     if not is_protected_warp_entity(e.entity) then return end

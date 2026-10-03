@@ -2,8 +2,8 @@ local entity_base = table.deepcopy(data.raw["linked-container"]["linked-chest"])
 local item_base = table.deepcopy(data.raw["item"]["linked-chest"])
 entity_base.gui_mode = "none"
 
-local ei_containers_entity_path = "__warptorio-space-age-edge__/graphics/entities/"
-local ei_containers_item_path = "__warptorio-space-age-edge__/graphics/items/"
+local ei_containers_entity_path = "__warptorio-space-age__/graphics/entities/"
+local ei_containers_item_path = "__warptorio-space-age__/graphics/items/"
 
 local function make_item(size, typus)
     local item = table.deepcopy(item_base)

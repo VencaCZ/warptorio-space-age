@@ -226,7 +226,7 @@ data:extend({
     maximum_value = 600,
   },
   { type = "bool-setting", name = "warptorio-ground-minimap", order = "a1", setting_type = "runtime-per-user", default_value = true },
-  { type = "bool-setting", name = "warptorio_boss-loot", order = "11b", setting_type = "runtime-global", default_value = true },
+  { type = "bool-setting", name = "warptorio_boss-loot", order = "11b", setting_type = "runtime-global", default_value = false },
   { type = "int-setting", name = "warptorio_boss-loot-count", order = "11b", setting_type = "runtime-global", default_value = 1, minimum_value = 0, maximum_value = 5 },
   { type = "double-setting", name = "warptorio_boss-loot-chance", order = "11b", setting_type = "runtime-global", default_value = 25, minimum_value = 0, maximum_value = 100 },
 })
