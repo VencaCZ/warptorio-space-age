@@ -437,7 +437,7 @@ local local_settings = {
      zoom_factor_max = 100,
      -- Radius beyond the platform centre (in tiles) that M.chart covers,
      -- ensuring bosses spawn just inside the charted ring.
-     boss_reveal = 340,
+     boss_reveal = 60,
   },
   planet_timer = 30,
   stuck_in_space_chance = settings.startup["warptorio_stuck-in-space-chance"].value,

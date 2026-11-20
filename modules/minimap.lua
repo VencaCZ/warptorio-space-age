@@ -73,10 +73,6 @@ local function sync_ground_minimap(player)
   local enabled = get_minimap_setting(player_settings, "warptorio-ground-minimap", true)
   local toggled = not (storage.warptorio.minimap_toggled and storage.warptorio.minimap_toggled[player.index] == false)
 
-  if frame and env.minimap_needs_reposition() then
-    pin_minimap(player, frame)
-  end
-
   if not enabled or not toggled then
     manage_builtin_minimap(player, false)
     if frame then frame.destroy() end

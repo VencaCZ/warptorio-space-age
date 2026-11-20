@@ -2,8 +2,9 @@ local M = {}
 
 local env
 
-local active = false
-
+-- No module-level copy of state: control.lua runs before storage is restored
+-- (and again on every MP join), so anything cached here would differ between
+-- the server and a joining client and desync. Read storage on demand instead.
 local function state()
   storage.warptorio = storage.warptorio or {}
   storage.warptorio.teleporter_visualize = storage.warptorio.teleporter_visualize or {}
@@ -18,12 +19,20 @@ local function ensure_render_ids()
   return st.render_ids
 end
 
+local function is_active()
+  local vis = storage.warptorio and storage.warptorio.teleporter_visualize
+  return vis ~= nil and vis.active == true
+end
+
+-- rendering.draw_* returns a LuaRenderObject in 2.x; plain numeric ids may
+-- still be around from older saves.
 local function destroy_object(id)
+  local obj = id
   if type(id) == "number" then
-    local ok, obj = pcall(rendering.get_object_by_id, id)
-    if ok and obj then
-      pcall(obj.destroy, obj)
-    end
+    obj = rendering.get_object_by_id(id)
+  end
+  if obj and obj.valid then
+    obj.destroy()
   end
 end
 
@@ -73,7 +82,7 @@ end
 
 local function refresh()
   clear_all()
-  if not active then return end
+  if not is_active() then return end
 
   local warp_zone = env.get_warp_zone and env.get_warp_zone() or storage.warptorio.warp_zone
   log("[teleporter_visualize] refresh warp_zone=" .. tostring(warp_zone) ..
@@ -96,22 +105,15 @@ local function refresh()
   end
 end
 
-function module_init(env_table)
+-- Called from the control.lua main chunk: only wire up callbacks here. No
+-- storage or rendering access, since storage is not restored yet and the main
+-- chunk also runs on every joining client.
+function M.init(env_table)
   env = env_table
-  local st = state()
-  if not st.cleared then
-    st.cleared = true
-    pcall(rendering.clear)
-  end
-  active = not not st.active
-  clear_all()
-  if active then
-    refresh()
-  end
 end
 
 function M.toggle(player)
-  active = not active
+  local active = not is_active()
   state().active = active
   if active then
     log("[teleporter_visualize] toggle ON by " .. (player and player.name or "?") .. " on surface=" ..
@@ -125,11 +127,9 @@ function M.toggle(player)
 end
 
 function M.refresh()
-  if active then refresh() end
+  if is_active() then refresh() end
 end
 
-function M.is_active() return active end
-
-M.init = module_init
+M.is_active = is_active
 
 return M

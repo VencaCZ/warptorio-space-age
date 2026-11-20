@@ -1,4 +1,29 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.8
+Date: 2026-11-20
+  Changes:
+    - Fixed issue with overlaping keybind
+---------------------------------------------------------------------------------------------------
+Version: 0.4.7
+Date: 2026-10-27
+  Changes:
+    - Fixed issue with game over on wrong surface check
+---------------------------------------------------------------------------------------------------
+Version: 0.4.6
+Date: 2026-10-11
+  Changes:
+    - Fixed multiplayer desync
+    - Fixed forced warp crash
+---------------------------------------------------------------------------------------------------
+Version: 0.4.5
+Date: 2026-10-04
+  Changes:
+    - Changed how the wave bosses work to keep them inline with the 0.4.4 changes
+    - Changed wave timings and dificulty
+    - Increased cost of the final research
+    - All bosses now have exactly same health to balance out modded bosses
+    - Changed final research cost if quality mod is not enabled
+---------------------------------------------------------------------------------------------------
 Version: 0.4.4
 Date: 2026-10-03
   Changes:

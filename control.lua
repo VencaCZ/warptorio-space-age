@@ -420,12 +420,6 @@ script.on_init(function()
   game.surfaces["nauvis"].set_tiles(tiles)
 end)
 
-local minimap_needs_reposition = false
-
-script.on_load(function()
-  --on_init_or_load()
-  minimap_needs_reposition = true
-end)
 
 script.on_event(defines.events.on_force_created, function(e)
   local spawn = translate_surface_position("nauvis", {x=0, y=0})
@@ -1730,6 +1724,7 @@ local function create_space_platform()
 end
 
 local clear_warp_countdown
+local roll_planet
 
 local function next_warp_zone_prepare(forced, go_home)
     --if true then return end
@@ -1783,6 +1778,16 @@ local function next_warp_zone_prepare(forced, go_home)
        storage.warptorio.previous_surface_1 = nil
        surface = new_random_surface(name)
     else
+       -- planet_next is only re-rolled once the warp engine cooldown runs out.
+       -- When the forced warp fires first (cooldown longer than the time limit
+       -- at high warp counts) it still names the planet we are standing on, and
+       -- new_random_surface would then reuse and rename the current surface
+       -- (LuaPlanet::create_surface returns the existing one), losing the source.
+       local next_planet = storage.warptorio.planet_next
+       if next_planet == nil or (next_planet == storage.warptorio.surface_name
+          and next_planet ~= "nauvis" and next_planet ~= "void") then
+          roll_planet()
+       end
        local num = math.random()
        if num < warp_settings.stuck_in_space_chance and not game.surfaces["space"] then
           surface = new_random_surface("space")
@@ -2188,7 +2193,7 @@ local function get_all_surfaces()
    return surfaces
    end]]
 
-local function roll_planet()
+function roll_planet()
    local surfaces = {}
 
   -- Insert extra nauvis to improve chances
@@ -2443,7 +2448,7 @@ if storage.warptorio.game_over then return end
     storage.warptorio.planet_timer = storage.warptorio.planet_timer + 1/60
 
     if storage.warptorio.planet_timer > warp_settings.planet_timer or storage.warptorio.planet_next == nil
-        or (storage.warptorio.planet_next == storage.warptorio.warp_zone and storage.warptorio.planet_next ~= "nauvis") then
+        or (storage.warptorio.planet_next == storage.warptorio.surface_name and storage.warptorio.planet_next ~= "nauvis") then
       storage.warptorio.planet_timer = 0
       roll_planet()
     end
@@ -2487,9 +2492,6 @@ if storage.warptorio.game_over then return end
   end
    for i,v in pairs(players) do
       minimap.sync(v)
-   end
-   if minimap_needs_reposition then
-      minimap_needs_reposition = false
    end
   for i,v in pairs(players) do
     -- If player steps into teleport zone, teleport them
@@ -2972,9 +2974,25 @@ script.on_event(defines.events.on_entity_damaged, function(e)
     end
 end)
 
+local function is_current_warp_surface(surface_name)
+  if surface_name == storage.warptorio.warp_zone then return true end
+  return surface_name == "warp-space-transition"
+    and storage.warptorio.transition_timer ~= nil
+    and storage.warptorio.transition_timer > 0
+end
+
+local function cause_check(cause,force)
+  if not cause then return false end
+  if force and force.name == "enemy" then return true end
+  return false
+end
+
 script.on_event(defines.events.on_entity_died, function(e)
     warp_constant_combinator.unregister(e.entity)
-    if storage.warptorio and storage.warptorio.power_unit_number and e.entity.unit_number == storage.warptorio.power_unit_number[1] then
+    if storage.warptorio and storage.warptorio.power_unit_number 
+       and is_current_warp_surface(e.entity.surface.name) 
+       and cause_check(e.cause, e.force) 
+       and e.entity.unit_number == storage.warptorio.power_unit_number[1] then
         trigger_game_over()
     end
     boss_system.on_boss_died(e.entity)
@@ -3069,7 +3087,6 @@ end
 
 minimap.init({
   translate_surface_position = translate_surface_position,
-  minimap_needs_reposition = function() return minimap_needs_reposition end,
 })
 
 teleporter_visualize.init({

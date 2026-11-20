@@ -156,7 +156,11 @@ local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon="__warptorio-space-age__/graphics/locations/black-hole.png",icon_size=256,}}
 t.hidden =false
 t.localised_name = nil
-ExtendTech(t,{name="warp-end-win",unit={count=42000,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}),time=240}, prerequisites={"warp-end-prepare"},effects={}})
+local end_cost = 24000
+if mods["quality"] then
+   end_cost = 42000
+end
+ExtendTech(t,{name="warp-end-win",unit={count=end_cost,ingredients = SciencePacks({red=1,green=1,blue=1,purple=1,yellow=1,white=1,vulcanus=1,fulgora=1,aquilo=1,gleba=1,final=1}),time=240}, prerequisites={"warp-end-prepare"},effects={}})
 
 local t = table.deepcopy(data.raw["technology"]["rocket-silo"])
 t.icons = {{icon=t.icon,tint={r=0.3,g=0.3,b=1,a=1},icon_size=256,}}
